@@ -1,0 +1,78 @@
+import 'common/base'
+import 'common/enum'
+import 'app'
+
+model User extends Base {
+  name            String?        @db.VarChar(100)
+  email           String         @unique @db.VarChar(100)
+  passwordDigest  String         @db.VarChar(255)
+  birthday        DateTime?      @db.Date
+  gender          Gender?
+  role            UserRole       @default(USER)
+  rememberDigest  String         @default("")
+  
+  // Giữ lại các trường từ model cũ
+  phone           String?        @unique
+  locked          Boolean        @default(false)
+  loginFailed     Int            @default(0) @omit
+  
+  // Relations
+  refreshTokens   RefreshToken[]
+  devices         Device[]       @omit
+  group           UserGroup[]
+  
+  // Course-related relations
+  userCourses     UserCourse[]
+  userLessons     UserLesson[]
+  userWords       UserWord[]
+  testResults     TestResult[]
+  adminCourseManagers AdminCourseManager[]
+  
+  // Created content
+  createdCourses  Course[]       @relation("CourseCreator")
+  createdLessons  Lesson[]       @relation("LessonCreator")
+
+  @@unique([email, phone])
+  @@auth
+}
+
+model UserGroup extends Base {
+  name       String       @unique
+  user       User[]
+  permission Permission[]
+}
+
+model Permission extends Base {
+  name           PermissionName // Tên đối tượng kiểm soát quyền
+  permissionType PermissionType // Loại hành động kiểm soát quyền
+  disabled       Boolean        @default(false)
+
+  groups         UserGroup[]
+
+  @@unique([name, permissionType])
+}
+
+model RefreshToken extends Base {
+  token     String   @unique
+  userId    String   // Changed to String to match User.id
+  revoked   Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id])
+  deviceId  String
+  device    Device   @relation(fields: [deviceId], references: [id])
+  expiresAt DateTime
+
+  @@unique([userId, deviceId])
+}
+
+model Device extends Base {
+  name         String  //e.g., "iPhone", "Laptop"
+  userId       String  // Changed to String to match User.id
+  user         User    @relation(fields: [userId], references: [id])
+  lastActive   DateTime?
+  isActive     Boolean        @default(true)
+  ipAddress    String?
+  location     String?
+  refreshToken RefreshToken[]
+
+  @@unique([userId, name])
+}

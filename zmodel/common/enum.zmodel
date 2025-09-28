@@ -1,0 +1,98 @@
+enum PermissionName {
+  AdministrativeUnit
+  Category
+  Disaster
+  Media
+  RescueTypeOnDisaster
+  
+  // Administrative units - specific permissions
+  Province
+  District
+  Commune
+  
+  // Category entities - specific permissions  
+  DisasterType
+  PriorityLevel
+  EmergencyLevel
+  DataField
+  RescueType
+  
+  // User management
+  User
+  UserGroup
+  Permission
+  
+  // Geographic entities
+  Zone
+  Coordinate
+  
+  // System entities
+  Device
+  RefreshToken
+}
+
+enum UserRole {
+  ADMIN
+  USER 
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum EnrolmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum LessonStatus {
+  TODO
+  DOING
+  PASS
+  FAIL
+}
+
+enum WordType {
+  NOUN
+  PRONOUN
+  VERB
+  ADJECTIVE
+  ADVERB
+  PREPOSITION
+  CONJUNCTION
+  INTERJECTION
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+}
+
+enum ComponentType {
+  WORD
+  TEST
+  PARAGRAPH
+}
+
+enum TestResultStatus {
+  PASSED
+  FAILED
+}
+
+enum PermissionType {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+}

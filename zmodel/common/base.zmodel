@@ -1,0 +1,10 @@
+abstract model Base {
+  id String @id @default(cuid())
+  description String @default("")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  deleted DateTime? @omit
+
+  @@deny('read', deleted != null)
+  @@allow('all', true) 
+}

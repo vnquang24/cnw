@@ -1,0 +1,151 @@
+import 'common/base'
+import 'common/enum'
+import 'user'
+
+// Course model
+model Course extends Base {
+  title       String    @db.VarChar(255)
+  createdBy   String?
+  duration    Int
+
+  // Relations
+  creator           User?                @relation("CourseCreator", fields: [createdBy], references: [id])
+  lessons           Lesson[]
+  userCourses       UserCourse[]
+  adminCourseManagers AdminCourseManager[]
+}
+
+// Lesson model
+model Lesson extends Base {
+  courseId    String
+  title       String    @db.VarChar(255)
+  position    Int
+  createdBy   String?
+
+  // Relations
+  course      Course     @relation(fields: [courseId], references: [id])
+  creator     User?      @relation("LessonCreator", fields: [createdBy], references: [id])
+  components  Component[]
+  userLessons UserLesson[]
+}
+
+// Word model
+model Word extends Base {
+  content  String   @db.Text
+  meaning  String   @db.Text
+  wordType WordType
+
+  // Relations
+  components Component[]
+}
+
+// Test model
+model Test extends Base {
+  name        String @db.Text
+  duration    Int
+  maxAttempts Int
+
+  // Relations
+  questions  Question[]
+  components Component[]
+}
+
+// Question model
+model Question extends Base {
+  testId       String
+  content      String       @db.Text
+  questionType QuestionType
+
+  // Relations
+  test    Test     @relation(fields: [testId], references: [id])
+  answers Answer[]
+}
+
+// Answer model
+model Answer extends Base {
+  questionId String
+  content    String  @db.VarChar(255)
+  correct    Boolean
+
+  // Relations
+  question Question @relation(fields: [questionId], references: [id])
+}
+
+// Component model
+model Component extends Base {
+  lessonId       String
+  componentType  ComponentType
+  testId         String?
+  wordId         String?
+  content        String?       @db.Text
+  indexInLesson  Int
+
+  // Relations
+  lesson      Lesson       @relation(fields: [lessonId], references: [id])
+  test        Test?        @relation(fields: [testId], references: [id])
+  word        Word?        @relation(fields: [wordId], references: [id])
+  userWords   UserWord[]
+  testResults TestResult[]
+}
+
+// UserCourse model
+model UserCourse extends Base {
+  userId           String
+  courseId         String
+  enrolmentStatus  EnrolmentStatus @default(PENDING)
+  progress         Int
+  reason           String?         @db.Text
+  startDate        DateTime?       @db.Date
+  endDate          DateTime?       @db.Date
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
+}
+
+// UserLesson model
+model UserLesson extends Base {
+  userId      String
+  lessonId    String
+  status      LessonStatus  @default(TODO)
+  grade       Int
+  completedAt DateTime?
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id])
+  lesson Lesson @relation(fields: [lessonId], references: [id])
+}
+
+// AdminCourseManager model
+model AdminCourseManager extends Base {
+  userId   String
+  courseId String
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
+}
+
+// UserWord model
+model UserWord extends Base {
+  userId      String
+  componentId String
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id])
+  component Component @relation(fields: [componentId], references: [id])
+}
+
+// TestResult model
+model TestResult extends Base {
+  userId        String
+  componentId   String
+  attemptNumber Int
+  userAnswers   Json
+  mark          Int
+  status        TestResultStatus
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id])
+  component Component @relation(fields: [componentId], references: [id])
+}
