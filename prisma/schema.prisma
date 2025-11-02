@@ -46,6 +46,17 @@ enum Gender {
     OTHER
 }
 
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CourseStatus {
+  ACTIVE
+  INACTIVE
+}
+
 enum EnrolmentStatus {
     PENDING
     APPROVED

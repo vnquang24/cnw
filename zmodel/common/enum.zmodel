@@ -42,6 +42,20 @@ enum Gender {
   OTHER
 }
 
+
+// Add by Nguyen Anh Quan
+enum CourseLevel {
+  BEGINNER 
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CourseStatus {
+  ACTIVE
+  INACTIVE
+}
+// 
+
 enum EnrolmentStatus {
   PENDING
   APPROVED

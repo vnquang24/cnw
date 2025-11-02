@@ -6,1152 +6,1432 @@
 // @ts-nocheck
 
 const metadata = {
-    models: {
+  models: {
+    course: {
+      name: "Course",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        title: {
+          name: "title",
+          type: "String",
+        },
+        createdBy: {
+          name: "createdBy",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "creator",
+        },
+        duration: {
+          name: "duration",
+          type: "Int",
+        },
+        level: {
+          name: "level",
+          type: "CourseLevel",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        status: {
+          name: "status",
+          type: "CourseStatus",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        creator: {
+          name: "creator",
+          type: "User",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "createdCourses",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "createdBy" },
+        },
+        lessons: {
+          name: "lessons",
+          type: "Lesson",
+          isDataModel: true,
+          isArray: true,
+          backLink: "course",
+        },
+        userCourses: {
+          name: "userCourses",
+          type: "UserCourse",
+          isDataModel: true,
+          isArray: true,
+          backLink: "course",
+        },
+        adminCourseManagers: {
+          name: "adminCourseManagers",
+          type: "AdminCourseManager",
+          isDataModel: true,
+          isArray: true,
+          backLink: "course",
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    lesson: {
+      name: "Lesson",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        courseId: {
+          name: "courseId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "course",
+        },
+        title: {
+          name: "title",
+          type: "String",
+        },
+        position: {
+          name: "position",
+          type: "Int",
+        },
+        createdBy: {
+          name: "createdBy",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "creator",
+        },
         course: {
-            name: 'Course', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, title: {
-                    name: "title",
-                    type: "String",
-                }, createdBy: {
-                    name: "createdBy",
-                    type: "String",
-                    isOptional: true,
-                    isForeignKey: true,
-                    relationField: 'creator',
-                }, duration: {
-                    name: "duration",
-                    type: "Int",
-                }, creator: {
-                    name: "creator",
-                    type: "User",
-                    isDataModel: true,
-                    isOptional: true,
-                    backLink: 'createdCourses',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "createdBy" },
-                }, lessons: {
-                    name: "lessons",
-                    type: "Lesson",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'course',
-                }, userCourses: {
-                    name: "userCourses",
-                    type: "UserCourse",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'course',
-                }, adminCourseManagers: {
-                    name: "adminCourseManagers",
-                    type: "AdminCourseManager",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'course',
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                },
-            },
+          name: "course",
+          type: "Course",
+          isDataModel: true,
+          backLink: "lessons",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "courseId" },
         },
-        lesson: {
-            name: 'Lesson', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, courseId: {
-                    name: "courseId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'course',
-                }, title: {
-                    name: "title",
-                    type: "String",
-                }, position: {
-                    name: "position",
-                    type: "Int",
-                }, createdBy: {
-                    name: "createdBy",
-                    type: "String",
-                    isOptional: true,
-                    isForeignKey: true,
-                    relationField: 'creator',
-                }, course: {
-                    name: "course",
-                    type: "Course",
-                    isDataModel: true,
-                    backLink: 'lessons',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "courseId" },
-                }, creator: {
-                    name: "creator",
-                    type: "User",
-                    isDataModel: true,
-                    isOptional: true,
-                    backLink: 'createdLessons',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "createdBy" },
-                }, components: {
-                    name: "components",
-                    type: "Component",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'lesson',
-                }, userLessons: {
-                    name: "userLessons",
-                    type: "UserLesson",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'lesson',
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                },
-            },
+        creator: {
+          name: "creator",
+          type: "User",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "createdLessons",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "createdBy" },
         },
-        word: {
-            name: 'Word', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, content: {
-                    name: "content",
-                    type: "String",
-                }, meaning: {
-                    name: "meaning",
-                    type: "String",
-                }, wordType: {
-                    name: "wordType",
-                    type: "WordType",
-                }, components: {
-                    name: "components",
-                    type: "Component",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'word',
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                },
-            },
+        components: {
+          name: "components",
+          type: "Component",
+          isDataModel: true,
+          isArray: true,
+          backLink: "lesson",
+        },
+        userLessons: {
+          name: "userLessons",
+          type: "UserLesson",
+          isDataModel: true,
+          isArray: true,
+          backLink: "lesson",
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    word: {
+      name: "Word",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        content: {
+          name: "content",
+          type: "String",
+        },
+        meaning: {
+          name: "meaning",
+          type: "String",
+        },
+        wordType: {
+          name: "wordType",
+          type: "WordType",
+        },
+        components: {
+          name: "components",
+          type: "Component",
+          isDataModel: true,
+          isArray: true,
+          backLink: "word",
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    test: {
+      name: "Test",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        name: {
+          name: "name",
+          type: "String",
+        },
+        duration: {
+          name: "duration",
+          type: "Int",
+        },
+        maxAttempts: {
+          name: "maxAttempts",
+          type: "Int",
+        },
+        questions: {
+          name: "questions",
+          type: "Question",
+          isDataModel: true,
+          isArray: true,
+          backLink: "test",
+        },
+        components: {
+          name: "components",
+          type: "Component",
+          isDataModel: true,
+          isArray: true,
+          backLink: "test",
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    question: {
+      name: "Question",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        testId: {
+          name: "testId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "test",
+        },
+        content: {
+          name: "content",
+          type: "String",
+        },
+        questionType: {
+          name: "questionType",
+          type: "QuestionType",
         },
         test: {
-            name: 'Test', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, name: {
-                    name: "name",
-                    type: "String",
-                }, duration: {
-                    name: "duration",
-                    type: "Int",
-                }, maxAttempts: {
-                    name: "maxAttempts",
-                    type: "Int",
-                }, questions: {
-                    name: "questions",
-                    type: "Question",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'test',
-                }, components: {
-                    name: "components",
-                    type: "Component",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'test',
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                },
-            },
+          name: "test",
+          type: "Test",
+          isDataModel: true,
+          backLink: "questions",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "testId" },
+        },
+        answers: {
+          name: "answers",
+          type: "Answer",
+          isDataModel: true,
+          isArray: true,
+          backLink: "question",
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    answer: {
+      name: "Answer",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        questionId: {
+          name: "questionId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "question",
+        },
+        content: {
+          name: "content",
+          type: "String",
+        },
+        correct: {
+          name: "correct",
+          type: "Boolean",
         },
         question: {
-            name: 'Question', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, testId: {
-                    name: "testId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'test',
-                }, content: {
-                    name: "content",
-                    type: "String",
-                }, questionType: {
-                    name: "questionType",
-                    type: "QuestionType",
-                }, test: {
-                    name: "test",
-                    type: "Test",
-                    isDataModel: true,
-                    backLink: 'questions',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "testId" },
-                }, answers: {
-                    name: "answers",
-                    type: "Answer",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'question',
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                },
-            },
+          name: "question",
+          type: "Question",
+          isDataModel: true,
+          backLink: "answers",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "questionId" },
         },
-        answer: {
-            name: 'Answer', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, questionId: {
-                    name: "questionId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'question',
-                }, content: {
-                    name: "content",
-                    type: "String",
-                }, correct: {
-                    name: "correct",
-                    type: "Boolean",
-                }, question: {
-                    name: "question",
-                    type: "Question",
-                    isDataModel: true,
-                    backLink: 'answers',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "questionId" },
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                },
-            },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
         },
-        component: {
-            name: 'Component', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, lessonId: {
-                    name: "lessonId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'lesson',
-                }, componentType: {
-                    name: "componentType",
-                    type: "ComponentType",
-                }, testId: {
-                    name: "testId",
-                    type: "String",
-                    isOptional: true,
-                    isForeignKey: true,
-                    relationField: 'test',
-                }, wordId: {
-                    name: "wordId",
-                    type: "String",
-                    isOptional: true,
-                    isForeignKey: true,
-                    relationField: 'word',
-                }, content: {
-                    name: "content",
-                    type: "String",
-                    isOptional: true,
-                }, indexInLesson: {
-                    name: "indexInLesson",
-                    type: "Int",
-                }, lesson: {
-                    name: "lesson",
-                    type: "Lesson",
-                    isDataModel: true,
-                    backLink: 'components',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "lessonId" },
-                }, test: {
-                    name: "test",
-                    type: "Test",
-                    isDataModel: true,
-                    isOptional: true,
-                    backLink: 'components',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "testId" },
-                }, word: {
-                    name: "word",
-                    type: "Word",
-                    isDataModel: true,
-                    isOptional: true,
-                    backLink: 'components',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "wordId" },
-                }, userWords: {
-                    name: "userWords",
-                    type: "UserWord",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'component',
-                }, testResults: {
-                    name: "testResults",
-                    type: "TestResult",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'component',
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                },
-            },
+      },
+    },
+    component: {
+      name: "Component",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
         },
-        userCourse: {
-            name: 'UserCourse', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, userId: {
-                    name: "userId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'user',
-                }, courseId: {
-                    name: "courseId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'course',
-                }, enrolmentStatus: {
-                    name: "enrolmentStatus",
-                    type: "EnrolmentStatus",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, progress: {
-                    name: "progress",
-                    type: "Int",
-                }, reason: {
-                    name: "reason",
-                    type: "String",
-                    isOptional: true,
-                }, startDate: {
-                    name: "startDate",
-                    type: "DateTime",
-                    isOptional: true,
-                }, endDate: {
-                    name: "endDate",
-                    type: "DateTime",
-                    isOptional: true,
-                }, user: {
-                    name: "user",
-                    type: "User",
-                    isDataModel: true,
-                    backLink: 'userCourses',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "userId" },
-                }, course: {
-                    name: "course",
-                    type: "Course",
-                    isDataModel: true,
-                    backLink: 'userCourses',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "courseId" },
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                },
-            },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
         },
-        userLesson: {
-            name: 'UserLesson', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, userId: {
-                    name: "userId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'user',
-                }, lessonId: {
-                    name: "lessonId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'lesson',
-                }, status: {
-                    name: "status",
-                    type: "LessonStatus",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, grade: {
-                    name: "grade",
-                    type: "Int",
-                }, completedAt: {
-                    name: "completedAt",
-                    type: "DateTime",
-                    isOptional: true,
-                }, user: {
-                    name: "user",
-                    type: "User",
-                    isDataModel: true,
-                    backLink: 'userLessons',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "userId" },
-                }, lesson: {
-                    name: "lesson",
-                    type: "Lesson",
-                    isDataModel: true,
-                    backLink: 'userLessons',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "lessonId" },
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                },
-            },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
         },
-        adminCourseManager: {
-            name: 'AdminCourseManager', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, userId: {
-                    name: "userId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'user',
-                }, courseId: {
-                    name: "courseId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'course',
-                }, user: {
-                    name: "user",
-                    type: "User",
-                    isDataModel: true,
-                    backLink: 'adminCourseManagers',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "userId" },
-                }, course: {
-                    name: "course",
-                    type: "Course",
-                    isDataModel: true,
-                    backLink: 'adminCourseManagers',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "courseId" },
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                },
-            },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
         },
-        userWord: {
-            name: 'UserWord', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, userId: {
-                    name: "userId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'user',
-                }, componentId: {
-                    name: "componentId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'component',
-                }, user: {
-                    name: "user",
-                    type: "User",
-                    isDataModel: true,
-                    backLink: 'userWords',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "userId" },
-                }, component: {
-                    name: "component",
-                    type: "Component",
-                    isDataModel: true,
-                    backLink: 'userWords',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "componentId" },
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                },
-            },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
         },
-        testResult: {
-            name: 'TestResult', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, userId: {
-                    name: "userId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'user',
-                }, componentId: {
-                    name: "componentId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'component',
-                }, attemptNumber: {
-                    name: "attemptNumber",
-                    type: "Int",
-                }, userAnswers: {
-                    name: "userAnswers",
-                    type: "Json",
-                }, mark: {
-                    name: "mark",
-                    type: "Int",
-                }, status: {
-                    name: "status",
-                    type: "TestResultStatus",
-                }, user: {
-                    name: "user",
-                    type: "User",
-                    isDataModel: true,
-                    backLink: 'testResults',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "userId" },
-                }, component: {
-                    name: "component",
-                    type: "Component",
-                    isDataModel: true,
-                    backLink: 'testResults',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "componentId" },
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                },
-            },
+        lessonId: {
+          name: "lessonId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "lesson",
+        },
+        componentType: {
+          name: "componentType",
+          type: "ComponentType",
+        },
+        testId: {
+          name: "testId",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "test",
+        },
+        wordId: {
+          name: "wordId",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "word",
+        },
+        content: {
+          name: "content",
+          type: "String",
+          isOptional: true,
+        },
+        indexInLesson: {
+          name: "indexInLesson",
+          type: "Int",
+        },
+        lesson: {
+          name: "lesson",
+          type: "Lesson",
+          isDataModel: true,
+          backLink: "components",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "lessonId" },
+        },
+        test: {
+          name: "test",
+          type: "Test",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "components",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "testId" },
+        },
+        word: {
+          name: "word",
+          type: "Word",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "components",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "wordId" },
+        },
+        userWords: {
+          name: "userWords",
+          type: "UserWord",
+          isDataModel: true,
+          isArray: true,
+          backLink: "component",
+        },
+        testResults: {
+          name: "testResults",
+          type: "TestResult",
+          isDataModel: true,
+          isArray: true,
+          backLink: "component",
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    userCourse: {
+      name: "UserCourse",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        userId: {
+          name: "userId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "user",
+        },
+        courseId: {
+          name: "courseId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "course",
+        },
+        enrolmentStatus: {
+          name: "enrolmentStatus",
+          type: "EnrolmentStatus",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        progress: {
+          name: "progress",
+          type: "Int",
+        },
+        reason: {
+          name: "reason",
+          type: "String",
+          isOptional: true,
+        },
+        startDate: {
+          name: "startDate",
+          type: "DateTime",
+          isOptional: true,
+        },
+        endDate: {
+          name: "endDate",
+          type: "DateTime",
+          isOptional: true,
         },
         user: {
-            name: 'User', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, name: {
-                    name: "name",
-                    type: "String",
-                    isOptional: true,
-                }, email: {
-                    name: "email",
-                    type: "String",
-                }, passwordDigest: {
-                    name: "passwordDigest",
-                    type: "String",
-                }, birthday: {
-                    name: "birthday",
-                    type: "DateTime",
-                    isOptional: true,
-                }, gender: {
-                    name: "gender",
-                    type: "Gender",
-                    isOptional: true,
-                }, role: {
-                    name: "role",
-                    type: "UserRole",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, rememberDigest: {
-                    name: "rememberDigest",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, phone: {
-                    name: "phone",
-                    type: "String",
-                    isOptional: true,
-                }, locked: {
-                    name: "locked",
-                    type: "Boolean",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": false }] }],
-                }, loginFailed: {
-                    name: "loginFailed",
-                    type: "Int",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": 0 }] }],
-                }, refreshTokens: {
-                    name: "refreshTokens",
-                    type: "RefreshToken",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'user',
-                }, devices: {
-                    name: "devices",
-                    type: "Device",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'user',
-                }, group: {
-                    name: "group",
-                    type: "UserGroup",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'user',
-                    isRelationOwner: true,
-                }, userCourses: {
-                    name: "userCourses",
-                    type: "UserCourse",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'user',
-                }, userLessons: {
-                    name: "userLessons",
-                    type: "UserLesson",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'user',
-                }, userWords: {
-                    name: "userWords",
-                    type: "UserWord",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'user',
-                }, testResults: {
-                    name: "testResults",
-                    type: "TestResult",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'user',
-                }, adminCourseManagers: {
-                    name: "adminCourseManagers",
-                    type: "AdminCourseManager",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'user',
-                }, createdCourses: {
-                    name: "createdCourses",
-                    type: "Course",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'creator',
-                }, createdLessons: {
-                    name: "createdLessons",
-                    type: "Lesson",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'creator',
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                }, email: {
-                    name: "email",
-                    fields: ["email"]
-                }, phone: {
-                    name: "phone",
-                    fields: ["phone"]
-                }, email_phone: {
-                    name: "email_phone",
-                    fields: ["email", "phone"]
-                },
-            },
+          name: "user",
+          type: "User",
+          isDataModel: true,
+          backLink: "userCourses",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "userId" },
         },
-        userGroup: {
-            name: 'UserGroup', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, name: {
-                    name: "name",
-                    type: "String",
-                }, user: {
-                    name: "user",
-                    type: "User",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'group',
-                    isRelationOwner: true,
-                }, permission: {
-                    name: "permission",
-                    type: "Permission",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'groups',
-                    isRelationOwner: true,
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                }, name: {
-                    name: "name",
-                    fields: ["name"]
-                },
-            },
+        course: {
+          name: "course",
+          type: "Course",
+          isDataModel: true,
+          backLink: "userCourses",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "courseId" },
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    userLesson: {
+      name: "UserLesson",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        userId: {
+          name: "userId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "user",
+        },
+        lessonId: {
+          name: "lessonId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "lesson",
+        },
+        status: {
+          name: "status",
+          type: "LessonStatus",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        grade: {
+          name: "grade",
+          type: "Int",
+        },
+        completedAt: {
+          name: "completedAt",
+          type: "DateTime",
+          isOptional: true,
+        },
+        user: {
+          name: "user",
+          type: "User",
+          isDataModel: true,
+          backLink: "userLessons",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "userId" },
+        },
+        lesson: {
+          name: "lesson",
+          type: "Lesson",
+          isDataModel: true,
+          backLink: "userLessons",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "lessonId" },
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    adminCourseManager: {
+      name: "AdminCourseManager",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        userId: {
+          name: "userId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "user",
+        },
+        courseId: {
+          name: "courseId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "course",
+        },
+        user: {
+          name: "user",
+          type: "User",
+          isDataModel: true,
+          backLink: "adminCourseManagers",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "userId" },
+        },
+        course: {
+          name: "course",
+          type: "Course",
+          isDataModel: true,
+          backLink: "adminCourseManagers",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "courseId" },
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    userWord: {
+      name: "UserWord",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        userId: {
+          name: "userId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "user",
+        },
+        componentId: {
+          name: "componentId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "component",
+        },
+        user: {
+          name: "user",
+          type: "User",
+          isDataModel: true,
+          backLink: "userWords",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "userId" },
+        },
+        component: {
+          name: "component",
+          type: "Component",
+          isDataModel: true,
+          backLink: "userWords",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "componentId" },
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    testResult: {
+      name: "TestResult",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        userId: {
+          name: "userId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "user",
+        },
+        componentId: {
+          name: "componentId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "component",
+        },
+        attemptNumber: {
+          name: "attemptNumber",
+          type: "Int",
+        },
+        userAnswers: {
+          name: "userAnswers",
+          type: "Json",
+        },
+        mark: {
+          name: "mark",
+          type: "Int",
+        },
+        status: {
+          name: "status",
+          type: "TestResultStatus",
+        },
+        user: {
+          name: "user",
+          type: "User",
+          isDataModel: true,
+          backLink: "testResults",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "userId" },
+        },
+        component: {
+          name: "component",
+          type: "Component",
+          isDataModel: true,
+          backLink: "testResults",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "componentId" },
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    user: {
+      name: "User",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        name: {
+          name: "name",
+          type: "String",
+          isOptional: true,
+        },
+        email: {
+          name: "email",
+          type: "String",
+        },
+        passwordDigest: {
+          name: "passwordDigest",
+          type: "String",
+        },
+        birthday: {
+          name: "birthday",
+          type: "DateTime",
+          isOptional: true,
+        },
+        gender: {
+          name: "gender",
+          type: "Gender",
+          isOptional: true,
+        },
+        role: {
+          name: "role",
+          type: "UserRole",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        rememberDigest: {
+          name: "rememberDigest",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        phone: {
+          name: "phone",
+          type: "String",
+          isOptional: true,
+        },
+        locked: {
+          name: "locked",
+          type: "Boolean",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: false }] },
+          ],
+        },
+        loginFailed: {
+          name: "loginFailed",
+          type: "Int",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: 0 }] },
+          ],
+        },
+        refreshTokens: {
+          name: "refreshTokens",
+          type: "RefreshToken",
+          isDataModel: true,
+          isArray: true,
+          backLink: "user",
+        },
+        devices: {
+          name: "devices",
+          type: "Device",
+          isDataModel: true,
+          isArray: true,
+          backLink: "user",
+        },
+        group: {
+          name: "group",
+          type: "UserGroup",
+          isDataModel: true,
+          isArray: true,
+          backLink: "user",
+          isRelationOwner: true,
+        },
+        userCourses: {
+          name: "userCourses",
+          type: "UserCourse",
+          isDataModel: true,
+          isArray: true,
+          backLink: "user",
+        },
+        userLessons: {
+          name: "userLessons",
+          type: "UserLesson",
+          isDataModel: true,
+          isArray: true,
+          backLink: "user",
+        },
+        userWords: {
+          name: "userWords",
+          type: "UserWord",
+          isDataModel: true,
+          isArray: true,
+          backLink: "user",
+        },
+        testResults: {
+          name: "testResults",
+          type: "TestResult",
+          isDataModel: true,
+          isArray: true,
+          backLink: "user",
+        },
+        adminCourseManagers: {
+          name: "adminCourseManagers",
+          type: "AdminCourseManager",
+          isDataModel: true,
+          isArray: true,
+          backLink: "user",
+        },
+        createdCourses: {
+          name: "createdCourses",
+          type: "Course",
+          isDataModel: true,
+          isArray: true,
+          backLink: "creator",
+        },
+        createdLessons: {
+          name: "createdLessons",
+          type: "Lesson",
+          isDataModel: true,
+          isArray: true,
+          backLink: "creator",
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+        email: {
+          name: "email",
+          fields: ["email"],
+        },
+        phone: {
+          name: "phone",
+          fields: ["phone"],
+        },
+        email_phone: {
+          name: "email_phone",
+          fields: ["email", "phone"],
+        },
+      },
+    },
+    userGroup: {
+      name: "UserGroup",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        name: {
+          name: "name",
+          type: "String",
+        },
+        user: {
+          name: "user",
+          type: "User",
+          isDataModel: true,
+          isArray: true,
+          backLink: "group",
+          isRelationOwner: true,
         },
         permission: {
-            name: 'Permission', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, name: {
-                    name: "name",
-                    type: "PermissionName",
-                }, permissionType: {
-                    name: "permissionType",
-                    type: "PermissionType",
-                }, disabled: {
-                    name: "disabled",
-                    type: "Boolean",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": false }] }],
-                }, groups: {
-                    name: "groups",
-                    type: "UserGroup",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'permission',
-                    isRelationOwner: true,
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                }, name_permissionType: {
-                    name: "name_permissionType",
-                    fields: ["name", "permissionType"]
-                },
-            },
+          name: "permission",
+          type: "Permission",
+          isDataModel: true,
+          isArray: true,
+          backLink: "groups",
+          isRelationOwner: true,
         },
-        refreshToken: {
-            name: 'RefreshToken', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, token: {
-                    name: "token",
-                    type: "String",
-                }, userId: {
-                    name: "userId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'user',
-                }, revoked: {
-                    name: "revoked",
-                    type: "Boolean",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": false }] }],
-                }, user: {
-                    name: "user",
-                    type: "User",
-                    isDataModel: true,
-                    backLink: 'refreshTokens',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "userId" },
-                }, deviceId: {
-                    name: "deviceId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'device',
-                }, device: {
-                    name: "device",
-                    type: "Device",
-                    isDataModel: true,
-                    backLink: 'refreshToken',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "deviceId" },
-                }, expiresAt: {
-                    name: "expiresAt",
-                    type: "DateTime",
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                }, token: {
-                    name: "token",
-                    fields: ["token"]
-                }, userId_deviceId: {
-                    name: "userId_deviceId",
-                    fields: ["userId", "deviceId"]
-                },
-            },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+        name: {
+          name: "name",
+          fields: ["name"],
+        },
+      },
+    },
+    permission: {
+      name: "Permission",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        name: {
+          name: "name",
+          type: "PermissionName",
+        },
+        permissionType: {
+          name: "permissionType",
+          type: "PermissionType",
+        },
+        disabled: {
+          name: "disabled",
+          type: "Boolean",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: false }] },
+          ],
+        },
+        groups: {
+          name: "groups",
+          type: "UserGroup",
+          isDataModel: true,
+          isArray: true,
+          backLink: "permission",
+          isRelationOwner: true,
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+        name_permissionType: {
+          name: "name_permissionType",
+          fields: ["name", "permissionType"],
+        },
+      },
+    },
+    refreshToken: {
+      name: "RefreshToken",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        token: {
+          name: "token",
+          type: "String",
+        },
+        userId: {
+          name: "userId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "user",
+        },
+        revoked: {
+          name: "revoked",
+          type: "Boolean",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: false }] },
+          ],
+        },
+        user: {
+          name: "user",
+          type: "User",
+          isDataModel: true,
+          backLink: "refreshTokens",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "userId" },
+        },
+        deviceId: {
+          name: "deviceId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "device",
         },
         device: {
-            name: 'Device', fields: {
-                id: {
-                    name: "id",
-                    type: "String",
-                    isId: true,
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, description: {
-                    name: "description",
-                    type: "String",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": "" }] }],
-                }, createdAt: {
-                    name: "createdAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value" }] }],
-                }, updatedAt: {
-                    name: "updatedAt",
-                    type: "DateTime",
-                    attributes: [{ "name": "@updatedAt", "args": [] }],
-                }, deleted: {
-                    name: "deleted",
-                    type: "DateTime",
-                    isOptional: true,
-                }, name: {
-                    name: "name",
-                    type: "String",
-                }, userId: {
-                    name: "userId",
-                    type: "String",
-                    isForeignKey: true,
-                    relationField: 'user',
-                }, user: {
-                    name: "user",
-                    type: "User",
-                    isDataModel: true,
-                    backLink: 'devices',
-                    isRelationOwner: true,
-                    foreignKeyMapping: { "id": "userId" },
-                }, lastActive: {
-                    name: "lastActive",
-                    type: "DateTime",
-                    isOptional: true,
-                }, isActive: {
-                    name: "isActive",
-                    type: "Boolean",
-                    attributes: [{ "name": "@default", "args": [{ "name": "value", "value": true }] }],
-                }, ipAddress: {
-                    name: "ipAddress",
-                    type: "String",
-                    isOptional: true,
-                }, location: {
-                    name: "location",
-                    type: "String",
-                    isOptional: true,
-                }, refreshToken: {
-                    name: "refreshToken",
-                    type: "RefreshToken",
-                    isDataModel: true,
-                    isArray: true,
-                    backLink: 'device',
-                },
-            }, uniqueConstraints: {
-                id: {
-                    name: "id",
-                    fields: ["id"]
-                }, userId_name: {
-                    name: "userId_name",
-                    fields: ["userId", "name"]
-                },
-            },
+          name: "device",
+          type: "Device",
+          isDataModel: true,
+          backLink: "refreshToken",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "deviceId" },
         },
-
+        expiresAt: {
+          name: "expiresAt",
+          type: "DateTime",
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+        token: {
+          name: "token",
+          fields: ["token"],
+        },
+        userId_deviceId: {
+          name: "userId_deviceId",
+          fields: ["userId", "deviceId"],
+        },
+      },
     },
-    deleteCascade: {
-
+    device: {
+      name: "Device",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        name: {
+          name: "name",
+          type: "String",
+        },
+        userId: {
+          name: "userId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "user",
+        },
+        user: {
+          name: "user",
+          type: "User",
+          isDataModel: true,
+          backLink: "devices",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "userId" },
+        },
+        lastActive: {
+          name: "lastActive",
+          type: "DateTime",
+          isOptional: true,
+        },
+        isActive: {
+          name: "isActive",
+          type: "Boolean",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: true }] },
+          ],
+        },
+        ipAddress: {
+          name: "ipAddress",
+          type: "String",
+          isOptional: true,
+        },
+        location: {
+          name: "location",
+          type: "String",
+          isOptional: true,
+        },
+        refreshToken: {
+          name: "refreshToken",
+          type: "RefreshToken",
+          isDataModel: true,
+          isArray: true,
+          backLink: "device",
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+        userId_name: {
+          name: "userId_name",
+          fields: ["userId", "name"],
+        },
+      },
     },
-    authModel: 'User'
-
+  },
+  deleteCascade: {},
+  authModel: "User",
 };
 export default metadata;

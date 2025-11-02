@@ -7,6 +7,10 @@ model Course extends Base {
   title       String    @db.VarChar(255)
   createdBy   String?
   duration    Int
+  // Add by Nguyen Anh Quan
+  level       CourseLevel @default(BEGINNER)
+  status      CourseStatus @default(ACTIVE)
+  // 
 
   // Relations
   creator           User?                @relation("CourseCreator", fields: [createdBy], references: [id])

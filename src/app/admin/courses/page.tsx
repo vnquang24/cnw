@@ -25,69 +25,203 @@ import {
   Eye,
   Trash2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  useFindManyCourse,
+  useCreateCourse,
+  useUpdateCourse,
+  useDeleteCourse,
+} from "@/generated/hooks";
+import {
+  CourseFormDialog,
+  CourseFormData,
+} from "@/components/admin/courses/CourseFormDialog";
+import { showToast } from "@/lib/toast";
+import { getUserId } from "@/lib/auth";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-export default function CoursesPage() {
-  const [searchText, setSearchText] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
+// Mock data cho khóa học
+// const courses = [
+//   {
+//     key: "1",
+//     id: 1,
+//     title: "JavaScript Cơ bản",
+//     description: "Học lập trình JavaScript từ cơ bản đến nâng cao",
+//     instructor: "Nguyễn Văn A",
+//     students: 45,
+//     lessons: 12,
+//     duration: "6 tuần",
+//     status: "active",
+//     level: "Cơ bản",
+//     createdAt: "2024-01-15",
+//   },
+//   {
+//     key: "2",
+//     id: 2,
+//     title: "React Advanced",
+//     description: "Khóa học React nâng cao cho developers",
+//     instructor: "Trần Thị B",
+//     students: 32,
+//     lessons: 15,
+//     duration: "8 tuần",
+//     status: "active",
+//     level: "Nâng cao",
+//     createdAt: "2024-01-20",
+//   },
+//   {
+//     key: "3",
+//     id: 3,
+//     title: "Node.js Backend",
+//     description: "Phát triển backend với Node.js và Express",
+//     instructor: "Lê Văn C",
+//     students: 28,
+//     lessons: 10,
+//     duration: "5 tuần",
+//     status: "draft",
+//     level: "Trung bình",
+//     createdAt: "2024-02-01",
+//   },
+//   {
+//     key: "4",
+//     id: 4,
+//     title: "Database Design",
+//     description: "Thiết kế và quản lý cơ sở dữ liệu",
+//     instructor: "Phạm Thị D",
+//     students: 25,
+//     lessons: 8,
+//     duration: "4 tuần",
+//     status: "completed",
+//     level: "Trung bình",
+//     createdAt: "2024-01-10",
+//   },
+// ];
 
-  // Mock data cho khóa học
-  const courses = [
-    {
-      key: "1",
-      id: 1,
-      title: "JavaScript Cơ bản",
-      description: "Học lập trình JavaScript từ cơ bản đến nâng cao",
-      instructor: "Nguyễn Văn A",
-      students: 45,
-      lessons: 12,
-      duration: "6 tuần",
-      status: "active",
-      level: "Cơ bản",
-      createdAt: "2024-01-15",
+export default function CoursesPage() {
+  const router = useRouter();
+  const userId = getUserId();
+  const [searchText, setSearchText] = useState("");
+  const [filterStatus, setFilterStatus] = useState("ALL");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const handleAddClick = () => {
+    setDialogMode("add");
+    setEditingId(null);
+    setDialogOpen(true);
+  };
+
+  const handleEditClick = (courseId: string) => {
+    setDialogMode("edit");
+    setEditingId(courseId);
+    setDialogOpen(true);
+  };
+
+  const {
+    data: courses = [],
+    isLoading,
+    error,
+    refetch,
+  } = useFindManyCourse({
+    orderBy: { createdAt: "desc" },
+    include: {
+      creator: {
+        select: { id: true, name: true },
+      },
+      _count: {
+        select: {
+          lessons: true,
+          userCourses: true,
+        },
+      },
     },
-    {
-      key: "2",
-      id: 2,
-      title: "React Advanced",
-      description: "Khóa học React nâng cao cho developers",
-      instructor: "Trần Thị B",
-      students: 32,
-      lessons: 15,
-      duration: "8 tuần",
-      status: "active",
-      level: "Nâng cao",
-      createdAt: "2024-01-20",
+  });
+
+  // Mutation hooks
+  const createCourseMutation = useCreateCourse({
+    onSuccess: () => {
+      showToast.success("Tạo khóa học thành công!");
+      refetch();
+      setDialogOpen(false);
     },
-    {
-      key: "3",
-      id: 3,
-      title: "Node.js Backend",
-      description: "Phát triển backend với Node.js và Express",
-      instructor: "Lê Văn C",
-      students: 28,
-      lessons: 10,
-      duration: "5 tuần",
-      status: "draft",
-      level: "Trung bình",
-      createdAt: "2024-02-01",
+    onError: (error) => {
+      showToast.error("Lỗi khi tạo khóa học!");
+      console.error(error);
     },
-    {
-      key: "4",
-      id: 4,
-      title: "Database Design",
-      description: "Thiết kế và quản lý cơ sở dữ liệu",
-      instructor: "Phạm Thị D",
-      students: 25,
-      lessons: 8,
-      duration: "4 tuần",
-      status: "completed",
-      level: "Trung bình",
-      createdAt: "2024-01-10",
+  });
+
+  const updateCourseMutation = useUpdateCourse({
+    onSuccess: () => {
+      showToast.success("Cập nhật khóa học thành công!");
+      refetch();
+      setDialogOpen(false);
     },
-  ];
+    onError: (error) => {
+      showToast.error("Lỗi khi cập nhật khóa học!");
+      console.error(error);
+    },
+  });
+
+  const handleFormSubmit = async (data: CourseFormData) => {
+    if (dialogMode === "add") {
+      await createCourseMutation.mutateAsync({
+        data: {
+          title: data.title,
+          description: data.description,
+          duration: data.duration,
+          level: data.level,
+          status: data.status,
+          createdBy: userId,
+        },
+      });
+    } else if (dialogMode === "edit" && editingId) {
+      await updateCourseMutation.mutateAsync({
+        where: { id: editingId },
+        data: {
+          title: data.title,
+          description: data.description,
+          duration: data.duration,
+          level: data.level,
+          status: data.status,
+        },
+      });
+    }
+  };
+
+  // ✅ Hook xóa khóa học
+  const deleteCourseMutation = useDeleteCourse({
+    onSuccess: () => {
+      showToast.success("Xóa khóa học thành công!");
+      refetch();
+    },
+    onError: (error) => {
+      showToast.error("Lỗi khi xóa khóa học!");
+      console.error(error);
+    },
+  });
+
+  const handleDelete = (id: string) => {
+    if (confirm("Bạn có chắc muốn xóa khóa học này?")) {
+      deleteCourseMutation.mutate({ where: { id } });
+    }
+  };
+
+  // Lấy dữ liệu khóa học đang edit
+  const editingCourse = editingId
+    ? courses.find((c) => c.id === editingId)
+    : undefined;
+
+  const initialFormData: CourseFormData | undefined = editingCourse
+    ? {
+        title: editingCourse.title,
+        description: editingCourse.description || "",
+        duration: editingCourse.duration,
+        level: editingCourse.level as "BEGINNER" | "INTERMEDIATE" | "ADVANCED",
+        status: editingCourse.status as "ACTIVE" | "INACTIVE",
+      }
+    : undefined;
 
   const columns = [
     {
@@ -152,13 +286,13 @@ export default function CoursesPage() {
       dataIndex: "level",
       key: "level",
       render: (level: string) => {
-        const color =
-          level === "Cơ bản"
-            ? "green"
-            : level === "Trung bình"
-              ? "orange"
-              : "red";
-        return <Tag color={color}>{level}</Tag>;
+        const levelMap = {
+          BEGINNER: { color: "green", text: "Cơ bản" },
+          INTERMEDIATE: { color: "blue", text: "Trung cấp" },
+          ADVANCED: { color: "orange", text: "Nâng cao" },
+        };
+        const levelInfo = levelMap[level as keyof typeof levelMap];
+        return <Tag color={levelInfo.color}>{levelInfo.text}</Tag>;
       },
     },
     {
@@ -167,9 +301,10 @@ export default function CoursesPage() {
       key: "status",
       render: (status: string) => {
         const statusMap = {
-          active: { color: "green", text: "Đang hoạt động" },
-          draft: { color: "orange", text: "Nháp" },
-          completed: { color: "blue", text: "Hoàn thành" },
+          ACTIVE: { color: "green", text: "Đang hoạt động" },
+          DRAFT: { color: "orange", text: "Nháp" },
+          COMPLETED: { color: "blue", text: "Hoàn thành" },
+          INACTIVE: { color: "red", text: "Đã hủy" },
         };
         const statusInfo = statusMap[status as keyof typeof statusMap];
         return <Tag color={statusInfo.color}>{statusInfo.text}</Tag>;
@@ -180,13 +315,31 @@ export default function CoursesPage() {
       key: "action",
       render: (_: any, record: any) => (
         <Space size="middle">
-          <Button type="link" icon={<Eye size={14} />} size="small">
+          <Button
+            type="link"
+            icon={<Eye size={14} />}
+            size="small"
+            onClick={() => router.push(`/admin/courses/${record.id}`)}
+          >
             Xem
           </Button>
-          <Button type="link" icon={<Edit size={14} />} size="small">
+          <Button
+            type="link"
+            icon={<Edit size={14} />}
+            size="small"
+            onClick={() => handleEditClick(record.id)}
+          >
             Sửa
           </Button>
-          <Button type="link" danger icon={<Trash2 size={14} />} size="small">
+          <Button
+            type="link"
+            danger
+            icon={<Trash2 size={14} />}
+            size="small"
+            onClick={() => {
+              handleDelete(record.id);
+            }}
+          >
             Xóa
           </Button>
         </Space>
@@ -194,14 +347,28 @@ export default function CoursesPage() {
     },
   ];
 
-  const filteredCourses = courses.filter((course) => {
-    const matchesSearch =
-      course.title.toLowerCase().includes(searchText.toLowerCase()) ||
-      course.instructor.toLowerCase().includes(searchText.toLowerCase());
-    const matchesFilter =
-      filterStatus === "all" || course.status === filterStatus;
-    return matchesSearch && matchesFilter;
-  });
+  const filteredCourses = courses
+    .map((course) => ({
+      ...course,
+      key: course.id, // Thêm key cho mỗi item
+      instructor: course.creator?.name || "N/A",
+      students: course._count?.userCourses || 0,
+      lessons: course._count?.lessons || 0,
+      duration: `${course.duration} phút`,
+      status: course.status, // Mặc định active (có thể thêm field status vào model sau)
+      level: course.level, // Mặc định (có thể thêm field level vào model sau)
+      createdAt: new Date(course.createdAt).toLocaleDateString("vi-VN"),
+    }))
+    .filter((course) => {
+      const matchesSearch =
+        course.title.toLowerCase().includes(searchText.toLowerCase()) ||
+        (course.creator?.name || "")
+          .toLowerCase()
+          .includes(searchText.toLowerCase());
+      const matchesFilter =
+        filterStatus === "ALL" || course.status === filterStatus;
+      return matchesSearch && matchesFilter;
+    });
 
   return (
     <div>
@@ -225,7 +392,9 @@ export default function CoursesPage() {
           <Card>
             <Statistic
               title="Đang hoạt động"
-              value={courses.filter((c) => c.status === "active").length}
+              value={
+                filteredCourses.filter((c) => c.status === "ACTIVE").length
+              }
               valueStyle={{ color: "#52c41a" }}
             />
           </Card>
@@ -234,7 +403,10 @@ export default function CoursesPage() {
           <Card>
             <Statistic
               title="Tổng học viên"
-              value={courses.reduce((sum, course) => sum + course.students, 0)}
+              value={courses.reduce(
+                (sum, course) => sum + (course._count?.userCourses || 0),
+                0,
+              )}
               prefix={<Users size={20} />}
             />
           </Card>
@@ -243,7 +415,10 @@ export default function CoursesPage() {
           <Card>
             <Statistic
               title="Tổng bài học"
-              value={courses.reduce((sum, course) => sum + course.lessons, 0)}
+              value={courses.reduce(
+                (sum, course) => sum + (course._count?.lessons || 0),
+                0,
+              )}
             />
           </Card>
         </Col>
@@ -266,15 +441,20 @@ export default function CoursesPage() {
                 onChange={setFilterStatus}
                 style={{ width: 150 }}
               >
-                <Option value="all">Tất cả</Option>
-                <Option value="active">Đang hoạt động</Option>
-                <Option value="draft">Nháp</Option>
-                <Option value="completed">Hoàn thành</Option>
+                <Option value="ALL">Tất cả</Option>
+                <Option value="ACTIVE">Đang hoạt động</Option>
+                <Option value="DRAFT">Nháp</Option>
+                <Option value="COMPLETED">Hoàn thành</Option>
+                <Option value="INACTIVE">Đã hủy</Option>
               </Select>
             </Space>
           </Col>
           <Col>
-            <Button type="primary" icon={<Plus size={14} />}>
+            <Button
+              type="primary"
+              icon={<Plus size={14} />}
+              onClick={handleAddClick}
+            >
               Thêm khóa học mới
             </Button>
           </Col>
@@ -284,8 +464,11 @@ export default function CoursesPage() {
       {/* Courses Table */}
       <Card>
         <Table
+          key={`courses-table-${searchText}-${filterStatus}`}
+          rowKey="id"
           columns={columns}
           dataSource={filteredCourses}
+          loading={isLoading}
           pagination={{
             showSizeChanger: true,
             showQuickJumper: true,
@@ -294,6 +477,14 @@ export default function CoursesPage() {
           }}
         />
       </Card>
+
+      <CourseFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSubmit={handleFormSubmit}
+        mode={dialogMode}
+        initialData={initialFormData}
+      />
     </div>
   );
 }
