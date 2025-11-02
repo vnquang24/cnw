@@ -17,6 +17,8 @@ import {
   Statistic,
   Tag,
   Typography,
+  Table,
+  Divider,
 } from "antd";
 import {
   ArrowLeft,
@@ -25,11 +27,15 @@ import {
   MessageCircle,
   Shuffle,
   Sparkles,
+  Trophy,
+  XCircle,
+  Eye,
 } from "lucide-react";
 import {
   useFindUniqueLesson,
   useFindManyUserLesson,
   useFindManyComponent,
+  useFindManyTestResult,
 } from "@/generated/hooks";
 import { getUserId } from "@/lib/auth";
 
@@ -375,28 +381,17 @@ export default function LessonLearningPage() {
             if (component.componentType === "TEST" && component.test) {
               const questions = component.test.questions ?? [];
               return (
-                <Card
+                <TestComponentCard
                   key={component.id}
-                  title={`${order}. ${label}`}
-                  extra={<Tag color="purple">{questions.length} câu hỏi</Tag>}
-                >
-                  <Space
-                    direction="vertical"
-                    size={8}
-                    style={{ width: "100%" }}
-                  >
-                    <Title level={4} style={{ margin: 0 }}>
-                      {component.test.name}
-                    </Title>
-                    <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-                      Thời lượng: {component.test.duration} phút · Tối đa{" "}
-                      {component.test.maxAttempts} lần làm
-                    </Paragraph>
-                    <Button type="primary" icon={<Sparkles size={16} />}>
-                      Bắt đầu làm bài
-                    </Button>
-                  </Space>
-                </Card>
+                  component={component}
+                  order={order}
+                  label={label}
+                  questions={questions}
+                  userId={userId}
+                  courseId={courseId}
+                  lessonId={lessonId}
+                  router={router}
+                />
               );
             }
 
@@ -418,5 +413,169 @@ export default function LessonLearningPage() {
         <Empty description="Bài học chưa có nội dung." />
       ) : null}
     </Space>
+  );
+}
+
+// Component to display test card with results history
+interface TestComponentCardProps {
+  component: any;
+  order: number;
+  label: string;
+  questions: any[];
+  userId: string | null;
+  courseId: string | undefined;
+  lessonId: string | undefined;
+  router: any;
+}
+
+function TestComponentCard({
+  component,
+  order,
+  label,
+  questions,
+  userId,
+  courseId,
+  lessonId,
+  router,
+}: TestComponentCardProps) {
+  // Fetch test results for this component
+  const testResultArgs = useMemo(
+    () => ({
+      where: {
+        userId: userId ?? "",
+        componentId: component.id,
+      },
+      orderBy: { attemptNumber: "desc" as const },
+      take: 5, // Show last 5 attempts
+    }),
+    [userId, component.id],
+  );
+
+  const { data: testResults, isLoading: resultsLoading } =
+    useFindManyTestResult(testResultArgs, {
+      enabled: Boolean(userId && component.id),
+    });
+
+  const columns = [
+    {
+      title: "Lần thử",
+      dataIndex: "attemptNumber",
+      key: "attemptNumber",
+      width: 80,
+      render: (num: number) => <Tag color="blue">#{num}</Tag>,
+    },
+    {
+      title: "Điểm",
+      dataIndex: "mark",
+      key: "mark",
+      width: 100,
+      render: (mark: number, record: any) => (
+        <Space size={4}>
+          {record.status === "PASSED" ? (
+            <Trophy size={16} color="#10b981" />
+          ) : (
+            <XCircle size={16} color="#ef4444" />
+          )}
+          <Text
+            strong
+            style={{
+              color: record.status === "PASSED" ? "#10b981" : "#ef4444",
+            }}
+          >
+            {mark}/100
+          </Text>
+        </Space>
+      ),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      width: 100,
+      render: (status: string) => (
+        <Tag color={status === "PASSED" ? "success" : "error"}>
+          {status === "PASSED" ? "Đạt" : "Chưa đạt"}
+        </Tag>
+      ),
+    },
+    {
+      title: "Thời gian",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date: string) => new Date(date).toLocaleString("vi-VN"),
+    },
+    {
+      title: "Hành động",
+      key: "action",
+      width: 100,
+      render: (record: any) => (
+        <Button
+          type="link"
+          size="small"
+          icon={<Eye size={14} />}
+          onClick={() =>
+            router.push(
+              `/user/tests/${component.test?.id}/result?componentId=${component.id}&attemptNumber=${record.attemptNumber}&lessonId=${lessonId}&courseId=${courseId}`,
+            )
+          }
+        >
+          Xem
+        </Button>
+      ),
+    },
+  ];
+
+  return (
+    <Card
+      title={`${order}. ${label}`}
+      extra={<Tag color="purple">{questions.length} câu hỏi</Tag>}
+    >
+      <Space direction="vertical" size={16} style={{ width: "100%" }}>
+        <div>
+          <Title level={4} style={{ margin: 0, marginBottom: 8 }}>
+            {component.test.name}
+          </Title>
+          <Paragraph type="secondary" style={{ marginBottom: 0 }}>
+            Thời lượng: {component.test.duration} phút · Tối đa{" "}
+            {component.test.maxAttempts} lần làm
+          </Paragraph>
+        </div>
+
+        <Button
+          type="primary"
+          icon={<Sparkles size={16} />}
+          onClick={() =>
+            router.push(
+              `/user/tests/${component.test?.id}/take?componentId=${component.id}&lessonId=${lessonId}&courseId=${courseId}`,
+            )
+          }
+          size="large"
+        >
+          Bắt đầu làm bài
+        </Button>
+
+        {testResults && testResults.length > 0 && (
+          <>
+            <Divider style={{ margin: "8px 0" }} />
+            <div>
+              <Title level={5} style={{ marginBottom: 12 }}>
+                📊 Lịch sử làm bài
+              </Title>
+              <Table
+                columns={columns}
+                dataSource={testResults}
+                rowKey="id"
+                pagination={false}
+                size="small"
+                loading={resultsLoading}
+                locale={{
+                  emptyText: "Chưa có lần làm bài nào",
+                }}
+              />
+            </div>
+          </>
+        )}
+      </Space>
+    </Card>
   );
 }

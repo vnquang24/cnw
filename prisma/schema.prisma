@@ -4,46 +4,46 @@
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 datasource db {
-  provider = "postgresql"
-  url      = env("")
+    provider = "postgresql"
+    url = env("")
 }
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 enum PermissionName {
-  AdministrativeUnit
-  Category
-  Disaster
-  Media
-  RescueTypeOnDisaster
-  Province
-  District
-  Commune
-  DisasterType
-  PriorityLevel
-  EmergencyLevel
-  DataField
-  RescueType
-  User
-  UserGroup
-  Permission
-  Zone
-  Coordinate
-  Device
-  RefreshToken
+    AdministrativeUnit
+    Category
+    Disaster
+    Media
+    RescueTypeOnDisaster
+    Province
+    District
+    Commune
+    DisasterType
+    PriorityLevel
+    EmergencyLevel
+    DataField
+    RescueType
+    User
+    UserGroup
+    Permission
+    Zone
+    Coordinate
+    Device
+    RefreshToken
 }
 
 enum UserRole {
-  ADMIN
-  USER
+    ADMIN
+    USER
 }
 
 enum Gender {
-  MALE
-  FEMALE
-  OTHER
+    MALE
+    FEMALE
+    OTHER
 }
 
 enum CourseLevel {
@@ -58,320 +58,318 @@ enum CourseStatus {
 }
 
 enum EnrolmentStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  IN_PROGRESS
-  COMPLETED
+    PENDING
+    APPROVED
+    REJECTED
+    IN_PROGRESS
+    COMPLETED
 }
 
 enum LessonStatus {
-  TODO
-  DOING
-  PASS
-  FAIL
+    TODO
+    DOING
+    PASS
+    FAIL
 }
 
 enum WordType {
-  NOUN
-  PRONOUN
-  VERB
-  ADJECTIVE
-  ADVERB
-  PREPOSITION
-  CONJUNCTION
-  INTERJECTION
+    NOUN
+    PRONOUN
+    VERB
+    ADJECTIVE
+    ADVERB
+    PREPOSITION
+    CONJUNCTION
+    INTERJECTION
 }
 
 enum QuestionType {
-  SINGLE_CHOICE
-  MULTIPLE_CHOICE
+    SINGLE_CHOICE
+    MULTIPLE_CHOICE
 }
 
 enum ComponentType {
-  WORD
-  TEST
-  PARAGRAPH
+    WORD
+    TEST
+    PARAGRAPH
 }
 
 enum TestResultStatus {
-  PASSED
-  FAILED
+    PASSED
+    FAILED
 }
 
 enum PermissionType {
-  CREATE
-  READ
-  UPDATE
-  DELETE
+    CREATE
+    READ
+    UPDATE
+    DELETE
 }
 
 enum MediaType {
-  IMAGE
-  VIDEO
-  AUDIO
+    IMAGE
+    VIDEO
+    AUDIO
 }
 
 model Course {
-  id                  String               @id() @default(cuid())
-  description         String               @default("")
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt()
-  deleted             DateTime?
-  title               String               @db.VarChar(255)
-  createdBy           String?
-  duration            Int
-  level               CourseLevel          @default(BEGINNER)
-  status              CourseStatus         @default(ACTIVE)
-  creator             User?                @relation("CourseCreator", fields: [createdBy], references: [id])
-  lessons             Lesson[]
-  userCourses         UserCourse[]
-  adminCourseManagers AdminCourseManager[]
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    title String @db.VarChar(255)
+    createdBy String?
+    duration Int
+    creator User? @relation("CourseCreator", fields: [createdBy], references: [id])
+    lessons Lesson[]
+    userCourses UserCourse[]
+    adminCourseManagers AdminCourseManager[]
 }
 
 model Lesson {
-  id          String       @id() @default(cuid())
-  description String       @default("")
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt()
-  deleted     DateTime?
-  courseId    String
-  title       String       @db.VarChar(255)
-  position    Int
-  createdBy   String?
-  course      Course       @relation(fields: [courseId], references: [id])
-  creator     User?        @relation("LessonCreator", fields: [createdBy], references: [id])
-  components  Component[]
-  userLessons UserLesson[]
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    courseId String
+    title String @db.VarChar(255)
+    position Int
+    createdBy String?
+    course Course @relation(fields: [courseId], references: [id])
+    creator User? @relation("LessonCreator", fields: [createdBy], references: [id])
+    components Component[]
+    userLessons UserLesson[]
 }
 
 model Word {
-  id          String      @id() @default(cuid())
-  description String      @default("")
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt()
-  deleted     DateTime?
-  content     String      @db.Text()
-  meaning     String      @db.Text()
-  wordType    WordType
-  components  Component[]
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    content String @db.Text()
+    meaning String @db.Text()
+    wordType WordType
+    components Component[]
 }
 
 model Test {
-  id          String      @id() @default(cuid())
-  description String      @default("")
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt()
-  deleted     DateTime?
-  name        String      @db.Text()
-  duration    Int
-  maxAttempts Int
-  questions   Question[]
-  components  Component[]
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    name String @db.Text()
+    duration Int
+    maxAttempts Int
+    questions Question[]
+    components Component[]
 }
 
 model Question {
-  id           String       @id() @default(cuid())
-  description  String       @default("")
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt()
-  deleted      DateTime?
-  testId       String
-  content      String       @db.Text()
-  questionType QuestionType
-  test         Test         @relation(fields: [testId], references: [id])
-  answers      Answer[]
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    testId String
+    content String @db.Text()
+    questionType QuestionType
+    test Test @relation(fields: [testId], references: [id])
+    answers Answer[]
 }
 
 model Answer {
-  id          String    @id() @default(cuid())
-  description String    @default("")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt()
-  deleted     DateTime?
-  questionId  String
-  content     String    @db.VarChar(255)
-  correct     Boolean
-  question    Question  @relation(fields: [questionId], references: [id])
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    questionId String
+    content String @db.VarChar(255)
+    correct Boolean
+    question Question @relation(fields: [questionId], references: [id])
 }
 
 model Component {
-  id            String        @id() @default(cuid())
-  description   String        @default("")
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt()
-  deleted       DateTime?
-  lessonId      String
-  componentType ComponentType
-  testId        String?
-  wordId        String?
-  content       String?       @db.Text()
-  indexInLesson Int
-  lesson        Lesson        @relation(fields: [lessonId], references: [id])
-  test          Test?         @relation(fields: [testId], references: [id])
-  word          Word?         @relation(fields: [wordId], references: [id])
-  userWords     UserWord[]
-  testResults   TestResult[]
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    lessonId String
+    componentType ComponentType
+    testId String?
+    wordId String?
+    content String? @db.Text()
+    indexInLesson Int
+    lesson Lesson @relation(fields: [lessonId], references: [id])
+    test Test? @relation(fields: [testId], references: [id])
+    word Word? @relation(fields: [wordId], references: [id])
+    userWords UserWord[]
+    testResults TestResult[]
 }
 
 model UserCourse {
-  id              String          @id() @default(cuid())
-  description     String          @default("")
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt()
-  deleted         DateTime?
-  userId          String
-  courseId        String
-  enrolmentStatus EnrolmentStatus @default(PENDING)
-  progress        Int
-  reason          String?         @db.Text()
-  startDate       DateTime?       @db.Date()
-  endDate         DateTime?       @db.Date()
-  user            User            @relation(fields: [userId], references: [id])
-  course          Course          @relation(fields: [courseId], references: [id])
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    userId String
+    courseId String
+    enrolmentStatus EnrolmentStatus @default(PENDING)
+    progress Int
+    reason String? @db.Text()
+    startDate DateTime? @db.Date()
+    endDate DateTime? @db.Date()
+    user User @relation(fields: [userId], references: [id])
+    course Course @relation(fields: [courseId], references: [id])
 }
 
 model UserLesson {
-  id          String       @id() @default(cuid())
-  description String       @default("")
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt()
-  deleted     DateTime?
-  userId      String
-  lessonId    String
-  status      LessonStatus @default(TODO)
-  grade       Int
-  completedAt DateTime?
-  user        User         @relation(fields: [userId], references: [id])
-  lesson      Lesson       @relation(fields: [lessonId], references: [id])
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    userId String
+    lessonId String
+    status LessonStatus @default(TODO)
+    grade Int
+    completedAt DateTime?
+    user User @relation(fields: [userId], references: [id])
+    lesson Lesson @relation(fields: [lessonId], references: [id])
 }
 
 model AdminCourseManager {
-  id          String    @id() @default(cuid())
-  description String    @default("")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt()
-  deleted     DateTime?
-  userId      String
-  courseId    String
-  user        User      @relation(fields: [userId], references: [id])
-  course      Course    @relation(fields: [courseId], references: [id])
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    userId String
+    courseId String
+    user User @relation(fields: [userId], references: [id])
+    course Course @relation(fields: [courseId], references: [id])
 }
 
 model UserWord {
-  id          String    @id() @default(cuid())
-  description String    @default("")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt()
-  deleted     DateTime?
-  userId      String
-  componentId String
-  user        User      @relation(fields: [userId], references: [id])
-  component   Component @relation(fields: [componentId], references: [id])
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    userId String
+    componentId String
+    user User @relation(fields: [userId], references: [id])
+    component Component @relation(fields: [componentId], references: [id])
 }
 
 model TestResult {
-  id            String           @id() @default(cuid())
-  description   String           @default("")
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt()
-  deleted       DateTime?
-  userId        String
-  componentId   String
-  attemptNumber Int
-  userAnswers   Json
-  mark          Int
-  status        TestResultStatus
-  user          User             @relation(fields: [userId], references: [id])
-  component     Component        @relation(fields: [componentId], references: [id])
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    userId String
+    componentId String
+    attemptNumber Int
+    userAnswers Json
+    mark Int
+    status TestResultStatus
+    user User @relation(fields: [userId], references: [id])
+    component Component @relation(fields: [componentId], references: [id])
 }
 
 model User {
-  id                  String               @id() @default(cuid())
-  description         String               @default("")
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt()
-  deleted             DateTime?
-  name                String?              @db.VarChar(100)
-  email               String               @unique() @db.VarChar(100)
-  passwordDigest      String               @db.VarChar(255)
-  birthday            DateTime?            @db.Date()
-  gender              Gender?
-  role                UserRole             @default(USER)
-  rememberDigest      String               @default("")
-  phone               String?              @unique()
-  locked              Boolean              @default(false)
-  loginFailed         Int                  @default(0)
-  refreshTokens       RefreshToken[]
-  devices             Device[]
-  group               UserGroup[]
-  userCourses         UserCourse[]
-  userLessons         UserLesson[]
-  userWords           UserWord[]
-  testResults         TestResult[]
-  adminCourseManagers AdminCourseManager[]
-  createdCourses      Course[]             @relation("CourseCreator")
-  createdLessons      Lesson[]             @relation("LessonCreator")
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    name String? @db.VarChar(100)
+    email String @unique() @db.VarChar(100)
+    passwordDigest String @db.VarChar(255)
+    birthday DateTime? @db.Date()
+    gender Gender?
+    role UserRole @default(USER)
+    rememberDigest String @default("")
+    phone String? @unique()
+    locked Boolean @default(false)
+    loginFailed Int @default(0)
+    refreshTokens RefreshToken[]
+    devices Device[]
+    group UserGroup[]
+    userCourses UserCourse[]
+    userLessons UserLesson[]
+    userWords UserWord[]
+    testResults TestResult[]
+    adminCourseManagers AdminCourseManager[]
+    createdCourses Course[] @relation("CourseCreator")
+    createdLessons Lesson[] @relation("LessonCreator")
 
-  @@unique([email, phone])
+    @@unique([email, phone])
 }
 
 model UserGroup {
-  id          String       @id() @default(cuid())
-  description String       @default("")
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt()
-  deleted     DateTime?
-  name        String       @unique()
-  user        User[]
-  permission  Permission[]
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    name String @unique()
+    user User[]
+    permission Permission[]
 }
 
 model Permission {
-  id             String         @id() @default(cuid())
-  description    String         @default("")
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt()
-  deleted        DateTime?
-  name           PermissionName
-  permissionType PermissionType
-  disabled       Boolean        @default(false)
-  groups         UserGroup[]
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    name PermissionName
+    permissionType PermissionType
+    disabled Boolean @default(false)
+    groups UserGroup[]
 
-  @@unique([name, permissionType])
+    @@unique([name, permissionType])
 }
 
 model RefreshToken {
-  id          String    @id() @default(cuid())
-  description String    @default("")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt()
-  deleted     DateTime?
-  token       String    @unique()
-  userId      String
-  revoked     Boolean   @default(false)
-  user        User      @relation(fields: [userId], references: [id])
-  deviceId    String
-  device      Device    @relation(fields: [deviceId], references: [id])
-  expiresAt   DateTime
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    token String @unique()
+    userId String
+    revoked Boolean @default(false)
+    user User @relation(fields: [userId], references: [id])
+    deviceId String
+    device Device @relation(fields: [deviceId], references: [id])
+    expiresAt DateTime
 
-  @@unique([userId, deviceId])
+    @@unique([userId, deviceId])
 }
 
 model Device {
-  id           String         @id() @default(cuid())
-  description  String         @default("")
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt()
-  deleted      DateTime?
-  name         String
-  userId       String
-  user         User           @relation(fields: [userId], references: [id])
-  lastActive   DateTime?
-  isActive     Boolean        @default(true)
-  ipAddress    String?
-  location     String?
-  refreshToken RefreshToken[]
+    id String @id() @default(cuid())
+    description String @default("")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt()
+    deleted DateTime?
+    name String
+    userId String
+    user User @relation(fields: [userId], references: [id])
+    lastActive DateTime?
+    isActive Boolean @default(true)
+    ipAddress String?
+    location String?
+    refreshToken RefreshToken[]
 
-  @@unique([userId, name])
+    @@unique([userId, name])
 }
