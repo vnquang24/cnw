@@ -1011,6 +1011,11 @@ const metadata = {
             { name: "@default", args: [{ name: "value", value: "" }] },
           ],
         },
+        avatarUrl: {
+          name: "avatarUrl",
+          type: "String",
+          isOptional: true,
+        },
         phone: {
           name: "phone",
           type: "String",

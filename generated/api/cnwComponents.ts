@@ -62,7 +62,7 @@ export function appControllerHealthQuery(
   };
 }
 
-export const useSuspenseAppControllerHealth = <TData = undefined,>(
+export const useSuspenseAppControllerHealth = <TData = undefined>(
   variables: AppControllerHealthVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<undefined, AppControllerHealthError, TData>,
@@ -81,7 +81,7 @@ export const useSuspenseAppControllerHealth = <TData = undefined,>(
   });
 };
 
-export const useAppControllerHealth = <TData = undefined,>(
+export const useAppControllerHealth = <TData = undefined>(
   variables: AppControllerHealthVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<undefined, AppControllerHealthError, TData>,
@@ -531,7 +531,7 @@ export function usersControllerFindOneQuery(
   };
 }
 
-export const useSuspenseUsersControllerFindOne = <TData = undefined,>(
+export const useSuspenseUsersControllerFindOne = <TData = undefined>(
   variables: UsersControllerFindOneVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<undefined, UsersControllerFindOneError, TData>,
@@ -550,7 +550,7 @@ export const useSuspenseUsersControllerFindOne = <TData = undefined,>(
   });
 };
 
-export const useUsersControllerFindOne = <TData = undefined,>(
+export const useUsersControllerFindOne = <TData = undefined>(
   variables: UsersControllerFindOneVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<undefined, UsersControllerFindOneError, TData>,
@@ -617,7 +617,7 @@ export function usersControllerFindAllQuery(
   };
 }
 
-export const useSuspenseUsersControllerFindAll = <TData = undefined,>(
+export const useSuspenseUsersControllerFindAll = <TData = undefined>(
   variables: UsersControllerFindAllVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<undefined, UsersControllerFindAllError, TData>,
@@ -636,7 +636,7 @@ export const useSuspenseUsersControllerFindAll = <TData = undefined,>(
   });
 };
 
-export const useUsersControllerFindAll = <TData = undefined,>(
+export const useUsersControllerFindAll = <TData = undefined>(
   variables: UsersControllerFindAllVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<undefined, UsersControllerFindAllError, TData>,
@@ -924,7 +924,7 @@ export const useSuspenseMinioControllerPresignedGetObject = <
   });
 };
 
-export const useMinioControllerPresignedGetObject = <TData = Schemas.UrlDto,>(
+export const useMinioControllerPresignedGetObject = <TData = Schemas.UrlDto>(
   variables: MinioControllerPresignedGetObjectVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<
@@ -942,6 +942,115 @@ export const useMinioControllerPresignedGetObject = <TData = Schemas.UrlDto,>(
     TData
   >({
     ...minioControllerPresignedGetObjectQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type MinioControllerGetPublicUrlQueryParams = {
+  /**
+   * Tên object cần lấy URL công khai
+   */
+  objectName: string;
+};
+
+export type MinioControllerGetPublicUrlError = Fetcher.ErrorWrapper<undefined>;
+
+export type MinioControllerGetPublicUrlVariables = {
+  queryParams: MinioControllerGetPublicUrlQueryParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchMinioControllerGetPublicUrl = (
+  variables: MinioControllerGetPublicUrlVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    Schemas.UrlDto,
+    MinioControllerGetPublicUrlError,
+    undefined,
+    {},
+    MinioControllerGetPublicUrlQueryParams,
+    {}
+  >({ url: "/api/minio/public-url", method: "get", ...variables, signal });
+
+export function minioControllerGetPublicUrlQuery(
+  variables: MinioControllerGetPublicUrlVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<Schemas.UrlDto>;
+};
+
+export function minioControllerGetPublicUrlQuery(
+  variables: MinioControllerGetPublicUrlVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<Schemas.UrlDto>)
+    | reactQuery.SkipToken;
+};
+
+export function minioControllerGetPublicUrlQuery(
+  variables: MinioControllerGetPublicUrlVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/minio/public-url",
+      operationId: "minioControllerGetPublicUrl",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchMinioControllerGetPublicUrl(variables, signal),
+  };
+}
+
+export const useSuspenseMinioControllerGetPublicUrl = <TData = Schemas.UrlDto>(
+  variables: MinioControllerGetPublicUrlVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      Schemas.UrlDto,
+      MinioControllerGetPublicUrlError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useSuspenseQuery<
+    Schemas.UrlDto,
+    MinioControllerGetPublicUrlError,
+    TData
+  >({
+    ...minioControllerGetPublicUrlQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useMinioControllerGetPublicUrl = <TData = Schemas.UrlDto>(
+  variables: MinioControllerGetPublicUrlVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      Schemas.UrlDto,
+      MinioControllerGetPublicUrlError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useQuery<
+    Schemas.UrlDto,
+    MinioControllerGetPublicUrlError,
+    TData
+  >({
+    ...minioControllerGetPublicUrlQuery(
       variables === reactQuery.skipToken
         ? variables
         : deepMerge(fetcherOptions, variables),
@@ -978,4 +1087,9 @@ export type QueryOperation =
       variables:
         | MinioControllerPresignedGetObjectVariables
         | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/minio/public-url";
+      operationId: "minioControllerGetPublicUrl";
+      variables: MinioControllerGetPublicUrlVariables | reactQuery.SkipToken;
     };

@@ -4,15 +4,11 @@ import { type ReactNode } from "react";
 import SharedLayout from "@/components/panel/shared-layout";
 import { userMenuItems } from "@/lib/menu-data/user-menu";
 
-export default function UserLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ProfileLayout({ children }: { children: ReactNode }) {
   return (
     <SharedLayout
       menuItems={userMenuItems}
-      title="Khu vực học viên"
+      title="Quản lý thông tin cá nhân"
       logoText="EduSystem"
       requiredRole="USER"
       redirectPath="/admin/dashboard"
