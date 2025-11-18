@@ -98,7 +98,7 @@ export default function DashboardPage() {
   if (coursesLoading || usersLoading || testsLoading || userCoursesLoading) {
     return (
       <div className="flex justify-center items-center h-96">
-        <Spin size="large" tip="Đang tải dữ liệu dashboard..." />
+        <span className="text-gray-500">Đang tải dữ liệu dashboard...</span>
       </div>
     );
   }

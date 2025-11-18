@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Card,
   Table,
@@ -16,10 +16,11 @@ import {
   Modal,
   Form,
   InputNumber,
-  message,
+  App,
   Drawer,
   Descriptions,
   Spin,
+  TreeSelect,
 } from "antd";
 import {
   FileText,
@@ -37,22 +38,34 @@ import {
   useCreateTest,
   useUpdateTest,
   useDeleteTest,
+  useFindManyCourse,
+  useFindManyLesson,
+  useFindManyComponent,
+  useCreateComponent,
+  useUpdateComponent,
+  useDeleteComponent,
 } from "@/generated/hooks";
-import { useFindManyQuestion } from "@/generated/hooks";
-import { useFindManyTestResult } from "@/generated/hooks";
-import type { Test } from "@prisma/client";
 import ManageQuestions from "./components/ManageQuestions";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-interface TestWithStats extends Test {
+interface TestWithStats {
+  id: string;
+  name: string;
+  duration: number;
+  maxAttempts: number;
+  createdAt: Date;
+  updatedAt: Date;
   questionsCount?: number;
   attemptsCount?: number;
   avgScore?: number;
+  questions?: any[];
+  components?: any[];
 }
 
 export default function TestsPage() {
+  const { message } = App.useApp();
   const [selectedTest, setSelectedTest] = useState<TestWithStats | null>(null);
   const [modalState, setModalState] = useState<{
     type: "create" | "edit" | "view" | "results" | "questions" | null;
@@ -60,10 +73,50 @@ export default function TestsPage() {
   }>({ type: null, open: false });
   const [searchText, setSearchText] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
+  const [selectedLessons, setSelectedLessons] = useState<string[]>([]);
 
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
   const [searchForm] = Form.useForm();
+
+  // Fetch courses and lessons
+  const { data: courses } = useFindManyCourse({
+    include: {
+      lessons: {
+        orderBy: { position: "asc" },
+        select: {
+          id: true,
+          title: true,
+          courseId: true,
+        },
+      },
+    },
+  });
+
+  // Fetch components for the selected test
+  const { data: testComponents } = useFindManyComponent(
+    {
+      where: { testId: selectedTest?.id },
+      select: {
+        id: true,
+        lessonId: true,
+        indexInLesson: true,
+      },
+    },
+    {
+      enabled: !!selectedTest?.id && modalState.type === "edit",
+    },
+  );
+
+  // Update selected lessons when editing
+  useEffect(() => {
+    if (modalState.type === "edit" && testComponents) {
+      const lessonIds = testComponents.map((comp) => comp.lessonId);
+      setSelectedLessons(lessonIds);
+      editForm.setFieldValue("lessons", lessonIds);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [testComponents, modalState.type]);
 
   // Fetch data
   const { data: tests, isLoading: testsLoading } = useFindManyTest({
@@ -86,6 +139,8 @@ export default function TestsPage() {
   const createTest = useCreateTest();
   const updateTest = useUpdateTest();
   const deleteTest = useDeleteTest();
+  const createComponent = useCreateComponent();
+  const deleteComponent = useDeleteComponent();
 
   // Transform data to include stats
   const testsWithStats: TestWithStats[] = useMemo(() => {
@@ -118,18 +173,35 @@ export default function TestsPage() {
   // Handle create test
   const handleCreateTest = async (values: any) => {
     try {
-      await createTest.mutateAsync({
+      const createdTest = await createTest.mutateAsync({
         data: {
           name: values.name,
           duration: values.duration,
           maxAttempts: values.maxAttempts,
         },
       });
+
+      // Create components for selected lessons
+      if (values.lessons && values.lessons.length > 0) {
+        for (const lessonId of values.lessons) {
+          await createComponent.mutateAsync({
+            data: {
+              lessonId: lessonId,
+              componentType: "TEST",
+              testId: createdTest.id,
+              indexInLesson: 999, // Default position, can be adjusted later
+            },
+          });
+        }
+      }
+
       message.success("Tạo bài kiểm tra thành công!");
       setModalState({ type: null, open: false });
       createForm.resetFields();
+      setSelectedLessons([]);
     } catch (error) {
       message.error("Có lỗi xảy ra khi tạo bài kiểm tra!");
+      console.error(error);
     }
   };
 
@@ -146,12 +218,49 @@ export default function TestsPage() {
           maxAttempts: values.maxAttempts,
         },
       });
+
+      // Handle lesson changes
+      const oldLessonIds = testComponents?.map((comp) => comp.lessonId) || [];
+      const newLessonIds = values.lessons || [];
+
+      // Remove components for unselected lessons
+      const lessonsToRemove = oldLessonIds.filter(
+        (id) => !newLessonIds.includes(id),
+      );
+      for (const lessonId of lessonsToRemove) {
+        const componentToDelete = testComponents?.find(
+          (comp) => comp.lessonId === lessonId,
+        );
+        if (componentToDelete) {
+          await deleteComponent.mutateAsync({
+            where: { id: componentToDelete.id },
+          });
+        }
+      }
+
+      // Add components for newly selected lessons
+      const lessonsToAdd = newLessonIds.filter(
+        (id: string) => !oldLessonIds.includes(id),
+      );
+      for (const lessonId of lessonsToAdd) {
+        await createComponent.mutateAsync({
+          data: {
+            lessonId: lessonId,
+            componentType: "TEST",
+            testId: selectedTest.id,
+            indexInLesson: 999, // Default position, can be adjusted later
+          },
+        });
+      }
+
       message.success("Cập nhật bài kiểm tra thành công!");
       setModalState({ type: null, open: false });
       setSelectedTest(null);
+      setSelectedLessons([]);
       editForm.resetFields();
     } catch (error) {
       message.error("Có lỗi xảy ra khi cập nhật bài kiểm tra!");
+      console.error(error);
     }
   };
 
@@ -204,6 +313,21 @@ export default function TestsPage() {
     setSelectedTest(test);
     setModalState({ type: "questions", open: true });
   };
+
+  // Build tree data for lesson selection
+  const lessonTreeData = useMemo(() => {
+    if (!courses) return [];
+
+    return courses.map((course: any) => ({
+      title: course.title,
+      value: `course-${course.id}`,
+      selectable: false,
+      children: course.lessons?.map((lesson: any) => ({
+        title: lesson.title,
+        value: lesson.id,
+      })),
+    }));
+  }, [courses]);
 
   const columns = [
     {
@@ -494,9 +618,11 @@ export default function TestsPage() {
         onCancel={() => {
           setModalState({ type: null, open: false });
           createForm.resetFields();
+          setSelectedLessons([]);
         }}
         onOk={() => createForm.submit()}
         confirmLoading={createTest.isPending}
+        width={600}
       >
         <Form form={createForm} layout="vertical" onFinish={handleCreateTest}>
           <Form.Item
@@ -532,6 +658,22 @@ export default function TestsPage() {
               placeholder="Nhập số lần làm"
             />
           </Form.Item>
+          <Form.Item
+            name="lessons"
+            label="Chọn bài học áp dụng"
+            tooltip="Chọn các bài học mà bài kiểm tra này sẽ được áp dụng"
+          >
+            <TreeSelect
+              treeData={lessonTreeData}
+              placeholder="Chọn bài học..."
+              multiple
+              treeCheckable
+              showCheckedStrategy={TreeSelect.SHOW_CHILD}
+              style={{ width: "100%" }}
+              maxTagCount="responsive"
+              treeDefaultExpandAll
+            />
+          </Form.Item>
         </Form>
       </Modal>
 
@@ -542,10 +684,12 @@ export default function TestsPage() {
         onCancel={() => {
           setModalState({ type: null, open: false });
           setSelectedTest(null);
+          setSelectedLessons([]);
           editForm.resetFields();
         }}
         onOk={() => editForm.submit()}
         confirmLoading={updateTest.isPending}
+        width={600}
       >
         <Form form={editForm} layout="vertical" onFinish={handleEditTest}>
           <Form.Item
@@ -579,6 +723,22 @@ export default function TestsPage() {
               min={1}
               style={{ width: "100%" }}
               placeholder="Nhập số lần làm"
+            />
+          </Form.Item>
+          <Form.Item
+            name="lessons"
+            label="Chọn bài học áp dụng"
+            tooltip="Chọn các bài học mà bài kiểm tra này sẽ được áp dụng"
+          >
+            <TreeSelect
+              treeData={lessonTreeData}
+              placeholder="Chọn bài học..."
+              multiple
+              treeCheckable
+              showCheckedStrategy={TreeSelect.SHOW_CHILD}
+              style={{ width: "100%" }}
+              maxTagCount="responsive"
+              treeDefaultExpandAll
             />
           </Form.Item>
         </Form>

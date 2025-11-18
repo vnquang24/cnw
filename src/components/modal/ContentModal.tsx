@@ -69,7 +69,7 @@ export default function ContentModal({
       okText={editingData ? "Cập nhật" : "Thêm"}
       cancelText="Hủy"
       width={600}
-      destroyOnClose
+      destroyOnHidden
     >
       <Form form={form} layout="vertical" className="mt-4">
         <Form.Item

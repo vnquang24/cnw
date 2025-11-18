@@ -51,7 +51,8 @@ export function CourseFormDialog({
       // Reset form khi đóng dialog
       form.resetFields();
     }
-  }, [open, initialData, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialData]);
 
   const handleSubmit = async () => {
     try {

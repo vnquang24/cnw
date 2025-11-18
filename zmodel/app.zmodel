@@ -94,13 +94,14 @@ model Component extends Base {
 
 // UserCourse model
 model UserCourse extends Base {
-  userId           String
-  courseId         String
-  enrolmentStatus  EnrolmentStatus @default(PENDING)
-  progress         Int
-  reason           String?         @db.Text
-  startDate        DateTime?       @db.Date
-  endDate          DateTime?       @db.Date
+  userId            String
+  courseId          String
+  enrolmentStatus   EnrolmentStatus @default(PENDING)
+  progress          Int
+  reason            String?         @db.Text
+  startDate         DateTime?       @db.Date
+  endDate           DateTime?       @db.Date
+  extensionRequest  Boolean         @default(false)
 
   // Relations
   user   User   @relation(fields: [userId], references: [id])

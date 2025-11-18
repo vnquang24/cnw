@@ -1,6 +1,6 @@
 "use client";
 
-import { Modal, Form, Input, Button, message, InputNumber } from "antd";
+import { Modal, Form, Input, Button, InputNumber, App } from "antd";
 import { BookOpen } from "lucide-react";
 import { useFindUniqueLesson, useUpdateLesson } from "@/generated/hooks";
 import { useEffect } from "react";
@@ -17,6 +17,7 @@ const LessonEditModal = () => {
     useLessonModal();
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
+  const { message } = App.useApp();
 
   const { data: lesson, isLoading } = useFindUniqueLesson(
     {

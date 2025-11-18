@@ -42,62 +42,6 @@ import { getUserId } from "@/lib/auth";
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-// Mock data cho khóa học
-// const courses = [
-//   {
-//     key: "1",
-//     id: 1,
-//     title: "JavaScript Cơ bản",
-//     description: "Học lập trình JavaScript từ cơ bản đến nâng cao",
-//     instructor: "Nguyễn Văn A",
-//     students: 45,
-//     lessons: 12,
-//     duration: "6 tuần",
-//     status: "active",
-//     level: "Cơ bản",
-//     createdAt: "2024-01-15",
-//   },
-//   {
-//     key: "2",
-//     id: 2,
-//     title: "React Advanced",
-//     description: "Khóa học React nâng cao cho developers",
-//     instructor: "Trần Thị B",
-//     students: 32,
-//     lessons: 15,
-//     duration: "8 tuần",
-//     status: "active",
-//     level: "Nâng cao",
-//     createdAt: "2024-01-20",
-//   },
-//   {
-//     key: "3",
-//     id: 3,
-//     title: "Node.js Backend",
-//     description: "Phát triển backend với Node.js và Express",
-//     instructor: "Lê Văn C",
-//     students: 28,
-//     lessons: 10,
-//     duration: "5 tuần",
-//     status: "draft",
-//     level: "Trung bình",
-//     createdAt: "2024-02-01",
-//   },
-//   {
-//     key: "4",
-//     id: 4,
-//     title: "Database Design",
-//     description: "Thiết kế và quản lý cơ sở dữ liệu",
-//     instructor: "Phạm Thị D",
-//     students: 25,
-//     lessons: 8,
-//     duration: "4 tuần",
-//     status: "completed",
-//     level: "Trung bình",
-//     createdAt: "2024-01-10",
-//   },
-// ];
-
 export default function CoursesPage() {
   const router = useRouter();
   const userId = getUserId();

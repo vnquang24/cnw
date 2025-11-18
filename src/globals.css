@@ -129,3 +129,31 @@ html {
 .leaflet-bottom {
   z-index: 100;
 }
+
+/* Sidebar collapsed dropdown menu */
+.sidebar-collapsed-dropdown {
+  box-shadow:
+    0 6px 16px 0 rgba(0, 0, 0, 0.08),
+    0 3px 6px -4px rgba(0, 0, 0, 0.12),
+    0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+}
+
+.sidebar-collapsed-dropdown .ant-dropdown-menu {
+  padding: 4px;
+}
+
+.sidebar-collapsed-dropdown .ant-dropdown-menu-item {
+  border-radius: 6px;
+  margin: 2px 0;
+  transition: all 0.2s ease;
+}
+
+.sidebar-collapsed-dropdown .ant-dropdown-menu-item:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.sidebar-collapsed-dropdown .ant-dropdown-menu-submenu-title {
+  border-radius: 6px;
+  margin: 2px 0;
+}

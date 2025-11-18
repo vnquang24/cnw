@@ -54,12 +54,14 @@ export default function SharedLayout({
         if (!active) return;
 
         if (!valid) {
+          await logout();
           router.replace("/login");
           return;
         }
 
         const info = getUserInfo();
         if (!info) {
+          await logout();
           router.replace("/login");
           return;
         }
@@ -76,6 +78,7 @@ export default function SharedLayout({
         setUserInfo(info);
       } catch (error) {
         if (active) {
+          await logout();
           router.replace("/login");
         }
       } finally {
@@ -113,9 +116,27 @@ export default function SharedLayout({
   if (!userInfo) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center space-y-2">
-          <div className="text-red-600">Không thể tải thông tin người dùng</div>
-          <Button type="primary" onClick={() => router.replace("/login")}>
+        <div className="text-center space-y-4">
+          <div className="text-red-600 text-lg font-medium">
+            Không thể tải thông tin người dùng
+          </div>
+          <p className="text-gray-600">
+            Phiên đăng nhập của bạn có thể đã hết hạn
+          </p>
+          <Button
+            type="primary"
+            size="large"
+            onClick={async () => {
+              try {
+                await logout();
+                router.push("/login");
+              } catch (error) {
+                console.error("Logout error:", error);
+                // Force redirect even if logout fails
+                router.push("/login");
+              }
+            }}
+          >
             Quay lại trang đăng nhập
           </Button>
         </div>
