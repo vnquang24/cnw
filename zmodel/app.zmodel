@@ -51,10 +51,24 @@ model Test extends Base {
   maxScore           Int     @default(10)
   shuffleQuestions   Boolean @default(false)
   shuffleAnswers     Boolean @default(false)
-
+  passScore          Int     @default(5)
   // Relations
   questions  Question[]
   components Component[]
+}
+
+// MediaFile model - Centralized file management
+model MediaFile extends Base {
+  fileName    String   @db.VarChar(255)  // Original filename
+  fileUrl     String   @db.VarChar(500)  // Public download URL in MinIO
+  fileType    String   @db.VarChar(50)   // MIME type: image/png, video/mp4, audio/mpeg
+  fileSize    Int?                       // File size in bytes
+  uploadedBy  String?                    // User who uploaded the file
+  questionId  String?                    // Question this file belongs to
+
+  // Relations
+  uploader    User?     @relation("MediaUploader", fields: [uploadedBy], references: [id])
+  question    Question? @relation(fields: [questionId], references: [id])
 }
 
 // Question model
@@ -66,8 +80,9 @@ model Question extends Base {
   maxLength    Int?
 
   // Relations
-  test    Test     @relation(fields: [testId], references: [id])
-  answers Answer[]
+  test       Test        @relation(fields: [testId], references: [id])
+  answers    Answer[]
+  mediaFiles MediaFile[] // Multiple media files per question
 }
 
 // Answer model
@@ -95,6 +110,7 @@ model Component extends Base {
   word        Word?        @relation(fields: [wordId], references: [id])
   userWords   UserWord[]
   testResults TestResult[]
+  userNotes   UserNote[]
 }
 
 // UserCourse model
@@ -106,6 +122,7 @@ model UserCourse extends Base {
   reason           String?         @db.Text
   startDate        DateTime?       @db.Date
   endDate          DateTime?       @db.Date
+  extensionRequest Boolean         @default(false)
 
   // Relations
   user   User   @relation(fields: [userId], references: [id])
@@ -162,4 +179,19 @@ model TestResult extends Base {
   user      User      @relation(fields: [userId], references: [id])
   component Component @relation(fields: [componentId], references: [id])
   grader    User?     @relation("GradedBy", fields: [gradedBy], references: [id])
+}
+
+// UserNote model - For user notes on learning components
+model UserNote extends Base {
+  userId      String
+  componentId String
+  content     String   @db.Text
+  isPrivate   Boolean  @default(true)  // Private notes by default
+  tags        String?  @db.VarChar(500) // Comma-separated tags for organization
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id])
+  component Component @relation(fields: [componentId], references: [id])
+
+  @@unique([userId, componentId]) // One note per user per component
 }

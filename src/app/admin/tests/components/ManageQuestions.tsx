@@ -32,6 +32,8 @@ import {
   useUpdateAnswer,
   useDeleteAnswer,
 } from "@/generated/hooks";
+import { useCreateMediaFile, useDeleteMediaFile } from "@/generated/hooks";
+import MediaUpload from "@/components/MediaUpload";
 
 const { Option } = Select;
 
@@ -42,12 +44,21 @@ interface Answer {
   isNew?: boolean;
 }
 
+interface MediaFileItem {
+  id?: string;
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize?: number;
+}
+
 interface Question {
   id: string;
   content: string;
   questionType: "SINGLE_CHOICE" | "MULTIPLE_CHOICE" | "ESSAY";
   points?: number;
   maxLength?: number;
+  mediaFiles?: MediaFileItem[];
   answers: Answer[];
   isNew?: boolean;
   isEditing?: boolean;
@@ -84,6 +95,7 @@ export default function ManageQuestions({
       where: { testId },
       include: {
         answers: true,
+        mediaFiles: true,
       },
     },
     { enabled: open },
@@ -96,6 +108,8 @@ export default function ManageQuestions({
   const createAnswer = useCreateAnswer();
   const updateAnswer = useUpdateAnswer();
   const deleteAnswer = useDeleteAnswer();
+  const createMediaFile = useCreateMediaFile();
+  const deleteMediaFile = useDeleteMediaFile();
 
   // Cleanup on unmount
   useEffect(() => {
@@ -123,6 +137,7 @@ export default function ManageQuestions({
         questionType: q.questionType,
         points: q.points || 1,
         maxLength: q.maxLength || 1000,
+        mediaFiles: q.mediaFiles || [],
         answers: q.answers || [],
         isNew: false,
         isEditing: false,
@@ -131,11 +146,12 @@ export default function ManageQuestions({
 
       // Set form values
       const formValues: any = {};
-      questions.forEach((q) => {
+      questions.forEach((q: any) => {
         formValues[`question_${q.id}_content`] = q.content;
         formValues[`question_${q.id}_type`] = q.questionType;
         formValues[`question_${q.id}_points`] = q.points;
         formValues[`question_${q.id}_maxLength`] = q.maxLength;
+        formValues[`question_${q.id}_mediaFiles`] = q.mediaFiles;
 
         q.answers.forEach((a: Answer) => {
           formValues[`answer_${a.id}_content`] = a.content;
@@ -155,6 +171,7 @@ export default function ManageQuestions({
       questionType: "SINGLE_CHOICE",
       points: 1,
       maxLength: 1000,
+      mediaFiles: [],
       answers: [
         {
           id: `new-ans-${Date.now()}-1`,
@@ -179,6 +196,7 @@ export default function ManageQuestions({
       [`question_${questionId}_type`]: "SINGLE_CHOICE",
       [`question_${questionId}_points`]: 1,
       [`question_${questionId}_maxLength`]: 1000,
+      [`question_${questionId}_mediaFiles`]: [],
     });
 
     setEditingQuestions([...editingQuestions, newQuestion]);
@@ -239,6 +257,19 @@ export default function ManageQuestions({
     setEditingQuestions(
       editingQuestions.map((q) =>
         q.id === questionId ? { ...q, maxLength } : q,
+      ),
+    );
+    setHasChanges(true);
+  };
+
+  // Update question media files
+  const updateQuestionMediaFiles = (
+    questionId: string,
+    mediaFiles: MediaFileItem[],
+  ) => {
+    setEditingQuestions(
+      editingQuestions.map((q) =>
+        q.id === questionId ? { ...q, mediaFiles } : q,
       ),
     );
     setHasChanges(true);
@@ -415,6 +446,10 @@ export default function ManageQuestions({
       formValues[`question_${questionId}_maxLength`] ||
       question.maxLength ||
       1000;
+    const questionMediaFiles =
+      formValues[`question_${questionId}_mediaFiles`] ||
+      question.mediaFiles ||
+      [];
 
     // Validate
     if (!questionContent.trim()) {
@@ -445,7 +480,7 @@ export default function ManageQuestions({
 
     try {
       if (question.isNew) {
-        // Create new question
+        // Create new question first
         const createdQuestion = await createQuestion.mutateAsync({
           data: {
             testId,
@@ -455,6 +490,21 @@ export default function ManageQuestions({
             maxLength: questionMaxLength,
           },
         });
+
+        // Create media files separately and connect to question
+        if (createdQuestion && questionMediaFiles.length > 0) {
+          for (const file of questionMediaFiles) {
+            await createMediaFile.mutateAsync({
+              data: {
+                fileName: file.fileName,
+                fileUrl: file.fileUrl,
+                fileType: file.fileType,
+                fileSize: file.fileSize,
+                questionId: createdQuestion.id,
+              },
+            });
+          }
+        }
 
         if (createdQuestion && question.questionType !== "ESSAY") {
           // Create answers only if not ESSAY
@@ -483,6 +533,36 @@ export default function ManageQuestions({
             maxLength: questionMaxLength,
           },
         });
+
+        // Handle media files separately
+        // First, delete all existing media files for this question
+        const existingQuestion = editingQuestions.find(
+          (q) => q.id === questionId,
+        );
+        if (existingQuestion?.mediaFiles) {
+          for (const mediaFile of existingQuestion.mediaFiles) {
+            if (mediaFile.id) {
+              await deleteMediaFile.mutateAsync({
+                where: { id: mediaFile.id },
+              });
+            }
+          }
+        }
+
+        // Then create new media files
+        if (questionMediaFiles.length > 0) {
+          for (const file of questionMediaFiles) {
+            await createMediaFile.mutateAsync({
+              data: {
+                fileName: file.fileName,
+                fileUrl: file.fileUrl,
+                fileType: file.fileType,
+                fileSize: file.fileSize,
+                questionId: questionId,
+              },
+            });
+          }
+        }
 
         // Update/create/delete answers only if not ESSAY
         if (question.questionType !== "ESSAY") {
@@ -560,24 +640,6 @@ export default function ManageQuestions({
           <div
             style={{ maxHeight: "70vh", overflowY: "auto", paddingRight: 10 }}
           >
-            {(shuffleQuestions || shuffleAnswers) && (
-              <Alert
-                type="info"
-                showIcon
-                message="Cài đặt trộn đề"
-                description={
-                  <div>
-                    {shuffleQuestions && (
-                      <div>• Câu hỏi sẽ được trộn cho mỗi lần làm bài</div>
-                    )}
-                    {shuffleAnswers && (
-                      <div>• Đáp án sẽ được trộn cho mỗi câu hỏi</div>
-                    )}
-                  </div>
-                }
-                style={{ marginBottom: 16 }}
-              />
-            )}
             {editingQuestions.length === 0 ? (
               <Empty
                 description="Chưa có câu hỏi nào"
@@ -728,6 +790,43 @@ export default function ManageQuestions({
                             </>
                           )}
                         </div>
+                      </div>
+
+                      {/* Media Upload - Luôn hiển thị */}
+                      <div style={{ marginBottom: 16 }}>
+                        <label
+                          style={{
+                            display: "block",
+                            marginBottom: 8,
+                            fontWeight: 500,
+                          }}
+                        >
+                          Media (Hình ảnh/Video/Âm thanh - Không giới hạn)
+                        </label>
+                        <Form.Item
+                          name={`question_${question.id}_mediaFiles`}
+                          style={{ marginBottom: 0 }}
+                        >
+                          <MediaUpload
+                            value={
+                              form.getFieldValue(
+                                `question_${question.id}_mediaFiles`,
+                              ) ||
+                              question.mediaFiles ||
+                              []
+                            }
+                            onChange={(files) => {
+                              // Cập nhật form value
+                              form.setFieldValue(
+                                `question_${question.id}_mediaFiles`,
+                                files,
+                              );
+                              // Cập nhật state
+                              updateQuestionMediaFiles(question.id, files);
+                            }}
+                            disabled={!question.isEditing && !question.isNew}
+                          />
+                        </Form.Item>
                       </div>
 
                       {/* Question Settings - Points and Type on same row */}

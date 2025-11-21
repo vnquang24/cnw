@@ -48,8 +48,8 @@ interface LessonData {
   };
   creator?: {
     id: string;
-    name: string;
-  };
+    name: string | null;
+  } | null;
 }
 
 interface LessonFormData {

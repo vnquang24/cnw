@@ -171,8 +171,25 @@ model Test {
   maxScore         Int         @default(10)
   shuffleQuestions Boolean     @default(false)
   shuffleAnswers   Boolean     @default(false)
+  passScore        Int         @default(5)
   questions        Question[]
   components       Component[]
+}
+
+model MediaFile {
+  id          String    @id() @default(cuid())
+  description String    @default("")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt()
+  deleted     DateTime?
+  fileName    String    @db.VarChar(255)
+  fileUrl     String    @db.VarChar(500)
+  fileType    String    @db.VarChar(50)
+  fileSize    Int?
+  uploadedBy  String?
+  questionId  String?
+  uploader    User?     @relation("MediaUploader", fields: [uploadedBy], references: [id])
+  question    Question? @relation(fields: [questionId], references: [id])
 }
 
 model Question {
@@ -188,6 +205,7 @@ model Question {
   maxLength    Int?
   test         Test         @relation(fields: [testId], references: [id])
   answers      Answer[]
+  mediaFiles   MediaFile[]
 }
 
 model Answer {
@@ -219,23 +237,25 @@ model Component {
   word          Word?         @relation(fields: [wordId], references: [id])
   userWords     UserWord[]
   testResults   TestResult[]
+  userNotes     UserNote[]
 }
 
 model UserCourse {
-  id              String          @id() @default(cuid())
-  description     String          @default("")
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt()
-  deleted         DateTime?
-  userId          String
-  courseId        String
-  enrolmentStatus EnrolmentStatus @default(PENDING)
-  progress        Int
-  reason          String?         @db.Text()
-  startDate       DateTime?       @db.Date()
-  endDate         DateTime?       @db.Date()
-  user            User            @relation(fields: [userId], references: [id])
-  course          Course          @relation(fields: [courseId], references: [id])
+  id               String          @id() @default(cuid())
+  description      String          @default("")
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt()
+  deleted          DateTime?
+  userId           String
+  courseId         String
+  enrolmentStatus  EnrolmentStatus @default(PENDING)
+  progress         Int
+  reason           String?         @db.Text()
+  startDate        DateTime?       @db.Date()
+  endDate          DateTime?       @db.Date()
+  extensionRequest Boolean         @default(false)
+  user             User            @relation(fields: [userId], references: [id])
+  course           Course          @relation(fields: [courseId], references: [id])
 }
 
 model UserLesson {
@@ -298,6 +318,23 @@ model TestResult {
   grader         User?            @relation("GradedBy", fields: [gradedBy], references: [id])
 }
 
+model UserNote {
+  id          String    @id() @default(cuid())
+  description String    @default("")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt()
+  deleted     DateTime?
+  userId      String
+  componentId String
+  content     String    @db.Text()
+  isPrivate   Boolean   @default(true)
+  tags        String?   @db.VarChar(500)
+  user        User      @relation(fields: [userId], references: [id])
+  component   Component @relation(fields: [componentId], references: [id])
+
+  @@unique([userId, componentId])
+}
+
 model User {
   id                  String               @id() @default(cuid())
   description         String               @default("")
@@ -324,8 +361,10 @@ model User {
   testResults         TestResult[]
   gradedResults       TestResult[]         @relation("GradedBy")
   adminCourseManagers AdminCourseManager[]
+  userNotes           UserNote[]
   createdCourses      Course[]             @relation("CourseCreator")
   createdLessons      Lesson[]             @relation("LessonCreator")
+  uploadedFiles       MediaFile[]          @relation("MediaUploader")
 
   @@unique([email, phone])
 }

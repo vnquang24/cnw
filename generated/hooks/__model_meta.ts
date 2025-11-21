@@ -315,6 +315,13 @@ const metadata: ModelMeta = {
             { name: "@default", args: [{ name: "value", value: false }] },
           ],
         },
+        passScore: {
+          name: "passScore",
+          type: "Int",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: 5 }] },
+          ],
+        },
         questions: {
           name: "questions",
           type: "Question",
@@ -328,6 +335,94 @@ const metadata: ModelMeta = {
           isDataModel: true,
           isArray: true,
           backLink: "test",
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    mediaFile: {
+      name: "MediaFile",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        fileName: {
+          name: "fileName",
+          type: "String",
+        },
+        fileUrl: {
+          name: "fileUrl",
+          type: "String",
+        },
+        fileType: {
+          name: "fileType",
+          type: "String",
+        },
+        fileSize: {
+          name: "fileSize",
+          type: "Int",
+          isOptional: true,
+        },
+        uploadedBy: {
+          name: "uploadedBy",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "uploader",
+        },
+        questionId: {
+          name: "questionId",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "question",
+        },
+        uploader: {
+          name: "uploader",
+          type: "User",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "uploadedFiles",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "uploadedBy" },
+        },
+        question: {
+          name: "question",
+          type: "Question",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "mediaFiles",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "questionId" },
         },
       },
       uniqueConstraints: {
@@ -406,6 +501,13 @@ const metadata: ModelMeta = {
         answers: {
           name: "answers",
           type: "Answer",
+          isDataModel: true,
+          isArray: true,
+          backLink: "question",
+        },
+        mediaFiles: {
+          name: "mediaFiles",
+          type: "MediaFile",
           isDataModel: true,
           isArray: true,
           backLink: "question",
@@ -583,6 +685,13 @@ const metadata: ModelMeta = {
           isArray: true,
           backLink: "component",
         },
+        userNotes: {
+          name: "userNotes",
+          type: "UserNote",
+          isDataModel: true,
+          isArray: true,
+          backLink: "component",
+        },
       },
       uniqueConstraints: {
         id: {
@@ -657,6 +766,13 @@ const metadata: ModelMeta = {
           name: "endDate",
           type: "DateTime",
           isOptional: true,
+        },
+        extensionRequest: {
+          name: "extensionRequest",
+          type: "Boolean",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: false }] },
+          ],
         },
         user: {
           name: "user",
@@ -1011,6 +1127,93 @@ const metadata: ModelMeta = {
         },
       },
     },
+    userNote: {
+      name: "UserNote",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        userId: {
+          name: "userId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "user",
+        },
+        componentId: {
+          name: "componentId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "component",
+        },
+        content: {
+          name: "content",
+          type: "String",
+        },
+        isPrivate: {
+          name: "isPrivate",
+          type: "Boolean",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: true }] },
+          ],
+        },
+        tags: {
+          name: "tags",
+          type: "String",
+          isOptional: true,
+        },
+        user: {
+          name: "user",
+          type: "User",
+          isDataModel: true,
+          backLink: "userNotes",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "userId" },
+        },
+        component: {
+          name: "component",
+          type: "Component",
+          isDataModel: true,
+          backLink: "userNotes",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "componentId" },
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+        userId_componentId: {
+          name: "userId_componentId",
+          fields: ["userId", "componentId"],
+        },
+      },
+    },
     user: {
       name: "User",
       fields: {
@@ -1165,6 +1368,13 @@ const metadata: ModelMeta = {
           isArray: true,
           backLink: "user",
         },
+        userNotes: {
+          name: "userNotes",
+          type: "UserNote",
+          isDataModel: true,
+          isArray: true,
+          backLink: "user",
+        },
         createdCourses: {
           name: "createdCourses",
           type: "Course",
@@ -1178,6 +1388,13 @@ const metadata: ModelMeta = {
           isDataModel: true,
           isArray: true,
           backLink: "creator",
+        },
+        uploadedFiles: {
+          name: "uploadedFiles",
+          type: "MediaFile",
+          isDataModel: true,
+          isArray: true,
+          backLink: "uploader",
         },
       },
       uniqueConstraints: {

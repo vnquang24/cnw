@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -19,17 +19,25 @@ import {
   Typography,
   Table,
   Divider,
+  Tabs,
 } from "antd";
+import type { Prisma } from "@prisma/client";
+import { StatusTag } from "@/components/ui/status-tag";
+import { InfoBadge } from "@/components/ui/info-badge";
+import { UserNote } from "@/components/ui/user-note";
 import {
   ArrowLeft,
   BookOpen,
   ClipboardList,
   MessageCircle,
+  MessageSquare,
   Shuffle,
   Sparkles,
   Trophy,
   XCircle,
   Eye,
+  FileText,
+  Target,
 } from "lucide-react";
 import {
   useFindUniqueLesson,
@@ -41,11 +49,26 @@ import { getUserId } from "@/lib/auth";
 
 const { Title, Text, Paragraph } = Typography;
 
-const lessonStatusConfig: Record<string, { label: string; color: string }> = {
-  TODO: { label: "Chưa học", color: "default" },
-  DOING: { label: "Đang học", color: "blue" },
-  PASS: { label: "Hoàn thành", color: "green" },
-  FAIL: { label: "Cần ôn lại", color: "volcano" },
+const lessonStatusConfig: Record<
+  string,
+  {
+    label: string;
+    status: "success" | "error" | "warning" | "info" | "default";
+    icon: React.ReactNode;
+  }
+> = {
+  TODO: { label: "Chưa học", status: "default", icon: <BookOpen size={14} /> },
+  DOING: { label: "Đang học", status: "info", icon: <BookOpen size={14} /> },
+  PASS: {
+    label: "Hoàn thành",
+    status: "success",
+    icon: <BookOpen size={14} />,
+  },
+  FAIL: {
+    label: "Cần ôn lại",
+    status: "warning",
+    icon: <BookOpen size={14} />,
+  },
 };
 
 const componentLabel: Record<string, string> = {
@@ -146,11 +169,29 @@ export default function LessonLearningPage() {
     [components],
   );
 
+  const paragraphComponents = useMemo(
+    () =>
+      (components ?? []).filter(
+        (component) => component.componentType === "PARAGRAPH",
+      ),
+    [components],
+  );
+
+  const testComponents = useMemo(
+    () =>
+      (components ?? []).filter(
+        (component) => component.componentType === "TEST",
+      ),
+    [components],
+  );
+
   const [wordViewMode, setWordViewMode] = useState<"list" | "flashcard">(
     "list",
   );
   const [flashcardIndex, setFlashcardIndex] = useState(0);
   const [showMeaning, setShowMeaning] = useState(false);
+  const [noteModalOpen, setNoteModalOpen] = useState(false);
+  const [selectedComponent, setSelectedComponent] = useState<any>(null);
 
   useEffect(() => {
     setFlashcardIndex(0);
@@ -227,19 +268,28 @@ export default function LessonLearningPage() {
               <Title level={3} style={{ margin: 0 }}>
                 {lesson.title}
               </Title>
-              <Text type="secondary">
-                Thuộc khóa học: {lesson.course?.title || ""}
-              </Text>
+              <InfoBadge
+                icon={<BookOpen size={16} />}
+                text={`Thuộc khóa học: ${lesson.course?.title || ""}`}
+                type="secondary"
+              />
               <Space size={8}>
-                <Tag color={currentStatus.color}>{currentStatus.label}</Tag>
-                <Tag icon={<ClipboardList size={14} />}>
-                  {components?.length || 0} nội dung
-                </Tag>
+                <StatusTag
+                  status={currentStatus.status}
+                  icon={currentStatus.icon}
+                  text={currentStatus.label}
+                  minWidth={100}
+                />
+                <InfoBadge
+                  icon={<ClipboardList size={14} />}
+                  text={`${components?.length || 0} nội dung`}
+                  type="default"
+                />
               </Space>
             </Space>
           </Col>
           <Col xs={24} md={6}>
-            <Card bordered={false} className="bg-gray-50">
+            <Card variant="borderless" className="bg-gray-50">
               <Space direction="vertical" size={8} style={{ width: "100%" }}>
                 <Statistic
                   title="Thứ tự trong khóa học"
@@ -291,7 +341,7 @@ export default function LessonLearningPage() {
                         <Title level={4} style={{ margin: 0 }}>
                           {word.content}
                         </Title>
-                        <Tag color="geekblue">{word.wordType}</Tag>
+                        <Tag color="blue">{word.wordType}</Tag>
                         <Paragraph style={{ marginBottom: 0 }}>
                           {word.meaning}
                         </Paragraph>
@@ -318,7 +368,11 @@ export default function LessonLearningPage() {
                     size={12}
                     style={{ width: "100%" }}
                   >
-                    <Tag color="geekblue">Từ số {flashcardIndex + 1}</Tag>
+                    <StatusTag
+                      status="info"
+                      text={`Từ số ${flashcardIndex + 1}`}
+                      minWidth={90}
+                    />
                     <Title level={3} style={{ margin: 0 }}>
                       {flashcardWord.content}
                     </Title>
@@ -374,46 +428,137 @@ export default function LessonLearningPage() {
         </Card>
       )}
 
-      {hasOtherComponents ? (
-        <Space direction="vertical" size={16} style={{ width: "100%" }}>
-          {otherComponents.map((component, index) => {
-            const label = componentLabel[component.componentType] ?? "Nội dung";
-            const order = (component.indexInLesson ?? index) + 1;
-
-            if (component.componentType === "TEST" && component.test) {
-              const questions = component.test.questions ?? [];
-              return (
-                <TestComponentCard
-                  key={component.id}
-                  component={component}
-                  order={order}
-                  label={label}
-                  questions={questions}
-                  userId={userId}
-                  courseId={courseId}
-                  lessonId={lessonId}
-                  router={router}
-                />
-              );
-            }
-
-            return (
-              <Card key={component.id} title={`${order}. ${label}`}>
-                <Space direction="vertical" size={8} style={{ width: "100%" }}>
-                  <Paragraph style={{ marginBottom: 0 }}>
-                    {component.content || "Nội dung đang cập nhật."}
-                  </Paragraph>
-                  <Tag icon={<MessageCircle size={14} />} color="cyan">
-                    Hãy ghi chú lại những điểm quan trọng
-                  </Tag>
-                </Space>
-              </Card>
-            );
-          })}
-        </Space>
+      {paragraphComponents.length > 0 || testComponents.length > 0 ? (
+        <Card title="Nội dung bài học">
+          <Tabs
+            defaultActiveKey="content"
+            items={[
+              ...(paragraphComponents.length > 0
+                ? [
+                    {
+                      key: "content",
+                      label: (
+                        <Space size={8}>
+                          <FileText size={16} />
+                          <span>Nội dung học</span>
+                          <Tag color="blue">{paragraphComponents.length}</Tag>
+                        </Space>
+                      ),
+                      children: (
+                        <Space
+                          direction="vertical"
+                          size={16}
+                          style={{ width: "100%" }}
+                        >
+                          {paragraphComponents.map((component, index) => {
+                            const order =
+                              (component.indexInLesson ?? index) + 1;
+                            return (
+                              <Card
+                                key={component.id}
+                                title={`${order}. ${componentLabel.PARAGRAPH}`}
+                              >
+                                <Space
+                                  direction="vertical"
+                                  size={12}
+                                  style={{ width: "100%" }}
+                                >
+                                  <Paragraph style={{ marginBottom: 0 }}>
+                                    {component.content ||
+                                      "Nội dung đang cập nhật."}
+                                  </Paragraph>
+                                  <Space size={8}>
+                                    <InfoBadge
+                                      icon={<MessageCircle size={14} />}
+                                      text="Hãy ghi chú lại những điểm quan trọng"
+                                      type="default"
+                                    />
+                                    <Button
+                                      type="link"
+                                      icon={<MessageSquare size={14} />}
+                                      onClick={() => {
+                                        setSelectedComponent({
+                                          id: component.id,
+                                          type: component.componentType,
+                                          title: `${order}. ${componentLabel.PARAGRAPH}`,
+                                        });
+                                        setNoteModalOpen(true);
+                                      }}
+                                    >
+                                      Ghi chú
+                                    </Button>
+                                  </Space>
+                                </Space>
+                              </Card>
+                            );
+                          })}
+                        </Space>
+                      ),
+                    },
+                  ]
+                : []),
+              ...(testComponents.length > 0
+                ? [
+                    {
+                      key: "tests",
+                      label: (
+                        <Space size={8}>
+                          <Target size={16} />
+                          <span>Bài kiểm tra</span>
+                          <Tag color="orange">{testComponents.length}</Tag>
+                        </Space>
+                      ),
+                      children: (
+                        <Space
+                          direction="vertical"
+                          size={16}
+                          style={{ width: "100%" }}
+                        >
+                          {testComponents.map((component, index) => {
+                            const questions = component.test?.questions ?? [];
+                            const order =
+                              (component.indexInLesson ?? index) + 1;
+                            return (
+                              <TestComponentCard
+                                key={component.id}
+                                component={component}
+                                order={order}
+                                label={componentLabel.TEST}
+                                questions={questions}
+                                userId={userId}
+                                courseId={courseId}
+                                lessonId={lessonId}
+                                router={router}
+                                setSelectedComponent={setSelectedComponent}
+                                setNoteModalOpen={setNoteModalOpen}
+                              />
+                            );
+                          })}
+                        </Space>
+                      ),
+                    },
+                  ]
+                : []),
+            ]}
+          />
+        </Card>
       ) : wordComponents.length === 0 ? (
         <Empty description="Bài học chưa có nội dung." />
       ) : null}
+
+      {selectedComponent && (
+        <UserNote
+          componentId={selectedComponent.id}
+          userId={userId}
+          componentType={selectedComponent.type}
+          componentTitle={selectedComponent.title}
+          open={noteModalOpen}
+          onClose={() => {
+            setNoteModalOpen(false);
+            setSelectedComponent(null);
+          }}
+        />
+      )}
     </Space>
   );
 }
@@ -428,6 +573,8 @@ interface TestComponentCardProps {
   courseId: string | undefined;
   lessonId: string | undefined;
   router: any;
+  setSelectedComponent: (component: any) => void;
+  setNoteModalOpen: (open: boolean) => void;
 }
 
 function TestComponentCard({
@@ -439,6 +586,8 @@ function TestComponentCard({
   courseId,
   lessonId,
   router,
+  setSelectedComponent,
+  setNoteModalOpen,
 }: TestComponentCardProps) {
   // Fetch test results for this component
   const testResultArgs = useMemo(
@@ -528,56 +677,96 @@ function TestComponentCard({
   ];
 
   return (
-    <Card
-      title={`${order}. ${label}`}
-      extra={<Tag color="purple">{questions.length} câu hỏi</Tag>}
-    >
-      <Space direction="vertical" size={16} style={{ width: "100%" }}>
-        <div>
-          <Title level={4} style={{ margin: 0, marginBottom: 8 }}>
-            {component.test.name}
-          </Title>
-          <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            Thời lượng: {component.test.duration} phút · Tối đa{" "}
-            {component.test.maxAttempts} lần làm
-          </Paragraph>
-        </div>
-
-        <Button
-          type="primary"
-          icon={<Sparkles size={16} />}
-          onClick={() =>
-            router.push(
-              `/user/tests/${component.test?.id}/take?componentId=${component.id}&lessonId=${lessonId}&courseId=${courseId}`,
-            )
-          }
-          size="large"
-        >
-          Bắt đầu làm bài
-        </Button>
-
-        {testResults && testResults.length > 0 && (
-          <>
-            <Divider style={{ margin: "8px 0" }} />
-            <div>
-              <Title level={5} style={{ marginBottom: 12 }}>
-                📊 Lịch sử làm bài
-              </Title>
-              <Table
-                columns={columns}
-                dataSource={testResults}
-                rowKey="id"
-                pagination={false}
+    <Space direction="vertical" size={16} style={{ width: "100%" }}>
+      <Card
+        title={`${order}. ${label}`}
+        extra={
+          <InfoBadge
+            icon={<ClipboardList size={14} />}
+            text={`${questions.length} câu hỏi`}
+            type="default"
+            size="small"
+          />
+        }
+      >
+        <Space direction="vertical" size={16} style={{ width: "100%" }}>
+          <div>
+            <Title level={4} style={{ margin: 0, marginBottom: 8 }}>
+              {component.test.name}
+            </Title>
+            <Space size={16} wrap>
+              <InfoBadge
+                icon={<BookOpen size={14} />}
+                text={`${component.test.duration} phút`}
+                type="secondary"
                 size="small"
-                loading={resultsLoading}
-                locale={{
-                  emptyText: "Chưa có lần làm bài nào",
-                }}
               />
-            </div>
-          </>
-        )}
-      </Space>
-    </Card>
+              <InfoBadge
+                icon={<Trophy size={14} />}
+                text={`Tối đa ${component.test.maxAttempts} lần làm`}
+                type="secondary"
+                size="small"
+              />
+              <InfoBadge
+                icon={<Trophy size={14} />}
+                text={`Điểm đạt: ${component.test.passScore || 5}/${component.test.maxScore || 10}`}
+                type="warning"
+                size="small"
+              />
+            </Space>
+          </div>
+
+          <Button
+            type="primary"
+            icon={<Sparkles size={16} />}
+            onClick={() =>
+              router.push(
+                `/user/tests/${component.test?.id}/take?componentId=${component.id}&lessonId=${lessonId}&courseId=${courseId}`,
+              )
+            }
+            size="large"
+          >
+            Bắt đầu làm bài
+          </Button>
+
+          {testResults && testResults.length > 0 && (
+            <>
+              <Divider style={{ margin: "8px 0" }} />
+              <div>
+                <Title level={5} style={{ marginBottom: 12 }}>
+                  📊 Lịch sử làm bài
+                </Title>
+                <Table
+                  columns={columns}
+                  dataSource={testResults}
+                  rowKey="id"
+                  pagination={false}
+                  size="small"
+                  loading={resultsLoading}
+                  locale={{
+                    emptyText: "Chưa có lần làm bài nào",
+                  }}
+                />
+              </div>
+            </>
+          )}
+
+          <Button
+            type="link"
+            icon={<MessageSquare size={14} />}
+            onClick={() => {
+              setSelectedComponent({
+                id: component.id,
+                type: component.componentType,
+                title: `${order}. ${label}`,
+              });
+              setNoteModalOpen(true);
+            }}
+          >
+            Ghi chú cho bài kiểm tra này
+          </Button>
+        </Space>
+      </Card>
+    </Space>
   );
 }

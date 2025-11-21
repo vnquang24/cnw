@@ -10,18 +10,18 @@ const { Title, Text } = Typography;
 interface ComponentData {
   id: string;
   componentType: string;
-  content?: string;
+  content?: string | null;
   indexInLesson: number;
   test?: {
     id: string;
     name: string;
-  };
+  } | null;
   word?: {
     id: string;
     content: string;
     meaning: string;
     wordType: string;
-  };
+  } | null;
 }
 
 const LessonViewModal = () => {

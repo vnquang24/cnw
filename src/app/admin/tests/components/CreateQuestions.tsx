@@ -18,6 +18,7 @@ import {
 import { Plus, Trash2 } from "lucide-react";
 import { useCreateQuestion } from "@/generated/hooks";
 import { useCreateAnswer } from "@/generated/hooks";
+import MediaUpload from "@/components/MediaUpload";
 
 const { Option } = Select;
 
@@ -175,6 +176,7 @@ export default function CreateQuestions({
         const type = values[`question_${i}_type`];
         const points = values[`question_${i}_points`] || 1;
         const maxLength = values[`question_${i}_maxLength`] || 1000;
+        const mediaFiles = values[`question_${i}_mediaFiles`] || [];
         const answerKey = `question_${i}_answerCount`;
         const answerCount = values[answerKey] || 2;
 
@@ -185,6 +187,14 @@ export default function CreateQuestions({
             questionType: type,
             points,
             maxLength: type === "ESSAY" ? maxLength : undefined,
+            mediaFiles: {
+              create: mediaFiles.map((file: any) => ({
+                fileName: file.fileName,
+                fileUrl: file.fileUrl,
+                fileType: file.fileType,
+                fileSize: file.fileSize,
+              })),
+            },
           },
         });
 
@@ -289,6 +299,15 @@ export default function CreateQuestions({
                       }}
                       size="large"
                     />
+                  </Form.Item>
+
+                  {/* Media Upload */}
+                  <Form.Item
+                    label="Media (Hình ảnh/Video/Âm thanh - Không giới hạn)"
+                    name={`question_${qIndex}_mediaFiles`}
+                    style={{ marginBottom: 16 }}
+                  >
+                    <MediaUpload />
                   </Form.Item>
 
                   {/* Question Type and Points */}

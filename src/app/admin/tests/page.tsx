@@ -34,6 +34,7 @@ import {
   Eye,
   Trash2,
 } from "lucide-react";
+import type { Prisma } from "@prisma/client";
 import {
   useFindManyTest,
   useCreateTest,
@@ -57,6 +58,9 @@ interface TestWithStats {
   duration: number;
   maxAttempts: number;
   maxScore?: number;
+  passScore?: number;
+  shuffleQuestions?: boolean;
+  shuffleAnswers?: boolean;
   createdAt: Date;
   updatedAt: Date;
   questionsCount?: number;
@@ -181,6 +185,7 @@ export default function TestsPage() {
           duration: values.duration,
           maxAttempts: values.maxAttempts,
           maxScore: values.maxScore,
+          passScore: values.passScore ?? 5,
           shuffleQuestions: values.shuffleQuestions ?? false,
           shuffleAnswers: values.shuffleAnswers ?? false,
         },
@@ -221,6 +226,7 @@ export default function TestsPage() {
           duration: values.duration,
           maxAttempts: values.maxAttempts,
           maxScore: values.maxScore,
+          passScore: values.passScore ?? 5,
           shuffleQuestions: values.shuffleQuestions ?? false,
           shuffleAnswers: values.shuffleAnswers ?? false,
         },
@@ -305,8 +311,9 @@ export default function TestsPage() {
       duration: test.duration,
       maxAttempts: test.maxAttempts,
       maxScore: test.maxScore,
-      shuffleQuestions: (test as any)?.shuffleQuestions ?? false,
-      shuffleAnswers: (test as any)?.shuffleAnswers ?? false,
+      passScore: test.passScore ?? 5,
+      shuffleQuestions: test.shuffleQuestions ?? false,
+      shuffleAnswers: test.shuffleAnswers ?? false,
     });
     setModalState({ type: "edit", open: true });
   };
@@ -659,7 +666,7 @@ export default function TestsPage() {
           form={createForm}
           layout="vertical"
           onFinish={handleCreateTest}
-          initialValues={{ maxScore: 10 }}
+          initialValues={{ maxScore: 10, passScore: 5 }}
         >
           <Form.Item
             name="name"
@@ -868,19 +875,24 @@ export default function TestsPage() {
             <Descriptions.Item label="Điểm tối đa">
               {selectedTest.maxScore || 10}
             </Descriptions.Item>
+            <Descriptions.Item label="Điểm đạt">
+              <Tag color="green">
+                {selectedTest.passScore || 5}/{selectedTest.maxScore || 10}
+              </Tag>
+            </Descriptions.Item>
             <Descriptions.Item label="Điểm trung bình">
               {selectedTest.avgScore ? selectedTest.avgScore.toFixed(1) : "0.0"}
               /{selectedTest.maxScore || 10}
             </Descriptions.Item>
             <Descriptions.Item label="Trộn câu hỏi">
-              {(selectedTest as any)?.shuffleQuestions ? (
+              {selectedTest.shuffleQuestions ? (
                 <Tag color="blue">Có</Tag>
               ) : (
                 <Tag>Không</Tag>
               )}
             </Descriptions.Item>
             <Descriptions.Item label="Trộn đáp án">
-              {(selectedTest as any)?.shuffleAnswers ? (
+              {selectedTest.shuffleAnswers ? (
                 <Tag color="blue">Có</Tag>
               ) : (
                 <Tag>Không</Tag>
@@ -947,8 +959,8 @@ export default function TestsPage() {
             setModalState({ type: null, open: false });
             setSelectedTest(null);
           }}
-          shuffleQuestions={(selectedTest as any)?.shuffleQuestions}
-          shuffleAnswers={(selectedTest as any)?.shuffleAnswers}
+          shuffleQuestions={selectedTest.shuffleQuestions}
+          shuffleAnswers={selectedTest.shuffleAnswers}
         />
       )}
     </div>

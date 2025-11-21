@@ -49,7 +49,7 @@ const { Option } = Select;
 
 type User = {
   id: string;
-  name: string;
+  name: string | null;
   email: string;
   role: string;
   locked: boolean;
@@ -180,7 +180,7 @@ function UsersPageContent() {
         updateUserMutation.mutate(
           {
             where: { id: newUser.id },
-            data: { role: pendingRoleUpdate.role },
+            data: { role: pendingRoleUpdate.role as any },
           },
           {
             onSuccess: () => {

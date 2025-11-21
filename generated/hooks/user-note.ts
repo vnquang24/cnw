@@ -4,7 +4,7 @@
 
 /* eslint-disable */
 
-import type { Prisma, Test } from "@prisma/client";
+import type { Prisma, UserNote } from "@prisma/client";
 import type {
   UseMutationOptions,
   UseQueryOptions,
@@ -36,48 +36,12 @@ import type {
   UseSuspenseInfiniteQueryOptions,
 } from "@tanstack/react-query";
 
-export function useCreateTest(
-  options?: Omit<
-    UseMutationOptions<Test | undefined, DefaultError, Prisma.TestCreateArgs> &
-      ExtraMutationOptions,
-    "mutationFn"
-  >,
-) {
-  const { endpoint, fetch } = getHooksContext();
-  const _mutation = useModelMutation<
-    Prisma.TestCreateArgs,
-    DefaultError,
-    Test,
-    true
-  >("Test", "POST", `${endpoint}/test/create`, metadata, options, fetch, true);
-  const mutation = {
-    ..._mutation,
-    mutateAsync: async <T extends Prisma.TestCreateArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestCreateArgs>,
-      options?: Omit<
-        UseMutationOptions<
-          CheckSelect<T, Test, Prisma.TestGetPayload<T>> | undefined,
-          DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestCreateArgs>
-        > &
-          ExtraMutationOptions,
-        "mutationFn"
-      >,
-    ) => {
-      return (await _mutation.mutateAsync(args, options as any)) as
-        | CheckSelect<T, Test, Prisma.TestGetPayload<T>>
-        | undefined;
-    },
-  };
-  return mutation;
-}
-
-export function useCreateManyTest(
+export function useCreateUserNote(
   options?: Omit<
     UseMutationOptions<
-      Prisma.BatchPayload,
+      UserNote | undefined,
       DefaultError,
-      Prisma.TestCreateManyArgs
+      Prisma.UserNoteCreateArgs
     > &
       ExtraMutationOptions,
     "mutationFn"
@@ -85,14 +49,62 @@ export function useCreateManyTest(
 ) {
   const { endpoint, fetch } = getHooksContext();
   const _mutation = useModelMutation<
-    Prisma.TestCreateManyArgs,
+    Prisma.UserNoteCreateArgs,
+    DefaultError,
+    UserNote,
+    true
+  >(
+    "UserNote",
+    "POST",
+    `${endpoint}/userNote/create`,
+    metadata,
+    options,
+    fetch,
+    true,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.UserNoteCreateArgs>(
+      args: Prisma.SelectSubset<T, Prisma.UserNoteCreateArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          CheckSelect<T, UserNote, Prisma.UserNoteGetPayload<T>> | undefined,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.UserNoteCreateArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(args, options as any)) as
+        | CheckSelect<T, UserNote, Prisma.UserNoteGetPayload<T>>
+        | undefined;
+    },
+  };
+  return mutation;
+}
+
+export function useCreateManyUserNote(
+  options?: Omit<
+    UseMutationOptions<
+      Prisma.BatchPayload,
+      DefaultError,
+      Prisma.UserNoteCreateManyArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.UserNoteCreateManyArgs,
     DefaultError,
     Prisma.BatchPayload,
     false
   >(
-    "Test",
+    "UserNote",
     "POST",
-    `${endpoint}/test/createMany`,
+    `${endpoint}/userNote/createMany`,
     metadata,
     options,
     fetch,
@@ -100,13 +112,13 @@ export function useCreateManyTest(
   );
   const mutation = {
     ..._mutation,
-    mutateAsync: async <T extends Prisma.TestCreateManyArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestCreateManyArgs>,
+    mutateAsync: async <T extends Prisma.UserNoteCreateManyArgs>(
+      args: Prisma.SelectSubset<T, Prisma.UserNoteCreateManyArgs>,
       options?: Omit<
         UseMutationOptions<
           Prisma.BatchPayload,
           DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestCreateManyArgs>
+          Prisma.SelectSubset<T, Prisma.UserNoteCreateManyArgs>
         > &
           ExtraMutationOptions,
         "mutationFn"
@@ -121,35 +133,35 @@ export function useCreateManyTest(
   return mutation;
 }
 
-export function useFindManyTest<
-  TArgs extends Prisma.TestFindManyArgs,
+export function useFindManyUserNote<
+  TArgs extends Prisma.UserNoteFindManyArgs,
   TQueryFnData = Array<
-    Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean }
+    Prisma.UserNoteGetPayload<TArgs> & { $optimistic?: boolean }
   >,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindManyArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserNoteFindManyArgs>,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
     ExtraQueryOptions,
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findMany`,
+    "UserNote",
+    `${endpoint}/userNote/findMany`,
     args,
     options,
     fetch,
   );
 }
 
-export function useInfiniteFindManyTest<
-  TArgs extends Prisma.TestFindManyArgs,
-  TQueryFnData = Array<Prisma.TestGetPayload<TArgs>>,
+export function useInfiniteFindManyUserNote<
+  TArgs extends Prisma.UserNoteFindManyArgs,
+  TQueryFnData = Array<Prisma.UserNoteGetPayload<TArgs>>,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindManyArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserNoteFindManyArgs>,
   options?: Omit<
     UseInfiniteQueryOptions<TQueryFnData, TError, InfiniteData<TData>>,
     "queryKey" | "initialPageParam"
@@ -158,23 +170,23 @@ export function useInfiniteFindManyTest<
   options = options ?? { getNextPageParam: () => null };
   const { endpoint, fetch } = getHooksContext();
   return useInfiniteModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findMany`,
+    "UserNote",
+    `${endpoint}/userNote/findMany`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseFindManyTest<
-  TArgs extends Prisma.TestFindManyArgs,
+export function useSuspenseFindManyUserNote<
+  TArgs extends Prisma.UserNoteFindManyArgs,
   TQueryFnData = Array<
-    Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean }
+    Prisma.UserNoteGetPayload<TArgs> & { $optimistic?: boolean }
   >,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindManyArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserNoteFindManyArgs>,
   options?: Omit<
     UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
     "queryKey"
@@ -183,21 +195,21 @@ export function useSuspenseFindManyTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findMany`,
+    "UserNote",
+    `${endpoint}/userNote/findMany`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseInfiniteFindManyTest<
-  TArgs extends Prisma.TestFindManyArgs,
-  TQueryFnData = Array<Prisma.TestGetPayload<TArgs>>,
+export function useSuspenseInfiniteFindManyUserNote<
+  TArgs extends Prisma.UserNoteFindManyArgs,
+  TQueryFnData = Array<Prisma.UserNoteGetPayload<TArgs>>,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindManyArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserNoteFindManyArgs>,
   options?: Omit<
     UseSuspenseInfiniteQueryOptions<TQueryFnData, TError, InfiniteData<TData>>,
     "queryKey" | "initialPageParam"
@@ -206,41 +218,41 @@ export function useSuspenseInfiniteFindManyTest<
   options = options ?? { getNextPageParam: () => null };
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseInfiniteModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findMany`,
+    "UserNote",
+    `${endpoint}/userNote/findMany`,
     args,
     options,
     fetch,
   );
 }
 
-export function useFindUniqueTest<
-  TArgs extends Prisma.TestFindUniqueArgs,
-  TQueryFnData = Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean },
+export function useFindUniqueUserNote<
+  TArgs extends Prisma.UserNoteFindUniqueArgs,
+  TQueryFnData = Prisma.UserNoteGetPayload<TArgs> & { $optimistic?: boolean },
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args: Prisma.SelectSubset<TArgs, Prisma.TestFindUniqueArgs>,
+  args: Prisma.SelectSubset<TArgs, Prisma.UserNoteFindUniqueArgs>,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
     ExtraQueryOptions,
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findUnique`,
+    "UserNote",
+    `${endpoint}/userNote/findUnique`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseFindUniqueTest<
-  TArgs extends Prisma.TestFindUniqueArgs,
-  TQueryFnData = Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean },
+export function useSuspenseFindUniqueUserNote<
+  TArgs extends Prisma.UserNoteFindUniqueArgs,
+  TQueryFnData = Prisma.UserNoteGetPayload<TArgs> & { $optimistic?: boolean },
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args: Prisma.SelectSubset<TArgs, Prisma.TestFindUniqueArgs>,
+  args: Prisma.SelectSubset<TArgs, Prisma.UserNoteFindUniqueArgs>,
   options?: Omit<
     UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
     "queryKey"
@@ -249,41 +261,41 @@ export function useSuspenseFindUniqueTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findUnique`,
+    "UserNote",
+    `${endpoint}/userNote/findUnique`,
     args,
     options,
     fetch,
   );
 }
 
-export function useFindFirstTest<
-  TArgs extends Prisma.TestFindFirstArgs,
-  TQueryFnData = Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean },
+export function useFindFirstUserNote<
+  TArgs extends Prisma.UserNoteFindFirstArgs,
+  TQueryFnData = Prisma.UserNoteGetPayload<TArgs> & { $optimistic?: boolean },
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindFirstArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserNoteFindFirstArgs>,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
     ExtraQueryOptions,
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findFirst`,
+    "UserNote",
+    `${endpoint}/userNote/findFirst`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseFindFirstTest<
-  TArgs extends Prisma.TestFindFirstArgs,
-  TQueryFnData = Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean },
+export function useSuspenseFindFirstUserNote<
+  TArgs extends Prisma.UserNoteFindFirstArgs,
+  TQueryFnData = Prisma.UserNoteGetPayload<TArgs> & { $optimistic?: boolean },
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindFirstArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserNoteFindFirstArgs>,
   options?: Omit<
     UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
     "queryKey"
@@ -292,56 +304,20 @@ export function useSuspenseFindFirstTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findFirst`,
+    "UserNote",
+    `${endpoint}/userNote/findFirst`,
     args,
     options,
     fetch,
   );
 }
 
-export function useUpdateTest(
-  options?: Omit<
-    UseMutationOptions<Test | undefined, DefaultError, Prisma.TestUpdateArgs> &
-      ExtraMutationOptions,
-    "mutationFn"
-  >,
-) {
-  const { endpoint, fetch } = getHooksContext();
-  const _mutation = useModelMutation<
-    Prisma.TestUpdateArgs,
-    DefaultError,
-    Test,
-    true
-  >("Test", "PUT", `${endpoint}/test/update`, metadata, options, fetch, true);
-  const mutation = {
-    ..._mutation,
-    mutateAsync: async <T extends Prisma.TestUpdateArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestUpdateArgs>,
-      options?: Omit<
-        UseMutationOptions<
-          CheckSelect<T, Test, Prisma.TestGetPayload<T>> | undefined,
-          DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestUpdateArgs>
-        > &
-          ExtraMutationOptions,
-        "mutationFn"
-      >,
-    ) => {
-      return (await _mutation.mutateAsync(args, options as any)) as
-        | CheckSelect<T, Test, Prisma.TestGetPayload<T>>
-        | undefined;
-    },
-  };
-  return mutation;
-}
-
-export function useUpdateManyTest(
+export function useUpdateUserNote(
   options?: Omit<
     UseMutationOptions<
-      Prisma.BatchPayload,
+      UserNote | undefined,
       DefaultError,
-      Prisma.TestUpdateManyArgs
+      Prisma.UserNoteUpdateArgs
     > &
       ExtraMutationOptions,
     "mutationFn"
@@ -349,95 +325,14 @@ export function useUpdateManyTest(
 ) {
   const { endpoint, fetch } = getHooksContext();
   const _mutation = useModelMutation<
-    Prisma.TestUpdateManyArgs,
+    Prisma.UserNoteUpdateArgs,
     DefaultError,
-    Prisma.BatchPayload,
-    false
+    UserNote,
+    true
   >(
-    "Test",
+    "UserNote",
     "PUT",
-    `${endpoint}/test/updateMany`,
-    metadata,
-    options,
-    fetch,
-    false,
-  );
-  const mutation = {
-    ..._mutation,
-    mutateAsync: async <T extends Prisma.TestUpdateManyArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestUpdateManyArgs>,
-      options?: Omit<
-        UseMutationOptions<
-          Prisma.BatchPayload,
-          DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestUpdateManyArgs>
-        > &
-          ExtraMutationOptions,
-        "mutationFn"
-      >,
-    ) => {
-      return (await _mutation.mutateAsync(
-        args,
-        options as any,
-      )) as Prisma.BatchPayload;
-    },
-  };
-  return mutation;
-}
-
-export function useUpsertTest(
-  options?: Omit<
-    UseMutationOptions<Test | undefined, DefaultError, Prisma.TestUpsertArgs> &
-      ExtraMutationOptions,
-    "mutationFn"
-  >,
-) {
-  const { endpoint, fetch } = getHooksContext();
-  const _mutation = useModelMutation<
-    Prisma.TestUpsertArgs,
-    DefaultError,
-    Test,
-    true
-  >("Test", "POST", `${endpoint}/test/upsert`, metadata, options, fetch, true);
-  const mutation = {
-    ..._mutation,
-    mutateAsync: async <T extends Prisma.TestUpsertArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestUpsertArgs>,
-      options?: Omit<
-        UseMutationOptions<
-          CheckSelect<T, Test, Prisma.TestGetPayload<T>> | undefined,
-          DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestUpsertArgs>
-        > &
-          ExtraMutationOptions,
-        "mutationFn"
-      >,
-    ) => {
-      return (await _mutation.mutateAsync(args, options as any)) as
-        | CheckSelect<T, Test, Prisma.TestGetPayload<T>>
-        | undefined;
-    },
-  };
-  return mutation;
-}
-
-export function useDeleteTest(
-  options?: Omit<
-    UseMutationOptions<Test | undefined, DefaultError, Prisma.TestDeleteArgs> &
-      ExtraMutationOptions,
-    "mutationFn"
-  >,
-) {
-  const { endpoint, fetch } = getHooksContext();
-  const _mutation = useModelMutation<
-    Prisma.TestDeleteArgs,
-    DefaultError,
-    Test,
-    true
-  >(
-    "Test",
-    "DELETE",
-    `${endpoint}/test/delete`,
+    `${endpoint}/userNote/update`,
     metadata,
     options,
     fetch,
@@ -445,32 +340,32 @@ export function useDeleteTest(
   );
   const mutation = {
     ..._mutation,
-    mutateAsync: async <T extends Prisma.TestDeleteArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestDeleteArgs>,
+    mutateAsync: async <T extends Prisma.UserNoteUpdateArgs>(
+      args: Prisma.SelectSubset<T, Prisma.UserNoteUpdateArgs>,
       options?: Omit<
         UseMutationOptions<
-          CheckSelect<T, Test, Prisma.TestGetPayload<T>> | undefined,
+          CheckSelect<T, UserNote, Prisma.UserNoteGetPayload<T>> | undefined,
           DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestDeleteArgs>
+          Prisma.SelectSubset<T, Prisma.UserNoteUpdateArgs>
         > &
           ExtraMutationOptions,
         "mutationFn"
       >,
     ) => {
       return (await _mutation.mutateAsync(args, options as any)) as
-        | CheckSelect<T, Test, Prisma.TestGetPayload<T>>
+        | CheckSelect<T, UserNote, Prisma.UserNoteGetPayload<T>>
         | undefined;
     },
   };
   return mutation;
 }
 
-export function useDeleteManyTest(
+export function useUpdateManyUserNote(
   options?: Omit<
     UseMutationOptions<
       Prisma.BatchPayload,
       DefaultError,
-      Prisma.TestDeleteManyArgs
+      Prisma.UserNoteUpdateManyArgs
     > &
       ExtraMutationOptions,
     "mutationFn"
@@ -478,14 +373,14 @@ export function useDeleteManyTest(
 ) {
   const { endpoint, fetch } = getHooksContext();
   const _mutation = useModelMutation<
-    Prisma.TestDeleteManyArgs,
+    Prisma.UserNoteUpdateManyArgs,
     DefaultError,
     Prisma.BatchPayload,
     false
   >(
-    "Test",
-    "DELETE",
-    `${endpoint}/test/deleteMany`,
+    "UserNote",
+    "PUT",
+    `${endpoint}/userNote/updateMany`,
     metadata,
     options,
     fetch,
@@ -493,13 +388,13 @@ export function useDeleteManyTest(
   );
   const mutation = {
     ..._mutation,
-    mutateAsync: async <T extends Prisma.TestDeleteManyArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestDeleteManyArgs>,
+    mutateAsync: async <T extends Prisma.UserNoteUpdateManyArgs>(
+      args: Prisma.SelectSubset<T, Prisma.UserNoteUpdateManyArgs>,
       options?: Omit<
         UseMutationOptions<
           Prisma.BatchPayload,
           DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestDeleteManyArgs>
+          Prisma.SelectSubset<T, Prisma.UserNoteUpdateManyArgs>
         > &
           ExtraMutationOptions,
         "mutationFn"
@@ -514,33 +409,178 @@ export function useDeleteManyTest(
   return mutation;
 }
 
-export function useAggregateTest<
-  TArgs extends Prisma.TestAggregateArgs,
-  TQueryFnData = Prisma.GetTestAggregateType<TArgs>,
+export function useUpsertUserNote(
+  options?: Omit<
+    UseMutationOptions<
+      UserNote | undefined,
+      DefaultError,
+      Prisma.UserNoteUpsertArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.UserNoteUpsertArgs,
+    DefaultError,
+    UserNote,
+    true
+  >(
+    "UserNote",
+    "POST",
+    `${endpoint}/userNote/upsert`,
+    metadata,
+    options,
+    fetch,
+    true,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.UserNoteUpsertArgs>(
+      args: Prisma.SelectSubset<T, Prisma.UserNoteUpsertArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          CheckSelect<T, UserNote, Prisma.UserNoteGetPayload<T>> | undefined,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.UserNoteUpsertArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(args, options as any)) as
+        | CheckSelect<T, UserNote, Prisma.UserNoteGetPayload<T>>
+        | undefined;
+    },
+  };
+  return mutation;
+}
+
+export function useDeleteUserNote(
+  options?: Omit<
+    UseMutationOptions<
+      UserNote | undefined,
+      DefaultError,
+      Prisma.UserNoteDeleteArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.UserNoteDeleteArgs,
+    DefaultError,
+    UserNote,
+    true
+  >(
+    "UserNote",
+    "DELETE",
+    `${endpoint}/userNote/delete`,
+    metadata,
+    options,
+    fetch,
+    true,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.UserNoteDeleteArgs>(
+      args: Prisma.SelectSubset<T, Prisma.UserNoteDeleteArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          CheckSelect<T, UserNote, Prisma.UserNoteGetPayload<T>> | undefined,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.UserNoteDeleteArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(args, options as any)) as
+        | CheckSelect<T, UserNote, Prisma.UserNoteGetPayload<T>>
+        | undefined;
+    },
+  };
+  return mutation;
+}
+
+export function useDeleteManyUserNote(
+  options?: Omit<
+    UseMutationOptions<
+      Prisma.BatchPayload,
+      DefaultError,
+      Prisma.UserNoteDeleteManyArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.UserNoteDeleteManyArgs,
+    DefaultError,
+    Prisma.BatchPayload,
+    false
+  >(
+    "UserNote",
+    "DELETE",
+    `${endpoint}/userNote/deleteMany`,
+    metadata,
+    options,
+    fetch,
+    false,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.UserNoteDeleteManyArgs>(
+      args: Prisma.SelectSubset<T, Prisma.UserNoteDeleteManyArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          Prisma.BatchPayload,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.UserNoteDeleteManyArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(
+        args,
+        options as any,
+      )) as Prisma.BatchPayload;
+    },
+  };
+  return mutation;
+}
+
+export function useAggregateUserNote<
+  TArgs extends Prisma.UserNoteAggregateArgs,
+  TQueryFnData = Prisma.GetUserNoteAggregateType<TArgs>,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args: Prisma.SelectSubset<TArgs, Prisma.TestAggregateArgs>,
+  args: Prisma.SelectSubset<TArgs, Prisma.UserNoteAggregateArgs>,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
     ExtraQueryOptions,
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/aggregate`,
+    "UserNote",
+    `${endpoint}/userNote/aggregate`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseAggregateTest<
-  TArgs extends Prisma.TestAggregateArgs,
-  TQueryFnData = Prisma.GetTestAggregateType<TArgs>,
+export function useSuspenseAggregateUserNote<
+  TArgs extends Prisma.UserNoteAggregateArgs,
+  TQueryFnData = Prisma.GetUserNoteAggregateType<TArgs>,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args: Prisma.SelectSubset<TArgs, Prisma.TestAggregateArgs>,
+  args: Prisma.SelectSubset<TArgs, Prisma.UserNoteAggregateArgs>,
   options?: Omit<
     UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
     "queryKey"
@@ -549,23 +589,23 @@ export function useSuspenseAggregateTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/aggregate`,
+    "UserNote",
+    `${endpoint}/userNote/aggregate`,
     args,
     options,
     fetch,
   );
 }
 
-export function useGroupByTest<
-  TArgs extends Prisma.TestGroupByArgs,
+export function useGroupByUserNote<
+  TArgs extends Prisma.UserNoteGroupByArgs,
   HasSelectOrTake extends Prisma.Or<
     Prisma.Extends<"skip", Prisma.Keys<TArgs>>,
     Prisma.Extends<"take", Prisma.Keys<TArgs>>
   >,
   OrderByArg extends Prisma.True extends HasSelectOrTake
-    ? { orderBy: Prisma.TestGroupByArgs["orderBy"] }
-    : { orderBy?: Prisma.TestGroupByArgs["orderBy"] },
+    ? { orderBy: Prisma.UserNoteGroupByArgs["orderBy"] }
+    : { orderBy?: Prisma.UserNoteGroupByArgs["orderBy"] },
   OrderFields extends Prisma.ExcludeUnderscoreKeys<
     Prisma.Keys<Prisma.MaybeTupleToUnion<TArgs["orderBy"]>>
   >,
@@ -618,13 +658,19 @@ export function useGroupByTest<
               }[OrderFields],
   TQueryFnData = {} extends InputErrors
     ? Array<
-        PickEnumerable<Prisma.TestGroupByOutputType, TArgs["by"]> & {
+        PickEnumerable<Prisma.UserNoteGroupByOutputType, TArgs["by"]> & {
           [P in keyof TArgs &
-            keyof Prisma.TestGroupByOutputType]: P extends "_count"
+            keyof Prisma.UserNoteGroupByOutputType]: P extends "_count"
             ? TArgs[P] extends boolean
               ? number
-              : Prisma.GetScalarType<TArgs[P], Prisma.TestGroupByOutputType[P]>
-            : Prisma.GetScalarType<TArgs[P], Prisma.TestGroupByOutputType[P]>;
+              : Prisma.GetScalarType<
+                  TArgs[P],
+                  Prisma.UserNoteGroupByOutputType[P]
+                >
+            : Prisma.GetScalarType<
+                TArgs[P],
+                Prisma.UserNoteGroupByOutputType[P]
+              >;
         }
       >
     : InputErrors,
@@ -633,7 +679,7 @@ export function useGroupByTest<
 >(
   args: Prisma.SelectSubset<
     TArgs,
-    Prisma.SubsetIntersection<TArgs, Prisma.TestGroupByArgs, OrderByArg> &
+    Prisma.SubsetIntersection<TArgs, Prisma.UserNoteGroupByArgs, OrderByArg> &
       InputErrors
   >,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
@@ -641,23 +687,23 @@ export function useGroupByTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/groupBy`,
+    "UserNote",
+    `${endpoint}/userNote/groupBy`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseGroupByTest<
-  TArgs extends Prisma.TestGroupByArgs,
+export function useSuspenseGroupByUserNote<
+  TArgs extends Prisma.UserNoteGroupByArgs,
   HasSelectOrTake extends Prisma.Or<
     Prisma.Extends<"skip", Prisma.Keys<TArgs>>,
     Prisma.Extends<"take", Prisma.Keys<TArgs>>
   >,
   OrderByArg extends Prisma.True extends HasSelectOrTake
-    ? { orderBy: Prisma.TestGroupByArgs["orderBy"] }
-    : { orderBy?: Prisma.TestGroupByArgs["orderBy"] },
+    ? { orderBy: Prisma.UserNoteGroupByArgs["orderBy"] }
+    : { orderBy?: Prisma.UserNoteGroupByArgs["orderBy"] },
   OrderFields extends Prisma.ExcludeUnderscoreKeys<
     Prisma.Keys<Prisma.MaybeTupleToUnion<TArgs["orderBy"]>>
   >,
@@ -710,13 +756,19 @@ export function useSuspenseGroupByTest<
               }[OrderFields],
   TQueryFnData = {} extends InputErrors
     ? Array<
-        PickEnumerable<Prisma.TestGroupByOutputType, TArgs["by"]> & {
+        PickEnumerable<Prisma.UserNoteGroupByOutputType, TArgs["by"]> & {
           [P in keyof TArgs &
-            keyof Prisma.TestGroupByOutputType]: P extends "_count"
+            keyof Prisma.UserNoteGroupByOutputType]: P extends "_count"
             ? TArgs[P] extends boolean
               ? number
-              : Prisma.GetScalarType<TArgs[P], Prisma.TestGroupByOutputType[P]>
-            : Prisma.GetScalarType<TArgs[P], Prisma.TestGroupByOutputType[P]>;
+              : Prisma.GetScalarType<
+                  TArgs[P],
+                  Prisma.UserNoteGroupByOutputType[P]
+                >
+            : Prisma.GetScalarType<
+                TArgs[P],
+                Prisma.UserNoteGroupByOutputType[P]
+              >;
         }
       >
     : InputErrors,
@@ -725,7 +777,7 @@ export function useSuspenseGroupByTest<
 >(
   args: Prisma.SelectSubset<
     TArgs,
-    Prisma.SubsetIntersection<TArgs, Prisma.TestGroupByArgs, OrderByArg> &
+    Prisma.SubsetIntersection<TArgs, Prisma.UserNoteGroupByArgs, OrderByArg> &
       InputErrors
   >,
   options?: Omit<
@@ -736,55 +788,55 @@ export function useSuspenseGroupByTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/groupBy`,
+    "UserNote",
+    `${endpoint}/userNote/groupBy`,
     args,
     options,
     fetch,
   );
 }
 
-export function useCountTest<
-  TArgs extends Prisma.TestCountArgs,
+export function useCountUserNote<
+  TArgs extends Prisma.UserNoteCountArgs,
   TQueryFnData = TArgs extends { select: any }
     ? TArgs["select"] extends true
       ? number
       : Prisma.GetScalarType<
           TArgs["select"],
-          Prisma.TestCountAggregateOutputType
+          Prisma.UserNoteCountAggregateOutputType
         >
     : number,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestCountArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserNoteCountArgs>,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
     ExtraQueryOptions,
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/count`,
+    "UserNote",
+    `${endpoint}/userNote/count`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseCountTest<
-  TArgs extends Prisma.TestCountArgs,
+export function useSuspenseCountUserNote<
+  TArgs extends Prisma.UserNoteCountArgs,
   TQueryFnData = TArgs extends { select: any }
     ? TArgs["select"] extends true
       ? number
       : Prisma.GetScalarType<
           TArgs["select"],
-          Prisma.TestCountAggregateOutputType
+          Prisma.UserNoteCountAggregateOutputType
         >
     : number,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestCountArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserNoteCountArgs>,
   options?: Omit<
     UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
     "queryKey"
@@ -793,27 +845,25 @@ export function useSuspenseCountTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/count`,
+    "UserNote",
+    `${endpoint}/userNote/count`,
     args,
     options,
     fetch,
   );
 }
 
-export function useCheckTest<TError = DefaultError>(
+export function useCheckUserNote<TError = DefaultError>(
   args: {
     operation: PolicyCrudKind;
     where?: {
       id?: string;
       description?: string;
-      name?: string;
-      duration?: number;
-      maxAttempts?: number;
-      maxScore?: number;
-      shuffleQuestions?: boolean;
-      shuffleAnswers?: boolean;
-      passScore?: number;
+      userId?: string;
+      componentId?: string;
+      content?: string;
+      isPrivate?: boolean;
+      tags?: string;
     };
   },
   options?: Omit<UseQueryOptions<boolean, TError, boolean>, "queryKey"> &
@@ -821,8 +871,8 @@ export function useCheckTest<TError = DefaultError>(
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<boolean, boolean, TError>(
-    "Test",
-    `${endpoint}/test/check`,
+    "UserNote",
+    `${endpoint}/userNote/check`,
     args,
     options,
     fetch,

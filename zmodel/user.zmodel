@@ -29,10 +29,12 @@ model User extends Base {
   testResults     TestResult[]
   gradedResults   TestResult[]   @relation("GradedBy")
   adminCourseManagers AdminCourseManager[]
+  userNotes       UserNote[]
   
   // Created content
   createdCourses  Course[]       @relation("CourseCreator")
   createdLessons  Lesson[]       @relation("LessonCreator")
+  uploadedFiles   MediaFile[]    @relation("MediaUploader")
 
   @@unique([email, phone])
   @@auth

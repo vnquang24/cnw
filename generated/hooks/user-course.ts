@@ -869,6 +869,7 @@ export function useCheckUserCourse<TError = DefaultError>(
       enrolmentStatus?: EnrolmentStatus;
       progress?: number;
       reason?: string;
+      extensionRequest?: boolean;
     };
   },
   options?: Omit<UseQueryOptions<boolean, TError, boolean>, "queryKey"> &

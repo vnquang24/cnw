@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -19,6 +19,8 @@ import {
   Tag,
   Typography,
 } from "antd";
+import { StatusTag } from "@/components/ui/status-tag";
+import { InfoBadge } from "@/components/ui/info-badge";
 import {
   BookOpen,
   ChevronLeft,
@@ -35,11 +37,26 @@ import { getUserId } from "@/lib/auth";
 
 const { Title, Text, Paragraph } = Typography;
 
-const lessonStatusConfig: Record<string, { label: string; color: string }> = {
-  TODO: { label: "Chưa học", color: "default" },
-  DOING: { label: "Đang học", color: "blue" },
-  PASS: { label: "Hoàn thành", color: "green" },
-  FAIL: { label: "Cần ôn lại", color: "volcano" },
+const lessonStatusConfig: Record<
+  string,
+  {
+    label: string;
+    status: "success" | "error" | "warning" | "info" | "default";
+    icon: React.ReactNode;
+  }
+> = {
+  TODO: { label: "Chưa học", status: "default", icon: <BookOpen size={14} /> },
+  DOING: { label: "Đang học", status: "info", icon: <Compass size={14} /> },
+  PASS: {
+    label: "Hoàn thành",
+    status: "success",
+    icon: <BookOpen size={14} />,
+  },
+  FAIL: {
+    label: "Cần ôn lại",
+    status: "warning",
+    icon: <BookOpen size={14} />,
+  },
 };
 
 export default function CourseDetailPage() {
@@ -170,10 +187,20 @@ export default function CourseDetailPage() {
                   <Title level={3} style={{ margin: 0 }}>
                     {course.title}
                   </Title>
-                  <Text type="secondary">
-                    Thời lượng: {course.duration} phút ·{" "}
-                    {course.lessons?.length || 0} bài học
-                  </Text>
+                  <Space size={16} wrap>
+                    <InfoBadge
+                      icon={<BookOpen size={14} />}
+                      text={`${course.duration} phút`}
+                      type="secondary"
+                      size="small"
+                    />
+                    <InfoBadge
+                      icon={<Layers size={14} />}
+                      text={`${course.lessons?.length || 0} bài học`}
+                      type="secondary"
+                      size="small"
+                    />
+                  </Space>
                 </div>
               </Space>
               {course.description && (
@@ -181,16 +208,15 @@ export default function CourseDetailPage() {
                   {course.description}
                 </Paragraph>
               )}
-              <Space size={8} align="center">
-                <UserRound size={16} className="text-gray-500" />
-                <Text type="secondary">
-                  Giảng viên: {course.creator?.name || "Chưa cập nhật"}
-                </Text>
-              </Space>
+              <InfoBadge
+                icon={<UserRound size={16} />}
+                text={`Giảng viên: ${course.creator?.name || "Chưa cập nhật"}`}
+                type="secondary"
+              />
             </Space>
           </Col>
           <Col xs={24} md={6}>
-            <Card bordered={false} className="bg-gray-50">
+            <Card variant="borderless" className="bg-gray-50">
               <Space direction="vertical" size={8} style={{ width: "100%" }}>
                 <Statistic
                   title="Tiến độ khóa học"
@@ -202,9 +228,11 @@ export default function CourseDetailPage() {
                   status={progressValue === 100 ? "success" : undefined}
                 />
                 {enrolmentInfo?.enrolmentStatus && (
-                  <Tag color="geekblue" style={{ width: "fit-content" }}>
-                    {enrolmentInfo.enrolmentStatus}
-                  </Tag>
+                  <StatusTag
+                    status="info"
+                    text={enrolmentInfo.enrolmentStatus}
+                    minWidth={100}
+                  />
                 )}
               </Space>
             </Card>
@@ -214,7 +242,14 @@ export default function CourseDetailPage() {
 
       <Card
         title="Danh sách bài học"
-        extra={`${course.lessons?.length || 0} bài`}
+        extra={
+          <InfoBadge
+            icon={<BookOpen size={14} />}
+            text={`${course.lessons?.length || 0} bài`}
+            type="default"
+            size="small"
+          />
+        }
       >
         {course.lessons?.length ? (
           <List
@@ -240,31 +275,35 @@ export default function CourseDetailPage() {
                 >
                   <List.Item.Meta
                     avatar={
-                      <Tag color="blue">Bài {lesson.position ?? index + 1}</Tag>
+                      <StatusTag
+                        status={"default"}
+                        text={`Bài ${lesson.position ?? index + 1}`}
+                        minWidth={70}
+                      />
                     }
                     title={
                       <Space size={8} wrap>
                         <Text strong>{lesson.title}</Text>
-                        <Tag color={status.color}>{status.label}</Tag>
+                        <StatusTag
+                          status={status.status}
+                          icon={status.icon}
+                          text={status.label}
+                          minWidth={100}
+                        />
                       </Space>
                     }
                     description={
                       <Space size={16} wrap>
-                        <Space size={6}>
-                          <Layers size={16} className="text-gray-500" />
-                          <Text type="secondary">
-                            {componentCount} nội dung
-                          </Text>
-                        </Space>
-                        <Space size={6}>
-                          <Compass size={16} className="text-gray-500" />
-                          <Text type="secondary">
-                            Cập nhật{" "}
-                            {new Date(lesson.updatedAt).toLocaleDateString(
-                              "vi-VN",
-                            )}
-                          </Text>
-                        </Space>
+                        <InfoBadge
+                          icon={<Layers size={16} />}
+                          text={`${componentCount} nội dung`}
+                          type="secondary"
+                        />
+                        <InfoBadge
+                          icon={<Compass size={16} />}
+                          text={`Cập nhật ${new Date(lesson.updatedAt).toLocaleDateString("vi-VN")}`}
+                          type="secondary"
+                        />
                       </Space>
                     }
                   />

@@ -15,6 +15,7 @@ import {
   Modal,
   Progress,
   Row,
+  Segmented,
   Space,
   Spin,
   Statistic,
@@ -35,7 +36,10 @@ import {
   Calendar,
   AlertTriangle,
   Send,
+  LayoutGrid,
+  List as ListIcon,
 } from "lucide-react";
+import type { Prisma } from "@prisma/client";
 import {
   useFindManyUserCourse,
   useFindManyCourse,
@@ -45,8 +49,21 @@ import {
 import { getUserId } from "@/lib/auth";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import { InfoBadge } from "@/components/ui/info-badge";
 
 const { Title, Text } = Typography;
+
+// Type definition for UserCourse with relations
+type UserCourseWithRelations = Prisma.UserCourseGetPayload<{
+  include: {
+    course: {
+      include: {
+        lessons: true;
+        creator: true;
+      };
+    };
+  };
+}>;
 
 const statusColorMap: Record<string, string> = {
   PENDING: "blue",
@@ -62,6 +79,7 @@ function UserCoursesContent() {
   const [userId, setUserId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("my-courses");
   const [searchText, setSearchText] = useState("");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   useEffect(() => {
     setUserId(getUserId());
@@ -298,45 +316,45 @@ function UserCoursesContent() {
     switch (status) {
       case "PENDING":
         return {
-          color: "blue",
+          color: "blue" as const,
+          badgeType: "warning" as const,
           text: "Chờ phê duyệt",
-          icon: <Clock size={16} className="inline mr-1" />,
-          description: "Yêu cầu đăng ký của bạn đang chờ admin phê duyệt.",
+          icon: <Clock size={14} />,
         };
       case "APPROVED":
         return {
-          color: "geekblue",
+          color: "geekblue" as const,
+          badgeType: "success" as const,
           text: "Đã phê duyệt",
-          icon: <CheckCircle size={16} className="inline mr-1" />,
-          description: "Khóa học đã được phê duyệt. Bạn có thể bắt đầu học.",
+          icon: <CheckCircle size={14} />,
         };
       case "REJECTED":
         return {
-          color: "red",
+          color: "red" as const,
+          badgeType: "danger" as const,
           text: "Bị từ chối",
-          icon: <XCircle size={16} className="inline mr-1" />,
-          description: "Yêu cầu đăng ký của bạn đã bị từ chối.",
+          icon: <XCircle size={14} />,
         };
       case "IN_PROGRESS":
         return {
-          color: "gold",
+          color: "gold" as const,
+          badgeType: "warning" as const,
           text: "Đang học",
-          icon: <BookOpen size={16} className="inline mr-1" />,
-          description: "Bạn đang trong quá trình học khóa học này.",
+          icon: <BookOpen size={14} />,
         };
       case "COMPLETED":
         return {
-          color: "green",
+          color: "green" as const,
+          badgeType: "success" as const,
           text: "Đã hoàn thành",
-          icon: <CheckCircle size={16} className="inline mr-1" />,
-          description: "Bạn đã hoàn thành khóa học này.",
+          icon: <CheckCircle size={14} />,
         };
       default:
         return {
-          color: "default",
+          color: "default" as const,
+          badgeType: "default" as const,
           text: status,
-          icon: <AlertCircle size={16} className="inline mr-1" />,
-          description: "",
+          icon: <AlertCircle size={14} />,
         };
     }
   };
@@ -383,318 +401,644 @@ function UserCoursesContent() {
     }
 
     return (
-      <Space direction="vertical" size="large" style={{ width: "100%" }}>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
+      <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "12px",
+          }}
+        >
+          <div style={{ flex: 1 }} />
+          <Segmented
+            value={viewMode}
+            onChange={(value) => setViewMode(value as "grid" | "list")}
+            options={[
+              {
+                label: (
+                  <span style={{ padding: "0 8px" }}>
+                    <LayoutGrid
+                      size={16}
+                      className="inline mr-1"
+                      style={{ verticalAlign: "middle" }}
+                    />
+                    Lưới
+                  </span>
+                ),
+                value: "grid",
+              },
+              {
+                label: (
+                  <span style={{ padding: "0 8px" }}>
+                    <ListIcon
+                      size={16}
+                      className="inline mr-1"
+                      style={{ verticalAlign: "middle" }}
+                    />
+                    Danh sách
+                  </span>
+                ),
+                value: "list",
+              },
+            ]}
+          />
+        </div>
+
+        <Row gutter={[12, 12]}>
+          <Col xs={12} sm={8} lg={4}>
+            <Card size="small" bodyStyle={{ padding: "12px" }}>
               <Statistic
-                title="Tổng số khóa học"
+                title="Tổng số"
                 value={totals.totalCourses}
-                prefix={<BookOpen size={18} className="text-blue-500" />}
+                prefix={<BookOpen size={16} className="text-blue-500" />}
+                valueStyle={{ fontSize: "20px" }}
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
+          <Col xs={12} sm={8} lg={4}>
+            <Card size="small" bodyStyle={{ padding: "12px" }}>
               <Statistic
                 title="Đang học"
                 value={totals.inProgress}
-                prefix={<Clock size={18} className="text-amber-500" />}
+                prefix={<Clock size={16} className="text-amber-500" />}
+                valueStyle={{ fontSize: "20px" }}
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
+          <Col xs={12} sm={8} lg={4}>
+            <Card size="small" bodyStyle={{ padding: "12px" }}>
               <Statistic
-                title="Đã hoàn thành"
+                title="Hoàn thành"
                 value={totals.completedCourses}
                 prefix={
-                  <GraduationCap size={18} className="text-emerald-500" />
+                  <GraduationCap size={16} className="text-emerald-500" />
                 }
+                valueStyle={{ fontSize: "20px" }}
               />
             </Card>
           </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card>
+          <Col xs={12} sm={8} lg={4}>
+            <Card size="small" bodyStyle={{ padding: "12px" }}>
               <Statistic
-                title="Tiến độ trung bình"
+                title="Tiến độ TB"
                 value={totals.averageProgress}
                 suffix="%"
-                prefix={<TrendingUp size={18} className="text-purple-500" />}
+                prefix={<TrendingUp size={16} className="text-purple-500" />}
+                valueStyle={{ fontSize: "20px" }}
               />
             </Card>
           </Col>
           {totals.pending > 0 && (
-            <Col xs={24} sm={12} lg={6}>
-              <Card>
+            <Col xs={12} sm={8} lg={4}>
+              <Card size="small" bodyStyle={{ padding: "12px" }}>
                 <Statistic
-                  title="Chờ phê duyệt"
+                  title="Chờ duyệt"
                   value={totals.pending}
-                  prefix={<Clock size={18} className="text-blue-500" />}
-                  valueStyle={{ color: "#1677ff" }}
+                  prefix={<Clock size={16} className="text-blue-500" />}
+                  valueStyle={{ color: "#1677ff", fontSize: "20px" }}
                 />
               </Card>
             </Col>
           )}
           {totals.rejected > 0 && (
-            <Col xs={24} sm={12} lg={6}>
-              <Card>
+            <Col xs={12} sm={8} lg={4}>
+              <Card size="small" bodyStyle={{ padding: "12px" }}>
                 <Statistic
-                  title="Bị từ chối"
+                  title="Từ chối"
                   value={totals.rejected}
-                  prefix={<XCircle size={18} className="text-red-500" />}
-                  valueStyle={{ color: "#ff4d4f" }}
+                  prefix={<XCircle size={16} className="text-red-500" />}
+                  valueStyle={{ color: "#ff4d4f", fontSize: "20px" }}
                 />
               </Card>
             </Col>
           )}
         </Row>
 
-        <List
-          dataSource={enrolments}
-          renderItem={(item) => {
-            const course = item.course;
-            if (!course) return null;
-            const lessonsCount = course.lessons?.length ?? 0;
-            const progressValue = Math.min(item.progress ?? 0, 100);
-            const statusInfo = getStatusInfo(item.enrolmentStatus);
+        {viewMode === "grid" ? (
+          <List
+            grid={{
+              gutter: 12,
+              xs: 1,
+              sm: 2,
+              md: 2,
+              lg: 3,
+              xl: 4,
+              xxl: 4,
+            }}
+            dataSource={enrolments}
+            renderItem={(item) => {
+              const course = item.course;
+              if (!course) return null;
+              const lessonsCount = course.lessons?.length ?? 0;
+              const progressValue = Math.min(item.progress ?? 0, 100);
 
-            // Determine if user can access the course
-            const canAccessCourse =
-              ["APPROVED", "IN_PROGRESS", "COMPLETED"].includes(
-                item.enrolmentStatus,
-              ) && !isExpired(item.endDate);
-            const showCompleteButton =
-              progressValue >= 100 && item.enrolmentStatus === "IN_PROGRESS";
-            const showExpiryWarning =
-              isExpiringSoon(item.endDate) || isExpired(item.endDate);
-            const courseExpired = isExpired(item.endDate);
+              const canAccessCourse =
+                ["APPROVED", "IN_PROGRESS", "COMPLETED"].includes(
+                  item.enrolmentStatus,
+                ) && !isExpired(item.endDate);
+              const showCompleteButton =
+                progressValue >= 100 && item.enrolmentStatus === "IN_PROGRESS";
+              const courseExpired = isExpired(item.endDate);
+              const isExpiringSoonFlag = isExpiringSoon(item.endDate);
 
-            return (
-              <List.Item>
-                <Card className="w-full" hoverable>
-                  <Row gutter={[16, 16]} align="middle">
-                    <Col xs={24} md={18}>
-                      <Space
-                        direction="vertical"
-                        size={8}
-                        style={{ width: "100%" }}
+              const getPrimaryStatus = () => {
+                if (
+                  courseExpired &&
+                  ["APPROVED", "IN_PROGRESS"].includes(item.enrolmentStatus)
+                ) {
+                  return {
+                    color: "red" as const,
+                    badgeType: "danger" as const,
+                    icon: <AlertTriangle size={12} />,
+                    text: "Đã hết hạn",
+                    showExtensionButton: true,
+                  };
+                }
+                if (item.enrolmentStatus === "REJECTED") {
+                  return {
+                    color: "red" as const,
+                    badgeType: "danger" as const,
+                    icon: <XCircle size={12} />,
+                    text: "Bị từ chối",
+                    showReason: true,
+                  };
+                }
+                if (item.enrolmentStatus === "PENDING") {
+                  return {
+                    color: "blue" as const,
+                    badgeType: "warning" as const,
+                    icon: <Clock size={12} />,
+                    text: "Chờ phê duyệt",
+                  };
+                }
+                if (
+                  isExpiringSoonFlag &&
+                  ["APPROVED", "IN_PROGRESS"].includes(item.enrolmentStatus)
+                ) {
+                  return {
+                    color: "orange" as const,
+                    badgeType: "warning" as const,
+                    icon: <Clock size={12} />,
+                    text: dayjs(item.endDate).format("DD/MM/YY"),
+                    showExtensionButton: true,
+                  };
+                }
+                if (item.enrolmentStatus === "COMPLETED") {
+                  return {
+                    color: "green" as const,
+                    badgeType: "success" as const,
+                    icon: <CheckCircle size={12} />,
+                    text: "Hoàn thành",
+                  };
+                }
+                return {
+                  color: "gold" as const,
+                  badgeType: "warning" as const,
+                  icon: <BookOpen size={12} />,
+                  text: "Đang học",
+                };
+              };
+
+              const primaryStatus = getPrimaryStatus();
+
+              return (
+                <List.Item>
+                  <Card
+                    hoverable
+                    size="small"
+                    bodyStyle={{ padding: "12px" }}
+                    actions={[
+                      <Link key="access" href={`/user/courses/${course.id}`}>
+                        <Button
+                          type="primary"
+                          size="small"
+                          style={{ width: "90%" }}
+                          disabled={!canAccessCourse}
+                        >
+                          {item.enrolmentStatus === "COMPLETED"
+                            ? "Xem lại"
+                            : "Vào học"}
+                        </Button>
+                      </Link>,
+                    ]}
+                  >
+                    <Space
+                      direction="vertical"
+                      size={8}
+                      style={{ width: "100%" }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
                       >
-                        <Space align="center" size={12}>
-                          <Avatar
-                            shape="square"
-                            size={56}
-                            style={{ background: "#1677ff10" }}
-                          >
-                            <BookOpen size={24} className="text-blue-600" />
-                          </Avatar>
-                          <div>
-                            <Title level={4} style={{ margin: 0 }}>
-                              {course.title}
-                            </Title>
-                            <Text type="secondary">
-                              {lessonsCount} bài học · {course.duration} phút
-                            </Text>
-                          </div>
-                        </Space>
+                        <Avatar
+                          shape="square"
+                          size={40}
+                          style={{ background: "#1677ff10", flexShrink: 0 }}
+                        >
+                          <BookOpen size={20} className="text-blue-600" />
+                        </Avatar>
+                        <Title
+                          level={5}
+                          style={{
+                            margin: 0,
+                            fontSize: "14px",
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {course.title}
+                        </Title>
+                      </div>
 
-                        <Alert
-                          message={
-                            <span>
-                              {statusInfo.icon}
-                              {statusInfo.text}
-                            </span>
-                          }
-                          description={statusInfo.description}
-                          type={
-                            item.enrolmentStatus === "REJECTED"
-                              ? "error"
-                              : item.enrolmentStatus === "PENDING"
-                                ? "info"
-                                : item.enrolmentStatus === "COMPLETED"
-                                  ? "success"
-                                  : "info"
-                          }
-                          showIcon={false}
-                          style={{ fontSize: "12px" }}
+                      <Space size={4} wrap>
+                        <InfoBadge
+                          icon={<BookOpen size={11} />}
+                          text={`${lessonsCount} bài`}
+                          size="small"
                         />
-
-                        {/* Expiry warning */}
-                        {showExpiryWarning && (
-                          <Alert
-                            message={
-                              courseExpired ? (
-                                <span>
-                                  <AlertTriangle
-                                    size={14}
-                                    className="inline mr-1"
-                                  />
-                                  Khóa học đã hết hạn
-                                </span>
-                              ) : (
-                                <span>
-                                  <Clock size={14} className="inline mr-1" />
-                                  Sắp hết hạn:{" "}
-                                  {dayjs(item.endDate).format("DD/MM/YYYY")}
-                                </span>
-                              )
-                            }
-                            description={
-                              <div style={{ fontSize: "12px" }}>
-                                {courseExpired
-                                  ? "Khóa học đã hết hạn. Vui lòng gửi yêu cầu gia hạn để tiếp tục học."
-                                  : "Khóa học sắp hết hạn. Bạn có thể gửi yêu cầu gia hạn."}
-                                <div className="mt-2">
-                                  <Button
-                                    size="small"
-                                    type={
-                                      item.extensionRequest
-                                        ? "default"
-                                        : "primary"
-                                    }
-                                    icon={<Send size={14} />}
-                                    onClick={() =>
-                                      handleRequestExtension(
-                                        item.id,
-                                        course.title,
-                                        item.extensionRequest || false,
-                                      )
-                                    }
-                                    loading={updateEnrolment.isPending}
-                                    disabled={item.extensionRequest}
-                                  >
-                                    {item.extensionRequest
-                                      ? "Đã gửi yêu cầu"
-                                      : "Gửi yêu cầu gia hạn"}
-                                  </Button>
-                                </div>
-                              </div>
-                            }
-                            type={courseExpired ? "error" : "warning"}
-                            showIcon
-                            style={{ fontSize: "12px" }}
-                          />
-                        )}
-
-                        {item.enrolmentStatus === "REJECTED" && item.reason && (
-                          <Alert
-                            message="Lý do từ chối"
-                            description={item.reason}
-                            type="error"
-                            showIcon
-                            style={{ fontSize: "12px" }}
-                          />
-                        )}
-
-                        {canAccessCourse && (
-                          <>
-                            <div>
-                              <Text type="secondary">Tiến độ khóa học</Text>
-                              <Progress
-                                percent={progressValue}
-                                status={
-                                  progressValue === 100 ? "success" : undefined
-                                }
-                              />
-                            </div>
-
-                            <Space>
-                              <Link href={`/user/courses/${course.id}`}>
-                                <Button type="primary">
-                                  {item.enrolmentStatus === "COMPLETED"
-                                    ? "Xem lại"
-                                    : "Vào học"}
-                                </Button>
-                              </Link>
-
-                              {showCompleteButton && (
-                                <Button
-                                  type="default"
-                                  icon={<CheckCircle size={16} />}
-                                  onClick={() =>
-                                    handleCompleteCourse(item.id, course.title)
-                                  }
-                                  loading={updateEnrolment.isPending}
-                                  style={{
-                                    borderColor: "#52c41a",
-                                    color: "#52c41a",
-                                  }}
-                                >
-                                  Hoàn thành khóa học
-                                </Button>
-                              )}
-                            </Space>
-                          </>
-                        )}
-
-                        {courseExpired && (
-                          <Alert
-                            message="Không thể truy cập"
-                            description="Khóa học đã hết hạn. Vui lòng gửi yêu cầu gia hạn để tiếp tục học."
-                            type="error"
-                            showIcon
-                            style={{ fontSize: "12px" }}
-                          />
-                        )}
-
-                        {item.enrolmentStatus === "PENDING" && (
-                          <Button disabled>
-                            <Clock size={16} className="inline mr-2" />
-                            Chờ phê duyệt
-                          </Button>
-                        )}
+                        <InfoBadge
+                          icon={<Clock size={11} />}
+                          text={`${course.duration}'`}
+                          size="small"
+                        />
                       </Space>
-                    </Col>
-                    <Col xs={24} md={6}>
-                      <Card bordered={false} className="bg-gray-50">
-                        <Space direction="vertical" size={6}>
-                          <Text type="secondary">Giảng viên</Text>
-                          <Space align="center">
-                            <Avatar
-                              size={32}
-                              style={{ backgroundColor: "#52c41a" }}
-                            >
-                              {course.creator?.name?.charAt(0) || "G"}
-                            </Avatar>
-                            <Text>
-                              {course.creator?.name || "Chưa cập nhật"}
-                            </Text>
-                          </Space>
-                          <Text type="secondary">Ngày đăng ký</Text>
-                          <Text>
-                            {new Date(item.createdAt).toLocaleDateString(
-                              "vi-VN",
-                            )}
-                          </Text>
+
+                      <Space size={4} align="center">
+                        <Avatar
+                          size={20}
+                          style={{
+                            backgroundColor: "#52c41a",
+                            fontSize: "10px",
+                          }}
+                        >
+                          {course.creator?.name?.charAt(0) || "G"}
+                        </Avatar>
+                        <Text type="secondary" style={{ fontSize: "11px" }}>
+                          {course.creator?.name || "N/A"}
+                        </Text>
+                      </Space>
+
+                      <InfoBadge
+                        icon={primaryStatus.icon}
+                        text={primaryStatus.text}
+                        type={primaryStatus.badgeType}
+                        size="small"
+                      />
+
+                      {primaryStatus.showReason && item.reason && (
+                        <Text type="danger" style={{ fontSize: "11px" }}>
+                          {item.reason}
+                        </Text>
+                      )}
+
+                      {canAccessCourse && (
+                        <Progress
+                          percent={progressValue}
+                          size="small"
+                          status={progressValue === 100 ? "success" : undefined}
+                          style={{ margin: 0 }}
+                        />
+                      )}
+
+                      {primaryStatus.showExtensionButton && (
+                        <Button
+                          block
+                          size="small"
+                          type={item.extensionRequest ? "default" : "dashed"}
+                          icon={<Send size={12} />}
+                          onClick={() =>
+                            handleRequestExtension(
+                              item.id,
+                              course.title,
+                              item.extensionRequest || false,
+                            )
+                          }
+                          loading={updateEnrolment.isPending}
+                          disabled={item.extensionRequest}
+                        >
+                          {item.extensionRequest ? "Đã gửi" : "Gia hạn"}
+                        </Button>
+                      )}
+
+                      {showCompleteButton && (
+                        <Button
+                          block
+                          size="small"
+                          type="default"
+                          icon={<CheckCircle size={12} />}
+                          onClick={() =>
+                            handleCompleteCourse(item.id, course.title)
+                          }
+                          loading={updateEnrolment.isPending}
+                          style={{ borderColor: "#52c41a", color: "#52c41a" }}
+                        >
+                          Hoàn thành
+                        </Button>
+                      )}
+
+                      {(item.startDate || item.endDate) && (
+                        <Space size={4} wrap>
                           {item.startDate && (
-                            <>
-                              <Text type="secondary">Ngày bắt đầu</Text>
-                              <Text>
-                                {new Date(item.startDate).toLocaleDateString(
-                                  "vi-VN",
-                                )}
-                              </Text>
-                            </>
+                            <InfoBadge
+                              icon={<Calendar size={10} />}
+                              text={dayjs(item.startDate).format("DD/MM/YY")}
+                              size="small"
+                            />
                           )}
                           {item.endDate && (
-                            <>
-                              <Text type="secondary">Ngày kết thúc</Text>
-                              <Text>
-                                {new Date(item.endDate).toLocaleDateString(
-                                  "vi-VN",
-                                )}
-                              </Text>
-                            </>
+                            <InfoBadge
+                              icon={<Calendar size={10} />}
+                              text={dayjs(item.endDate).format("DD/MM/YY")}
+                              size="small"
+                            />
                           )}
                         </Space>
-                      </Card>
-                    </Col>
-                  </Row>
-                </Card>
-              </List.Item>
-            );
-          }}
-        />
+                      )}
+                    </Space>
+                  </Card>
+                </List.Item>
+              );
+            }}
+          />
+        ) : (
+          <List
+            dataSource={enrolments}
+            renderItem={(item) => {
+              const course = item.course;
+              if (!course) return null;
+              const lessonsCount = course.lessons?.length ?? 0;
+              const progressValue = Math.min(item.progress ?? 0, 100);
+
+              // Determine if user can access the course
+              const canAccessCourse =
+                ["APPROVED", "IN_PROGRESS", "COMPLETED"].includes(
+                  item.enrolmentStatus,
+                ) && !isExpired(item.endDate);
+              const showCompleteButton =
+                progressValue >= 100 && item.enrolmentStatus === "IN_PROGRESS";
+              const courseExpired = isExpired(item.endDate);
+              const isExpiringSoonFlag = isExpiringSoon(item.endDate);
+
+              // Priority-based status display (only show the most important one)
+              const getPrimaryStatus = () => {
+                // 1. Expired (highest priority if applicable)
+                if (
+                  courseExpired &&
+                  ["APPROVED", "IN_PROGRESS"].includes(item.enrolmentStatus)
+                ) {
+                  return {
+                    color: "red" as const,
+                    badgeType: "danger" as const,
+                    icon: <AlertTriangle size={14} />,
+                    text: "Đã hết hạn",
+                    showExtensionButton: true,
+                  };
+                }
+
+                // 2. Rejected
+                if (item.enrolmentStatus === "REJECTED") {
+                  return {
+                    color: "red" as const,
+                    badgeType: "danger" as const,
+                    icon: <XCircle size={14} />,
+                    text: "Bị từ chối",
+                    showReason: true,
+                  };
+                }
+
+                // 3. Pending
+                if (item.enrolmentStatus === "PENDING") {
+                  return {
+                    color: "blue" as const,
+                    badgeType: "warning" as const,
+                    icon: <Clock size={14} />,
+                    text: "Chờ phê duyệt",
+                  };
+                }
+
+                // 4. Expiring soon
+                if (
+                  isExpiringSoonFlag &&
+                  ["APPROVED", "IN_PROGRESS"].includes(item.enrolmentStatus)
+                ) {
+                  return {
+                    color: "orange" as const,
+                    badgeType: "warning" as const,
+                    icon: <Clock size={14} />,
+                    text: `Hết hạn: ${dayjs(item.endDate).format("DD/MM/YYYY")}`,
+                    showExtensionButton: true,
+                  };
+                }
+
+                // 5. Completed
+                if (item.enrolmentStatus === "COMPLETED") {
+                  return {
+                    color: "green" as const,
+                    badgeType: "success" as const,
+                    icon: <CheckCircle size={14} />,
+                    text: "Đã hoàn thành",
+                  };
+                }
+
+                // 6. In Progress (default for approved/in_progress)
+                return {
+                  color: "gold" as const,
+                  badgeType: "warning" as const,
+                  icon: <BookOpen size={14} />,
+                  text: "Đang học",
+                };
+              };
+
+              const primaryStatus = getPrimaryStatus();
+
+              return (
+                <List.Item style={{ padding: "8px 0" }}>
+                  <Card
+                    className="w-full"
+                    hoverable
+                    size="small"
+                    bodyStyle={{ padding: "12px" }}
+                  >
+                    <Space
+                      direction="vertical"
+                      size={8}
+                      style={{ width: "100%" }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: "12px",
+                        }}
+                      >
+                        <Avatar
+                          shape="square"
+                          size={48}
+                          style={{ background: "#1677ff10", flexShrink: 0 }}
+                        >
+                          <BookOpen size={24} className="text-blue-600" />
+                        </Avatar>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <Title
+                            level={5}
+                            style={{ margin: 0, marginBottom: "4px" }}
+                          >
+                            {course.title}
+                          </Title>
+                          <Space size={6} wrap>
+                            <InfoBadge
+                              icon={<BookOpen size={12} />}
+                              text={`${lessonsCount} bài`}
+                              size="small"
+                            />
+                            <InfoBadge
+                              icon={<Clock size={12} />}
+                              text={`${course.duration}'`}
+                              size="small"
+                            />
+                            <Space
+                              size={4}
+                              align="center"
+                              style={{ fontSize: "12px" }}
+                            >
+                              <Avatar
+                                size={16}
+                                style={{
+                                  backgroundColor: "#52c41a",
+                                  fontSize: "10px",
+                                }}
+                              >
+                                {course.creator?.name?.charAt(0) || "G"}
+                              </Avatar>
+                              <Text
+                                type="secondary"
+                                style={{ fontSize: "11px" }}
+                              >
+                                {course.creator?.name || "N/A"}
+                              </Text>
+                            </Space>
+                          </Space>
+                        </div>
+                      </div>
+
+                      <Space size={8} wrap>
+                        <InfoBadge
+                          icon={primaryStatus.icon}
+                          text={primaryStatus.text}
+                          type={primaryStatus.badgeType}
+                          size="small"
+                        />
+
+                        {primaryStatus.showExtensionButton && (
+                          <Button
+                            size="small"
+                            type={item.extensionRequest ? "default" : "link"}
+                            icon={<Send size={12} />}
+                            onClick={() =>
+                              handleRequestExtension(
+                                item.id,
+                                course.title,
+                                item.extensionRequest || false,
+                              )
+                            }
+                            loading={updateEnrolment.isPending}
+                            disabled={item.extensionRequest}
+                            style={{ padding: "0 8px", height: "24px" }}
+                          >
+                            {item.extensionRequest ? "Đã gửi" : "Gia hạn"}
+                          </Button>
+                        )}
+
+                        {primaryStatus.showReason && item.reason && (
+                          <Text type="danger" style={{ fontSize: "12px" }}>
+                            {item.reason}
+                          </Text>
+                        )}
+                      </Space>
+
+                      {/* {canAccessCourse && ( */}
+                      <>
+                        <Progress
+                          percent={progressValue}
+                          size="small"
+                          status={progressValue === 100 ? "success" : undefined}
+                          style={{ margin: 0 }}
+                        />
+
+                        <Space size={8}>
+                          <Link href={`/user/courses/${course.id}`}>
+                            <Button
+                              type="primary"
+                              size="small"
+                              disabled={canAccessCourse ? undefined : true}
+                            >
+                              {item.enrolmentStatus === "COMPLETED"
+                                ? "Xem lại"
+                                : "Vào học"}
+                            </Button>
+                          </Link>
+
+                          {showCompleteButton && (
+                            <Button
+                              size="small"
+                              type="default"
+                              icon={<CheckCircle size={14} />}
+                              onClick={() =>
+                                handleCompleteCourse(item.id, course.title)
+                              }
+                              loading={updateEnrolment.isPending}
+                              style={{
+                                borderColor: "#52c41a",
+                                color: "#52c41a",
+                              }}
+                            >
+                              Hoàn thành
+                            </Button>
+                          )}
+                        </Space>
+                      </>
+                      {/* )} */}
+
+                      {item.enrolmentStatus === "PENDING" && (
+                        <Button
+                          size="small"
+                          disabled
+                          icon={<Clock size={14} />}
+                        >
+                          Chờ phê duyệt
+                        </Button>
+                      )}
+
+                      {(item.startDate || item.endDate) && (
+                        <Space size={6} wrap>
+                          {item.startDate && (
+                            <InfoBadge
+                              icon={<Calendar size={11} />}
+                              text={`Bắt đầu: ${dayjs(item.startDate).format("DD/MM/YY")}`}
+                              size="small"
+                            />
+                          )}
+                          {item.endDate && (
+                            <InfoBadge
+                              icon={<Calendar size={11} />}
+                              text={`Kết thúc: ${dayjs(item.endDate).format("DD/MM/YY")}`}
+                              size="small"
+                            />
+                          )}
+                        </Space>
+                      )}
+                    </Space>
+                  </Card>
+                </List.Item>
+              );
+            }}
+          />
+        )}
       </Space>
     );
   };
@@ -702,11 +1046,11 @@ function UserCoursesContent() {
   // Explore Courses Tab Content
   const ExploreCoursesTab = () => {
     return (
-      <Space direction="vertical" size="large" style={{ width: "100%" }}>
+      <Space direction="vertical" size="middle" style={{ width: "100%" }}>
         <Input
-          placeholder="Tìm kiếm khóa học theo tên, mô tả hoặc giảng viên..."
-          prefix={<Search size={18} />}
-          size="large"
+          placeholder="Tìm kiếm khóa học..."
+          prefix={<Search size={16} />}
+          size="middle"
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           allowClear
@@ -724,13 +1068,13 @@ function UserCoursesContent() {
         ) : (
           <List
             grid={{
-              gutter: 16,
+              gutter: 12,
               xs: 1,
-              sm: 1,
+              sm: 2,
               md: 2,
-              lg: 2,
-              xl: 3,
-              xxl: 3,
+              lg: 3,
+              xl: 4,
+              xxl: 4,
             }}
             dataSource={availableCourses}
             renderItem={(course) => {
@@ -740,68 +1084,85 @@ function UserCoursesContent() {
                 <List.Item>
                   <Card
                     hoverable
+                    size="small"
                     actions={[
                       <Button
                         key="enroll"
                         type="primary"
-                        icon={<Plus size={16} />}
+                        size="small"
                         onClick={() =>
                           handleEnrollCourse(course.id, course.title)
                         }
                         loading={createEnrolment.isPending}
+                        style={{ width: "80%" }}
                       >
-                        Đăng ký học
+                        Đăng ký
                       </Button>,
                     ]}
                   >
-                    <Card.Meta
-                      avatar={
+                    <Space
+                      direction="vertical"
+                      size={8}
+                      style={{ width: "100%" }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
                         <Avatar
                           shape="square"
-                          size={64}
-                          style={{ background: "#1677ff10" }}
+                          size={40}
+                          style={{ background: "#1677ff10", flexShrink: 0 }}
                         >
-                          <BookOpen size={32} className="text-blue-600" />
+                          <BookOpen size={20} className="text-blue-600" />
                         </Avatar>
-                      }
-                      title={
-                        <Title level={5} style={{ margin: 0 }}>
+                        <Title
+                          level={5}
+                          style={{ margin: 0, fontSize: "14px" }}
+                        >
                           {course.title}
                         </Title>
-                      }
-                      description={
-                        <Space
-                          direction="vertical"
-                          size={8}
-                          style={{ width: "100%" }}
+                      </div>
+
+                      <Text
+                        type="secondary"
+                        className="line-clamp-2"
+                        style={{ fontSize: "12px", minHeight: "32px" }}
+                      >
+                        {course.description || "Chưa có mô tả"}
+                      </Text>
+
+                      <Space size={4} wrap>
+                        <InfoBadge
+                          icon={<BookOpen size={11} />}
+                          text={`${lessonsCount} bài`}
+                          size="small"
+                        />
+                        <InfoBadge
+                          icon={<Clock size={11} />}
+                          text={`${course.duration}'`}
+                          size="small"
+                        />
+                      </Space>
+
+                      <Space size={4} align="center">
+                        <Avatar
+                          size={20}
+                          style={{
+                            backgroundColor: "#52c41a",
+                            fontSize: "10px",
+                          }}
                         >
-                          <Text type="secondary" className="line-clamp-2">
-                            {course.description || "Chưa có mô tả"}
-                          </Text>
-                          <Space split="|" size={4}>
-                            <Text type="secondary">
-                              <BookOpen size={14} className="inline mr-1" />
-                              {lessonsCount} bài học
-                            </Text>
-                            <Text type="secondary">
-                              <Clock size={14} className="inline mr-1" />
-                              {course.duration} phút
-                            </Text>
-                          </Space>
-                          <Space align="center">
-                            <Avatar
-                              size={24}
-                              style={{ backgroundColor: "#52c41a" }}
-                            >
-                              {course.creator?.name?.charAt(0) || "G"}
-                            </Avatar>
-                            <Text type="secondary">
-                              {course.creator?.name || "Chưa cập nhật"}
-                            </Text>
-                          </Space>
-                        </Space>
-                      }
-                    />
+                          {course.creator?.name?.charAt(0) || "G"}
+                        </Avatar>
+                        <Text type="secondary" style={{ fontSize: "11px" }}>
+                          {course.creator?.name || "N/A"}
+                        </Text>
+                      </Space>
+                    </Space>
                   </Card>
                 </List.Item>
               );
@@ -813,10 +1174,14 @@ function UserCoursesContent() {
   };
 
   return (
-    <Space direction="vertical" size="large" style={{ width: "100%" }}>
+    <Space direction="vertical" size="middle" style={{ width: "100%" }}>
       <div>
-        <Title level={3}>Khóa học</Title>
-        <Text type="secondary">Quản lý và khám phá các khóa học.</Text>
+        <Title level={3} style={{ marginBottom: "4px" }}>
+          Khóa học
+        </Title>
+        <Text type="secondary" style={{ fontSize: "13px" }}>
+          Quản lý và khám phá các khóa học
+        </Text>
       </div>
 
       <Tabs

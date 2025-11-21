@@ -38,7 +38,7 @@ import {
 import { useFindManyUserCourse, useUpdateUserCourse } from "@/generated/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
-
+import { InfoBadge } from "@/components/ui/info-badge";
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
@@ -56,7 +56,7 @@ type UserCourse = {
   createdAt: Date;
   user?: {
     id: string;
-    name: string;
+    name: string | null;
     email: string;
     avatarUrl?: string | null;
   };
@@ -355,13 +355,12 @@ function EnrollmentsPageContent() {
           {/* Extension request badge */}
           {record.extensionRequest && (
             <div className="mt-1">
-              <Tag
-                color="purple"
-                icon={<Send size={12} />}
-                style={{ fontSize: "11px" }}
-              >
-                Yêu cầu gia hạn
-              </Tag>
+              <InfoBadge
+                icon={<AlertTriangle size={12} />}
+                text="Yêu cầu gia hạn"
+                type="warning"
+                size="small"
+              />
             </div>
           )}
           {/* Expiring warning */}
@@ -370,24 +369,22 @@ function EnrollmentsPageContent() {
             <>
               {isExpired(record.endDate) && (
                 <div className="mt-1">
-                  <Tag
-                    color="red"
+                  <InfoBadge
                     icon={<AlertTriangle size={12} />}
-                    style={{ fontSize: "11px" }}
-                  >
-                    Đã hết hạn
-                  </Tag>
+                    text="Đã hết hạn"
+                    type="danger"
+                    size="small"
+                  />
                 </div>
               )}
               {!isExpired(record.endDate) && isExpiringSoon(record.endDate) && (
                 <div className="mt-1">
-                  <Tag
-                    color="orange"
+                  <InfoBadge
                     icon={<Clock size={12} />}
-                    style={{ fontSize: "11px" }}
-                  >
-                    Sắp hết hạn
-                  </Tag>
+                    text="Sắp hết hạn"
+                    type="warning"
+                    size="small"
+                  />
                 </div>
               )}
             </>
@@ -531,7 +528,15 @@ function EnrollmentsPageContent() {
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6} lg={4}>
-          <Card>
+          <Card
+            style={{ cursor: "pointer", transition: "all 0.3s" }}
+            onClick={() => setFilterStatus("PENDING")}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.boxShadow =
+                "0 4px 12px rgba(0, 0, 0, 0.1)")
+            }
+            onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "")}
+          >
             <Badge count={statistics.pending} offset={[10, 0]}>
               <Statistic
                 title="Chờ duyệt"
@@ -543,7 +548,15 @@ function EnrollmentsPageContent() {
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6} lg={4}>
-          <Card>
+          <Card
+            style={{ cursor: "pointer", transition: "all 0.3s" }}
+            onClick={() => setFilterStatus("APPROVED")}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.boxShadow =
+                "0 4px 12px rgba(0, 0, 0, 0.1)")
+            }
+            onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "")}
+          >
             <Statistic
               title="Đã duyệt"
               value={statistics.approved}
@@ -808,7 +821,7 @@ function EnrollmentsPageContent() {
         width={600}
       >
         {selectedEnrollment && (
-          <div className="py-4">
+          <div className="py-4 ">
             <Descriptions column={1} bordered size="small">
               <Descriptions.Item label="Học viên">
                 {selectedEnrollment.user?.name}
@@ -829,29 +842,8 @@ function EnrollmentsPageContent() {
             </Descriptions>
 
             {isExpired(selectedEnrollment.endDate) && (
-              <Alert
-                message="Khóa học đã hết hạn"
-                description="Khóa học này đã hết hạn. Bạn có thể gia hạn để học viên tiếp tục học."
-                type="error"
-                showIcon
-                icon={<AlertTriangle size={16} />}
-                className="mt-4"
-                style={{ fontSize: "12px" }}
-              />
+              <Alert message="Khóa học đã hết hạn" />
             )}
-
-            {!isExpired(selectedEnrollment.endDate) &&
-              isExpiringSoon(selectedEnrollment.endDate) && (
-                <Alert
-                  message="Sắp hết hạn"
-                  description={`Khóa học sẽ hết hạn vào ${dayjs(selectedEnrollment.endDate).format("DD/MM/YYYY")}`}
-                  type="warning"
-                  showIcon
-                  icon={<Clock size={16} />}
-                  className="mt-4"
-                  style={{ fontSize: "12px" }}
-                />
-              )}
 
             <Form form={form} layout="vertical" className="mt-4">
               <Form.Item
@@ -875,13 +867,6 @@ function EnrollmentsPageContent() {
                 />
               </Form.Item>
             </Form>
-
-            <Alert
-              message="Sau khi gia hạn, học viên có thể tiếp tục truy cập khóa học"
-              type="info"
-              showIcon
-              style={{ fontSize: "12px" }}
-            />
           </div>
         )}
       </Modal>

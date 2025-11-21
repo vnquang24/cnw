@@ -19,6 +19,7 @@ import {
   Statistic,
   Tag,
   Typography,
+  Image,
   message,
 } from "antd";
 import {
@@ -29,10 +30,13 @@ import {
   Send,
   AlertCircle,
 } from "lucide-react";
+import type { Prisma } from "@prisma/client";
 import {
   useFindUniqueTest,
   useFindManyTestResult,
   useCreateTestResult,
+  useFindManyUserLesson,
+  useUpdateUserLesson,
 } from "@/generated/hooks";
 import { getUserId } from "@/lib/auth";
 import { shuffleTestContent } from "@/utils/shuffleUtils";
@@ -45,6 +49,18 @@ interface UserAnswer {
   selectedAnswerIds: string[];
   essayAnswer?: string;
 }
+
+// Type definition for Test with all fields including shuffle options
+type TestWithQuestions = Prisma.TestGetPayload<{
+  include: {
+    questions: {
+      include: {
+        answers: true;
+        mediaFiles: true;
+      };
+    };
+  };
+}>;
 
 export default function TakeTestPage() {
   const params = useParams();
@@ -83,6 +99,7 @@ export default function TakeTestPage() {
         questions: {
           include: {
             answers: true,
+            mediaFiles: true,
           },
           orderBy: { createdAt: "asc" as const },
         },
@@ -115,7 +132,24 @@ export default function TakeTestPage() {
     enabled: Boolean(userId && componentId),
   });
 
+  // Fetch user lesson data
+  const userLessonArgs = useMemo(
+    () => ({
+      where: {
+        userId: userId ?? "",
+        lessonId: lessonId ?? "",
+      },
+      take: 1,
+    }),
+    [userId, lessonId],
+  );
+
+  const { data: userLessons } = useFindManyUserLesson(userLessonArgs, {
+    enabled: Boolean(userId && lessonId),
+  });
+
   const createTestResult = useCreateTestResult();
+  const updateUserLesson = useUpdateUserLesson();
 
   // Initialize timer when test loads
   useEffect(() => {
@@ -165,23 +199,20 @@ export default function TakeTestPage() {
         test.questions.map((q: any) => q.id.slice(0, 8)),
       );
 
-      // Type casting to include shuffle fields
-      const testData = test as any;
-
       // Force shuffle with timestamp seed to ensure different order each time
       const timestamp = Date.now();
       console.log("⏰ Using timestamp seed:", timestamp);
 
       const questionsToDisplay = shuffleTestContent(
         test.questions,
-        testData?.shuffleQuestions ?? false,
-        testData?.shuffleAnswers ?? false,
+        test.shuffleQuestions ?? false,
+        test.shuffleAnswers ?? false,
       );
 
       console.log("✅ Shuffle complete!");
       console.log("🔀 Shuffle settings:", {
-        shuffleQuestions: testData?.shuffleQuestions,
-        shuffleAnswers: testData?.shuffleAnswers,
+        shuffleQuestions: test.shuffleQuestions,
+        shuffleAnswers: test.shuffleAnswers,
       });
       console.log(
         "📋 New order:",
@@ -344,11 +375,12 @@ export default function TakeTestPage() {
     try {
       const mark = calculateScore();
       const maxScore = test?.maxScore || 10;
+      const passScore = test?.passScore || maxScore / 2;
 
       let status: "PASSED" | "FAILED" | "PENDING" = "PENDING";
 
       if (mark !== null) {
-        status = mark >= maxScore / 2 ? "PASSED" : "FAILED";
+        status = mark >= passScore ? "PASSED" : "FAILED";
       }
 
       // Convert userAnswers to proper format for database
@@ -406,7 +438,37 @@ export default function TakeTestPage() {
         data: submitData,
       });
 
-      message.success("Nộp bài thành công!");
+      // Auto-complete lesson if test is passed
+      if (
+        status === "PASSED" &&
+        lessonId &&
+        userLessons &&
+        userLessons.length > 0
+      ) {
+        const currentUserLesson = userLessons[0];
+
+        try {
+          // Update user lesson to PASS status
+          await updateUserLesson.mutateAsync({
+            where: { id: currentUserLesson.id },
+            data: {
+              status: "PASS",
+              completedAt: new Date().toISOString(),
+              grade: Math.round(finalMark),
+            },
+          });
+
+          message.success(
+            "Nộp bài thành công! Bài học đã được đánh dấu hoàn thành!",
+          );
+        } catch (lessonError) {
+          console.error("Error updating lesson status:", lessonError);
+          // Don't fail the whole operation if lesson update fails
+          message.success("Nộp bài thành công!");
+        }
+      } else {
+        message.success("Nộp bài thành công!");
+      }
 
       // Navigate to results page
       router.push(
@@ -527,7 +589,11 @@ export default function TakeTestPage() {
             <Col xs={24} md={12}>
               <Row gutter={16}>
                 <Col span={12}>
-                  <Card size="small" bordered={false} className="bg-blue-50">
+                  <Card
+                    size="small"
+                    variant="borderless"
+                    className="bg-blue-50"
+                  >
                     <Statistic
                       title="Đã trả lời"
                       value={answeredCount}
@@ -544,7 +610,7 @@ export default function TakeTestPage() {
                 <Col span={12}>
                   <Card
                     size="small"
-                    bordered={false}
+                    variant="borderless"
                     className={timeLeft < 60 ? "bg-red-50" : "bg-green-50"}
                   >
                     <Statistic
@@ -582,6 +648,130 @@ export default function TakeTestPage() {
                 Câu {currentQuestionIndex + 1}: {currentQuestion.content}
               </Title>
             </div>
+
+            {/* Media Display - Enhanced with Ant Design Components */}
+            {currentQuestion.mediaFiles &&
+              currentQuestion.mediaFiles.length > 0 && (
+                <div style={{ marginTop: 16, marginBottom: 16 }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        currentQuestion.mediaFiles.length === 1
+                          ? "1fr"
+                          : "repeat(auto-fit, minmax(300px, 1fr))",
+                      gap: 12,
+                    }}
+                  >
+                    {currentQuestion.mediaFiles.map(
+                      (media: any, index: number) => (
+                        <Card
+                          key={index}
+                          size="small"
+                          variant="outlined"
+                          style={{ overflow: "hidden" }}
+                          styles={{ body: { padding: 0 } }}
+                        >
+                          {media.fileType.startsWith("image/") && (
+                            <Image
+                              src={media.fileUrl}
+                              alt={media.fileName}
+                              style={{
+                                width: "100%",
+                                height: "auto",
+                                maxHeight: 300,
+                                objectFit: "contain",
+                              }}
+                              preview={{
+                                mask: "Xem ảnh",
+                                maskClassName: "custom-mask",
+                              }}
+                              placeholder={
+                                <div
+                                  style={{
+                                    width: "100%",
+                                    height: 200,
+                                    backgroundColor: "#f5f5f5",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  <Spin />
+                                </div>
+                              }
+                            />
+                          )}
+                          {media.fileType.startsWith("video/") && (
+                            <div style={{ position: "relative" }}>
+                              <video
+                                src={media.fileUrl}
+                                controls
+                                controlsList="nodownload"
+                                preload="metadata"
+                                style={{
+                                  width: "100%",
+                                  height: "auto",
+                                  maxHeight: 300,
+                                  display: "block",
+                                }}
+                                onContextMenu={(e) => e.preventDefault()}
+                              >
+                                <source src={media.fileUrl} />
+                                Trình duyệt không hỗ trợ video.
+                              </video>
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  bottom: 8,
+                                  right: 8,
+                                  background: "rgba(0,0,0,0.6)",
+                                  color: "white",
+                                  padding: "2px 6px",
+                                  borderRadius: 4,
+                                  fontSize: 12,
+                                }}
+                              >
+                                Video
+                              </div>
+                            </div>
+                          )}
+                          {media.fileType.startsWith("audio/") && (
+                            <div style={{ padding: 16, textAlign: "center" }}>
+                              <div style={{ marginBottom: 12 }}>
+                                <Tag color="green">Audio</Tag>
+                              </div>
+                              <audio
+                                src={media.fileUrl}
+                                controls
+                                controlsList="nodownload"
+                                preload="metadata"
+                                style={{ width: "100%", maxWidth: 300 }}
+                                onContextMenu={(e) => e.preventDefault()}
+                              >
+                                <source src={media.fileUrl} />
+                                Trình duyệt không hỗ trợ audio.
+                              </audio>
+                              <div
+                                style={{
+                                  marginTop: 8,
+                                  fontSize: 12,
+                                  color: "#666",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {media.fileName}
+                              </div>
+                            </div>
+                          )}
+                        </Card>
+                      ),
+                    )}
+                  </div>
+                </div>
+              )}
 
             {/* Answers */}
             <Space direction="vertical" size={12} style={{ width: "100%" }}>

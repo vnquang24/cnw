@@ -13,6 +13,13 @@ import {
   Activity,
   BarChart3,
   UserCheck,
+  Library,
+  ClipboardCheck,
+  ListChecks,
+  TestTube,
+  Award,
+  Beaker,
+  Target,
 } from "lucide-react";
 import { MenuItem } from "@/components/panel/menu-item/type";
 
@@ -23,24 +30,36 @@ export const menuItems: MenuItem[] = [
     pathname: "/admin/dashboard",
   },
   {
-    icon: BookOpen,
+    icon: GraduationCap,
     label: "Quản lý khóa học",
     pathname: "/admin/courses",
+    subMenu: [
+      {
+        label: "Danh sách khóa học",
+        pathname: "/admin/courses",
+        icon: Library,
+      },
+      {
+        label: "Đăng ký khóa học",
+        pathname: "/admin/enrollments",
+        icon: UserCheck,
+      },
+    ],
   },
   {
-    icon: FileText,
+    icon: ClipboardCheck,
     label: "Bài kiểm tra",
     pathname: "",
     subMenu: [
       {
         label: "Danh sách bài kiểm tra",
         pathname: "/admin/tests",
-        icon: CircleDot,
+        icon: ListChecks,
       },
       {
         label: "Kết quả kiểm tra",
         pathname: "/admin/test-results",
-        icon: BarChart3,
+        icon: Award,
       },
     ],
   },
@@ -50,24 +69,19 @@ export const menuItems: MenuItem[] = [
     pathname: "/admin/users",
   },
   {
-    icon: UserCheck,
-    label: "Đăng ký khóa học",
-    pathname: "/admin/enrollments",
-  },
-  {
-    icon: Monitor,
+    icon: Beaker,
     label: "Demo & Thử nghiệm",
     pathname: "",
     subMenu: [
       {
         label: "Demo Components",
         pathname: "/admin/demo",
-        icon: CircleDot,
+        icon: Monitor,
       },
       {
         label: "API Examples",
         pathname: "/admin/example",
-        icon: CircleDot,
+        icon: Target,
       },
     ],
   },

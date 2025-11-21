@@ -27,6 +27,7 @@ import {
   Clock,
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
+import type { Prisma, WordType } from "@prisma/client";
 import {
   useFindUniqueLesson,
   useFindManyComponent,
@@ -45,21 +46,21 @@ const { Title, Text } = Typography;
 interface ComponentData {
   id: string;
   componentType: string;
-  content?: string;
+  content?: string | null;
   indexInLesson: number;
-  wordId?: string;
-  testId?: string;
+  wordId?: string | null;
+  testId?: string | null;
   word?: {
     id: string;
     content: string;
     meaning: string;
     wordType: string;
-  };
+  } | null;
   test?: {
     id: string;
     name: string;
     duration: number;
-  };
+  } | null;
 }
 
 interface ContentFormData {
@@ -291,7 +292,7 @@ export default function LessonDetailPage() {
           data: {
             content: values.content,
             meaning: values.meaning,
-            wordType: values.wordType,
+            wordType: values.wordType as WordType,
           },
         });
 
@@ -307,9 +308,13 @@ export default function LessonDetailPage() {
           data: {
             content: values.content,
             meaning: values.meaning,
-            wordType: values.wordType,
+            wordType: values.wordType as WordType,
           },
         });
+
+        if (!newWord?.id) {
+          throw new Error("Failed to create word");
+        }
 
         await createComponentMutation.mutateAsync({
           data: {
@@ -391,7 +396,7 @@ export default function LessonDetailPage() {
       ),
       children: (
         <ContentTab
-          components={contentComponents || []}
+          components={(contentComponents || []) as ComponentData[]}
           loading={contentLoading}
           onAdd={handleAddContent}
           onEdit={handleEditContent}
@@ -409,7 +414,7 @@ export default function LessonDetailPage() {
       ),
       children: (
         <WordTab
-          components={wordComponents || []}
+          components={(wordComponents || []) as ComponentData[]}
           loading={wordLoading}
           onAdd={handleAddWord}
           onEdit={handleEditWord}
@@ -428,7 +433,7 @@ export default function LessonDetailPage() {
       ),
       children: (
         <TestTab
-          components={testComponents || []}
+          components={(testComponents || []) as ComponentData[]}
           loading={testLoading}
           onAdd={() =>
             router.push(

@@ -5,32 +5,37 @@ import {
   UserRound,
   Settings,
   CircleDot,
+  GraduationCap,
+  TrendingUp,
+  Award,
+  UserCircle,
+  UserCog,
 } from "lucide-react";
 import { MenuItem } from "@/components/panel/menu-item/type";
 
 export const userMenuItems: MenuItem[] = [
   {
-    icon: BookOpen,
+    icon: GraduationCap,
     label: "Khóa học của tôi",
     pathname: "/user/courses",
   },
   {
-    icon: CheckCircle2,
+    icon: TrendingUp,
     label: "Tiến độ học tập",
     pathname: "/user/progress",
   },
   {
-    icon: ClipboardList,
+    icon: Award,
     label: "Kết quả kiểm tra",
     pathname: "/user/tests",
   },
   {
-    icon: UserRound,
+    icon: UserCircle,
     label: "Hồ sơ học viên",
     pathname: "/user/profile",
   },
   {
-    icon: Settings,
+    icon: UserCog,
     label: "Quản lý thông tin",
     pathname: "/profile",
   },

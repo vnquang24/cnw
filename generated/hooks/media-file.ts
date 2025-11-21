@@ -4,7 +4,7 @@
 
 /* eslint-disable */
 
-import type { Prisma, Test } from "@prisma/client";
+import type { Prisma, MediaFile } from "@prisma/client";
 import type {
   UseMutationOptions,
   UseQueryOptions,
@@ -36,48 +36,12 @@ import type {
   UseSuspenseInfiniteQueryOptions,
 } from "@tanstack/react-query";
 
-export function useCreateTest(
-  options?: Omit<
-    UseMutationOptions<Test | undefined, DefaultError, Prisma.TestCreateArgs> &
-      ExtraMutationOptions,
-    "mutationFn"
-  >,
-) {
-  const { endpoint, fetch } = getHooksContext();
-  const _mutation = useModelMutation<
-    Prisma.TestCreateArgs,
-    DefaultError,
-    Test,
-    true
-  >("Test", "POST", `${endpoint}/test/create`, metadata, options, fetch, true);
-  const mutation = {
-    ..._mutation,
-    mutateAsync: async <T extends Prisma.TestCreateArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestCreateArgs>,
-      options?: Omit<
-        UseMutationOptions<
-          CheckSelect<T, Test, Prisma.TestGetPayload<T>> | undefined,
-          DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestCreateArgs>
-        > &
-          ExtraMutationOptions,
-        "mutationFn"
-      >,
-    ) => {
-      return (await _mutation.mutateAsync(args, options as any)) as
-        | CheckSelect<T, Test, Prisma.TestGetPayload<T>>
-        | undefined;
-    },
-  };
-  return mutation;
-}
-
-export function useCreateManyTest(
+export function useCreateMediaFile(
   options?: Omit<
     UseMutationOptions<
-      Prisma.BatchPayload,
+      MediaFile | undefined,
       DefaultError,
-      Prisma.TestCreateManyArgs
+      Prisma.MediaFileCreateArgs
     > &
       ExtraMutationOptions,
     "mutationFn"
@@ -85,14 +49,62 @@ export function useCreateManyTest(
 ) {
   const { endpoint, fetch } = getHooksContext();
   const _mutation = useModelMutation<
-    Prisma.TestCreateManyArgs,
+    Prisma.MediaFileCreateArgs,
+    DefaultError,
+    MediaFile,
+    true
+  >(
+    "MediaFile",
+    "POST",
+    `${endpoint}/mediaFile/create`,
+    metadata,
+    options,
+    fetch,
+    true,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.MediaFileCreateArgs>(
+      args: Prisma.SelectSubset<T, Prisma.MediaFileCreateArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          CheckSelect<T, MediaFile, Prisma.MediaFileGetPayload<T>> | undefined,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.MediaFileCreateArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(args, options as any)) as
+        | CheckSelect<T, MediaFile, Prisma.MediaFileGetPayload<T>>
+        | undefined;
+    },
+  };
+  return mutation;
+}
+
+export function useCreateManyMediaFile(
+  options?: Omit<
+    UseMutationOptions<
+      Prisma.BatchPayload,
+      DefaultError,
+      Prisma.MediaFileCreateManyArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.MediaFileCreateManyArgs,
     DefaultError,
     Prisma.BatchPayload,
     false
   >(
-    "Test",
+    "MediaFile",
     "POST",
-    `${endpoint}/test/createMany`,
+    `${endpoint}/mediaFile/createMany`,
     metadata,
     options,
     fetch,
@@ -100,13 +112,13 @@ export function useCreateManyTest(
   );
   const mutation = {
     ..._mutation,
-    mutateAsync: async <T extends Prisma.TestCreateManyArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestCreateManyArgs>,
+    mutateAsync: async <T extends Prisma.MediaFileCreateManyArgs>(
+      args: Prisma.SelectSubset<T, Prisma.MediaFileCreateManyArgs>,
       options?: Omit<
         UseMutationOptions<
           Prisma.BatchPayload,
           DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestCreateManyArgs>
+          Prisma.SelectSubset<T, Prisma.MediaFileCreateManyArgs>
         > &
           ExtraMutationOptions,
         "mutationFn"
@@ -121,35 +133,35 @@ export function useCreateManyTest(
   return mutation;
 }
 
-export function useFindManyTest<
-  TArgs extends Prisma.TestFindManyArgs,
+export function useFindManyMediaFile<
+  TArgs extends Prisma.MediaFileFindManyArgs,
   TQueryFnData = Array<
-    Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean }
+    Prisma.MediaFileGetPayload<TArgs> & { $optimistic?: boolean }
   >,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindManyArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.MediaFileFindManyArgs>,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
     ExtraQueryOptions,
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findMany`,
+    "MediaFile",
+    `${endpoint}/mediaFile/findMany`,
     args,
     options,
     fetch,
   );
 }
 
-export function useInfiniteFindManyTest<
-  TArgs extends Prisma.TestFindManyArgs,
-  TQueryFnData = Array<Prisma.TestGetPayload<TArgs>>,
+export function useInfiniteFindManyMediaFile<
+  TArgs extends Prisma.MediaFileFindManyArgs,
+  TQueryFnData = Array<Prisma.MediaFileGetPayload<TArgs>>,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindManyArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.MediaFileFindManyArgs>,
   options?: Omit<
     UseInfiniteQueryOptions<TQueryFnData, TError, InfiniteData<TData>>,
     "queryKey" | "initialPageParam"
@@ -158,23 +170,23 @@ export function useInfiniteFindManyTest<
   options = options ?? { getNextPageParam: () => null };
   const { endpoint, fetch } = getHooksContext();
   return useInfiniteModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findMany`,
+    "MediaFile",
+    `${endpoint}/mediaFile/findMany`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseFindManyTest<
-  TArgs extends Prisma.TestFindManyArgs,
+export function useSuspenseFindManyMediaFile<
+  TArgs extends Prisma.MediaFileFindManyArgs,
   TQueryFnData = Array<
-    Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean }
+    Prisma.MediaFileGetPayload<TArgs> & { $optimistic?: boolean }
   >,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindManyArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.MediaFileFindManyArgs>,
   options?: Omit<
     UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
     "queryKey"
@@ -183,21 +195,21 @@ export function useSuspenseFindManyTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findMany`,
+    "MediaFile",
+    `${endpoint}/mediaFile/findMany`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseInfiniteFindManyTest<
-  TArgs extends Prisma.TestFindManyArgs,
-  TQueryFnData = Array<Prisma.TestGetPayload<TArgs>>,
+export function useSuspenseInfiniteFindManyMediaFile<
+  TArgs extends Prisma.MediaFileFindManyArgs,
+  TQueryFnData = Array<Prisma.MediaFileGetPayload<TArgs>>,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindManyArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.MediaFileFindManyArgs>,
   options?: Omit<
     UseSuspenseInfiniteQueryOptions<TQueryFnData, TError, InfiniteData<TData>>,
     "queryKey" | "initialPageParam"
@@ -206,41 +218,41 @@ export function useSuspenseInfiniteFindManyTest<
   options = options ?? { getNextPageParam: () => null };
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseInfiniteModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findMany`,
+    "MediaFile",
+    `${endpoint}/mediaFile/findMany`,
     args,
     options,
     fetch,
   );
 }
 
-export function useFindUniqueTest<
-  TArgs extends Prisma.TestFindUniqueArgs,
-  TQueryFnData = Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean },
+export function useFindUniqueMediaFile<
+  TArgs extends Prisma.MediaFileFindUniqueArgs,
+  TQueryFnData = Prisma.MediaFileGetPayload<TArgs> & { $optimistic?: boolean },
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args: Prisma.SelectSubset<TArgs, Prisma.TestFindUniqueArgs>,
+  args: Prisma.SelectSubset<TArgs, Prisma.MediaFileFindUniqueArgs>,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
     ExtraQueryOptions,
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findUnique`,
+    "MediaFile",
+    `${endpoint}/mediaFile/findUnique`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseFindUniqueTest<
-  TArgs extends Prisma.TestFindUniqueArgs,
-  TQueryFnData = Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean },
+export function useSuspenseFindUniqueMediaFile<
+  TArgs extends Prisma.MediaFileFindUniqueArgs,
+  TQueryFnData = Prisma.MediaFileGetPayload<TArgs> & { $optimistic?: boolean },
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args: Prisma.SelectSubset<TArgs, Prisma.TestFindUniqueArgs>,
+  args: Prisma.SelectSubset<TArgs, Prisma.MediaFileFindUniqueArgs>,
   options?: Omit<
     UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
     "queryKey"
@@ -249,41 +261,41 @@ export function useSuspenseFindUniqueTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findUnique`,
+    "MediaFile",
+    `${endpoint}/mediaFile/findUnique`,
     args,
     options,
     fetch,
   );
 }
 
-export function useFindFirstTest<
-  TArgs extends Prisma.TestFindFirstArgs,
-  TQueryFnData = Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean },
+export function useFindFirstMediaFile<
+  TArgs extends Prisma.MediaFileFindFirstArgs,
+  TQueryFnData = Prisma.MediaFileGetPayload<TArgs> & { $optimistic?: boolean },
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindFirstArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.MediaFileFindFirstArgs>,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
     ExtraQueryOptions,
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findFirst`,
+    "MediaFile",
+    `${endpoint}/mediaFile/findFirst`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseFindFirstTest<
-  TArgs extends Prisma.TestFindFirstArgs,
-  TQueryFnData = Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean },
+export function useSuspenseFindFirstMediaFile<
+  TArgs extends Prisma.MediaFileFindFirstArgs,
+  TQueryFnData = Prisma.MediaFileGetPayload<TArgs> & { $optimistic?: boolean },
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindFirstArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.MediaFileFindFirstArgs>,
   options?: Omit<
     UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
     "queryKey"
@@ -292,56 +304,20 @@ export function useSuspenseFindFirstTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findFirst`,
+    "MediaFile",
+    `${endpoint}/mediaFile/findFirst`,
     args,
     options,
     fetch,
   );
 }
 
-export function useUpdateTest(
-  options?: Omit<
-    UseMutationOptions<Test | undefined, DefaultError, Prisma.TestUpdateArgs> &
-      ExtraMutationOptions,
-    "mutationFn"
-  >,
-) {
-  const { endpoint, fetch } = getHooksContext();
-  const _mutation = useModelMutation<
-    Prisma.TestUpdateArgs,
-    DefaultError,
-    Test,
-    true
-  >("Test", "PUT", `${endpoint}/test/update`, metadata, options, fetch, true);
-  const mutation = {
-    ..._mutation,
-    mutateAsync: async <T extends Prisma.TestUpdateArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestUpdateArgs>,
-      options?: Omit<
-        UseMutationOptions<
-          CheckSelect<T, Test, Prisma.TestGetPayload<T>> | undefined,
-          DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestUpdateArgs>
-        > &
-          ExtraMutationOptions,
-        "mutationFn"
-      >,
-    ) => {
-      return (await _mutation.mutateAsync(args, options as any)) as
-        | CheckSelect<T, Test, Prisma.TestGetPayload<T>>
-        | undefined;
-    },
-  };
-  return mutation;
-}
-
-export function useUpdateManyTest(
+export function useUpdateMediaFile(
   options?: Omit<
     UseMutationOptions<
-      Prisma.BatchPayload,
+      MediaFile | undefined,
       DefaultError,
-      Prisma.TestUpdateManyArgs
+      Prisma.MediaFileUpdateArgs
     > &
       ExtraMutationOptions,
     "mutationFn"
@@ -349,95 +325,14 @@ export function useUpdateManyTest(
 ) {
   const { endpoint, fetch } = getHooksContext();
   const _mutation = useModelMutation<
-    Prisma.TestUpdateManyArgs,
+    Prisma.MediaFileUpdateArgs,
     DefaultError,
-    Prisma.BatchPayload,
-    false
+    MediaFile,
+    true
   >(
-    "Test",
+    "MediaFile",
     "PUT",
-    `${endpoint}/test/updateMany`,
-    metadata,
-    options,
-    fetch,
-    false,
-  );
-  const mutation = {
-    ..._mutation,
-    mutateAsync: async <T extends Prisma.TestUpdateManyArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestUpdateManyArgs>,
-      options?: Omit<
-        UseMutationOptions<
-          Prisma.BatchPayload,
-          DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestUpdateManyArgs>
-        > &
-          ExtraMutationOptions,
-        "mutationFn"
-      >,
-    ) => {
-      return (await _mutation.mutateAsync(
-        args,
-        options as any,
-      )) as Prisma.BatchPayload;
-    },
-  };
-  return mutation;
-}
-
-export function useUpsertTest(
-  options?: Omit<
-    UseMutationOptions<Test | undefined, DefaultError, Prisma.TestUpsertArgs> &
-      ExtraMutationOptions,
-    "mutationFn"
-  >,
-) {
-  const { endpoint, fetch } = getHooksContext();
-  const _mutation = useModelMutation<
-    Prisma.TestUpsertArgs,
-    DefaultError,
-    Test,
-    true
-  >("Test", "POST", `${endpoint}/test/upsert`, metadata, options, fetch, true);
-  const mutation = {
-    ..._mutation,
-    mutateAsync: async <T extends Prisma.TestUpsertArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestUpsertArgs>,
-      options?: Omit<
-        UseMutationOptions<
-          CheckSelect<T, Test, Prisma.TestGetPayload<T>> | undefined,
-          DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestUpsertArgs>
-        > &
-          ExtraMutationOptions,
-        "mutationFn"
-      >,
-    ) => {
-      return (await _mutation.mutateAsync(args, options as any)) as
-        | CheckSelect<T, Test, Prisma.TestGetPayload<T>>
-        | undefined;
-    },
-  };
-  return mutation;
-}
-
-export function useDeleteTest(
-  options?: Omit<
-    UseMutationOptions<Test | undefined, DefaultError, Prisma.TestDeleteArgs> &
-      ExtraMutationOptions,
-    "mutationFn"
-  >,
-) {
-  const { endpoint, fetch } = getHooksContext();
-  const _mutation = useModelMutation<
-    Prisma.TestDeleteArgs,
-    DefaultError,
-    Test,
-    true
-  >(
-    "Test",
-    "DELETE",
-    `${endpoint}/test/delete`,
+    `${endpoint}/mediaFile/update`,
     metadata,
     options,
     fetch,
@@ -445,32 +340,32 @@ export function useDeleteTest(
   );
   const mutation = {
     ..._mutation,
-    mutateAsync: async <T extends Prisma.TestDeleteArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestDeleteArgs>,
+    mutateAsync: async <T extends Prisma.MediaFileUpdateArgs>(
+      args: Prisma.SelectSubset<T, Prisma.MediaFileUpdateArgs>,
       options?: Omit<
         UseMutationOptions<
-          CheckSelect<T, Test, Prisma.TestGetPayload<T>> | undefined,
+          CheckSelect<T, MediaFile, Prisma.MediaFileGetPayload<T>> | undefined,
           DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestDeleteArgs>
+          Prisma.SelectSubset<T, Prisma.MediaFileUpdateArgs>
         > &
           ExtraMutationOptions,
         "mutationFn"
       >,
     ) => {
       return (await _mutation.mutateAsync(args, options as any)) as
-        | CheckSelect<T, Test, Prisma.TestGetPayload<T>>
+        | CheckSelect<T, MediaFile, Prisma.MediaFileGetPayload<T>>
         | undefined;
     },
   };
   return mutation;
 }
 
-export function useDeleteManyTest(
+export function useUpdateManyMediaFile(
   options?: Omit<
     UseMutationOptions<
       Prisma.BatchPayload,
       DefaultError,
-      Prisma.TestDeleteManyArgs
+      Prisma.MediaFileUpdateManyArgs
     > &
       ExtraMutationOptions,
     "mutationFn"
@@ -478,14 +373,14 @@ export function useDeleteManyTest(
 ) {
   const { endpoint, fetch } = getHooksContext();
   const _mutation = useModelMutation<
-    Prisma.TestDeleteManyArgs,
+    Prisma.MediaFileUpdateManyArgs,
     DefaultError,
     Prisma.BatchPayload,
     false
   >(
-    "Test",
-    "DELETE",
-    `${endpoint}/test/deleteMany`,
+    "MediaFile",
+    "PUT",
+    `${endpoint}/mediaFile/updateMany`,
     metadata,
     options,
     fetch,
@@ -493,13 +388,13 @@ export function useDeleteManyTest(
   );
   const mutation = {
     ..._mutation,
-    mutateAsync: async <T extends Prisma.TestDeleteManyArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestDeleteManyArgs>,
+    mutateAsync: async <T extends Prisma.MediaFileUpdateManyArgs>(
+      args: Prisma.SelectSubset<T, Prisma.MediaFileUpdateManyArgs>,
       options?: Omit<
         UseMutationOptions<
           Prisma.BatchPayload,
           DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestDeleteManyArgs>
+          Prisma.SelectSubset<T, Prisma.MediaFileUpdateManyArgs>
         > &
           ExtraMutationOptions,
         "mutationFn"
@@ -514,33 +409,178 @@ export function useDeleteManyTest(
   return mutation;
 }
 
-export function useAggregateTest<
-  TArgs extends Prisma.TestAggregateArgs,
-  TQueryFnData = Prisma.GetTestAggregateType<TArgs>,
+export function useUpsertMediaFile(
+  options?: Omit<
+    UseMutationOptions<
+      MediaFile | undefined,
+      DefaultError,
+      Prisma.MediaFileUpsertArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.MediaFileUpsertArgs,
+    DefaultError,
+    MediaFile,
+    true
+  >(
+    "MediaFile",
+    "POST",
+    `${endpoint}/mediaFile/upsert`,
+    metadata,
+    options,
+    fetch,
+    true,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.MediaFileUpsertArgs>(
+      args: Prisma.SelectSubset<T, Prisma.MediaFileUpsertArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          CheckSelect<T, MediaFile, Prisma.MediaFileGetPayload<T>> | undefined,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.MediaFileUpsertArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(args, options as any)) as
+        | CheckSelect<T, MediaFile, Prisma.MediaFileGetPayload<T>>
+        | undefined;
+    },
+  };
+  return mutation;
+}
+
+export function useDeleteMediaFile(
+  options?: Omit<
+    UseMutationOptions<
+      MediaFile | undefined,
+      DefaultError,
+      Prisma.MediaFileDeleteArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.MediaFileDeleteArgs,
+    DefaultError,
+    MediaFile,
+    true
+  >(
+    "MediaFile",
+    "DELETE",
+    `${endpoint}/mediaFile/delete`,
+    metadata,
+    options,
+    fetch,
+    true,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.MediaFileDeleteArgs>(
+      args: Prisma.SelectSubset<T, Prisma.MediaFileDeleteArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          CheckSelect<T, MediaFile, Prisma.MediaFileGetPayload<T>> | undefined,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.MediaFileDeleteArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(args, options as any)) as
+        | CheckSelect<T, MediaFile, Prisma.MediaFileGetPayload<T>>
+        | undefined;
+    },
+  };
+  return mutation;
+}
+
+export function useDeleteManyMediaFile(
+  options?: Omit<
+    UseMutationOptions<
+      Prisma.BatchPayload,
+      DefaultError,
+      Prisma.MediaFileDeleteManyArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.MediaFileDeleteManyArgs,
+    DefaultError,
+    Prisma.BatchPayload,
+    false
+  >(
+    "MediaFile",
+    "DELETE",
+    `${endpoint}/mediaFile/deleteMany`,
+    metadata,
+    options,
+    fetch,
+    false,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.MediaFileDeleteManyArgs>(
+      args: Prisma.SelectSubset<T, Prisma.MediaFileDeleteManyArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          Prisma.BatchPayload,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.MediaFileDeleteManyArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(
+        args,
+        options as any,
+      )) as Prisma.BatchPayload;
+    },
+  };
+  return mutation;
+}
+
+export function useAggregateMediaFile<
+  TArgs extends Prisma.MediaFileAggregateArgs,
+  TQueryFnData = Prisma.GetMediaFileAggregateType<TArgs>,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args: Prisma.SelectSubset<TArgs, Prisma.TestAggregateArgs>,
+  args: Prisma.SelectSubset<TArgs, Prisma.MediaFileAggregateArgs>,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
     ExtraQueryOptions,
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/aggregate`,
+    "MediaFile",
+    `${endpoint}/mediaFile/aggregate`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseAggregateTest<
-  TArgs extends Prisma.TestAggregateArgs,
-  TQueryFnData = Prisma.GetTestAggregateType<TArgs>,
+export function useSuspenseAggregateMediaFile<
+  TArgs extends Prisma.MediaFileAggregateArgs,
+  TQueryFnData = Prisma.GetMediaFileAggregateType<TArgs>,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args: Prisma.SelectSubset<TArgs, Prisma.TestAggregateArgs>,
+  args: Prisma.SelectSubset<TArgs, Prisma.MediaFileAggregateArgs>,
   options?: Omit<
     UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
     "queryKey"
@@ -549,23 +589,23 @@ export function useSuspenseAggregateTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/aggregate`,
+    "MediaFile",
+    `${endpoint}/mediaFile/aggregate`,
     args,
     options,
     fetch,
   );
 }
 
-export function useGroupByTest<
-  TArgs extends Prisma.TestGroupByArgs,
+export function useGroupByMediaFile<
+  TArgs extends Prisma.MediaFileGroupByArgs,
   HasSelectOrTake extends Prisma.Or<
     Prisma.Extends<"skip", Prisma.Keys<TArgs>>,
     Prisma.Extends<"take", Prisma.Keys<TArgs>>
   >,
   OrderByArg extends Prisma.True extends HasSelectOrTake
-    ? { orderBy: Prisma.TestGroupByArgs["orderBy"] }
-    : { orderBy?: Prisma.TestGroupByArgs["orderBy"] },
+    ? { orderBy: Prisma.MediaFileGroupByArgs["orderBy"] }
+    : { orderBy?: Prisma.MediaFileGroupByArgs["orderBy"] },
   OrderFields extends Prisma.ExcludeUnderscoreKeys<
     Prisma.Keys<Prisma.MaybeTupleToUnion<TArgs["orderBy"]>>
   >,
@@ -618,13 +658,19 @@ export function useGroupByTest<
               }[OrderFields],
   TQueryFnData = {} extends InputErrors
     ? Array<
-        PickEnumerable<Prisma.TestGroupByOutputType, TArgs["by"]> & {
+        PickEnumerable<Prisma.MediaFileGroupByOutputType, TArgs["by"]> & {
           [P in keyof TArgs &
-            keyof Prisma.TestGroupByOutputType]: P extends "_count"
+            keyof Prisma.MediaFileGroupByOutputType]: P extends "_count"
             ? TArgs[P] extends boolean
               ? number
-              : Prisma.GetScalarType<TArgs[P], Prisma.TestGroupByOutputType[P]>
-            : Prisma.GetScalarType<TArgs[P], Prisma.TestGroupByOutputType[P]>;
+              : Prisma.GetScalarType<
+                  TArgs[P],
+                  Prisma.MediaFileGroupByOutputType[P]
+                >
+            : Prisma.GetScalarType<
+                TArgs[P],
+                Prisma.MediaFileGroupByOutputType[P]
+              >;
         }
       >
     : InputErrors,
@@ -633,7 +679,7 @@ export function useGroupByTest<
 >(
   args: Prisma.SelectSubset<
     TArgs,
-    Prisma.SubsetIntersection<TArgs, Prisma.TestGroupByArgs, OrderByArg> &
+    Prisma.SubsetIntersection<TArgs, Prisma.MediaFileGroupByArgs, OrderByArg> &
       InputErrors
   >,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
@@ -641,23 +687,23 @@ export function useGroupByTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/groupBy`,
+    "MediaFile",
+    `${endpoint}/mediaFile/groupBy`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseGroupByTest<
-  TArgs extends Prisma.TestGroupByArgs,
+export function useSuspenseGroupByMediaFile<
+  TArgs extends Prisma.MediaFileGroupByArgs,
   HasSelectOrTake extends Prisma.Or<
     Prisma.Extends<"skip", Prisma.Keys<TArgs>>,
     Prisma.Extends<"take", Prisma.Keys<TArgs>>
   >,
   OrderByArg extends Prisma.True extends HasSelectOrTake
-    ? { orderBy: Prisma.TestGroupByArgs["orderBy"] }
-    : { orderBy?: Prisma.TestGroupByArgs["orderBy"] },
+    ? { orderBy: Prisma.MediaFileGroupByArgs["orderBy"] }
+    : { orderBy?: Prisma.MediaFileGroupByArgs["orderBy"] },
   OrderFields extends Prisma.ExcludeUnderscoreKeys<
     Prisma.Keys<Prisma.MaybeTupleToUnion<TArgs["orderBy"]>>
   >,
@@ -710,13 +756,19 @@ export function useSuspenseGroupByTest<
               }[OrderFields],
   TQueryFnData = {} extends InputErrors
     ? Array<
-        PickEnumerable<Prisma.TestGroupByOutputType, TArgs["by"]> & {
+        PickEnumerable<Prisma.MediaFileGroupByOutputType, TArgs["by"]> & {
           [P in keyof TArgs &
-            keyof Prisma.TestGroupByOutputType]: P extends "_count"
+            keyof Prisma.MediaFileGroupByOutputType]: P extends "_count"
             ? TArgs[P] extends boolean
               ? number
-              : Prisma.GetScalarType<TArgs[P], Prisma.TestGroupByOutputType[P]>
-            : Prisma.GetScalarType<TArgs[P], Prisma.TestGroupByOutputType[P]>;
+              : Prisma.GetScalarType<
+                  TArgs[P],
+                  Prisma.MediaFileGroupByOutputType[P]
+                >
+            : Prisma.GetScalarType<
+                TArgs[P],
+                Prisma.MediaFileGroupByOutputType[P]
+              >;
         }
       >
     : InputErrors,
@@ -725,7 +777,7 @@ export function useSuspenseGroupByTest<
 >(
   args: Prisma.SelectSubset<
     TArgs,
-    Prisma.SubsetIntersection<TArgs, Prisma.TestGroupByArgs, OrderByArg> &
+    Prisma.SubsetIntersection<TArgs, Prisma.MediaFileGroupByArgs, OrderByArg> &
       InputErrors
   >,
   options?: Omit<
@@ -736,55 +788,55 @@ export function useSuspenseGroupByTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/groupBy`,
+    "MediaFile",
+    `${endpoint}/mediaFile/groupBy`,
     args,
     options,
     fetch,
   );
 }
 
-export function useCountTest<
-  TArgs extends Prisma.TestCountArgs,
+export function useCountMediaFile<
+  TArgs extends Prisma.MediaFileCountArgs,
   TQueryFnData = TArgs extends { select: any }
     ? TArgs["select"] extends true
       ? number
       : Prisma.GetScalarType<
           TArgs["select"],
-          Prisma.TestCountAggregateOutputType
+          Prisma.MediaFileCountAggregateOutputType
         >
     : number,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestCountArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.MediaFileCountArgs>,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
     ExtraQueryOptions,
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/count`,
+    "MediaFile",
+    `${endpoint}/mediaFile/count`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseCountTest<
-  TArgs extends Prisma.TestCountArgs,
+export function useSuspenseCountMediaFile<
+  TArgs extends Prisma.MediaFileCountArgs,
   TQueryFnData = TArgs extends { select: any }
     ? TArgs["select"] extends true
       ? number
       : Prisma.GetScalarType<
           TArgs["select"],
-          Prisma.TestCountAggregateOutputType
+          Prisma.MediaFileCountAggregateOutputType
         >
     : number,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestCountArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.MediaFileCountArgs>,
   options?: Omit<
     UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
     "queryKey"
@@ -793,27 +845,26 @@ export function useSuspenseCountTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/count`,
+    "MediaFile",
+    `${endpoint}/mediaFile/count`,
     args,
     options,
     fetch,
   );
 }
 
-export function useCheckTest<TError = DefaultError>(
+export function useCheckMediaFile<TError = DefaultError>(
   args: {
     operation: PolicyCrudKind;
     where?: {
       id?: string;
       description?: string;
-      name?: string;
-      duration?: number;
-      maxAttempts?: number;
-      maxScore?: number;
-      shuffleQuestions?: boolean;
-      shuffleAnswers?: boolean;
-      passScore?: number;
+      fileName?: string;
+      fileUrl?: string;
+      fileType?: string;
+      fileSize?: number;
+      uploadedBy?: string;
+      questionId?: string;
     };
   },
   options?: Omit<UseQueryOptions<boolean, TError, boolean>, "queryKey"> &
@@ -821,8 +872,8 @@ export function useCheckTest<TError = DefaultError>(
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<boolean, boolean, TError>(
-    "Test",
-    `${endpoint}/test/check`,
+    "MediaFile",
+    `${endpoint}/mediaFile/check`,
     args,
     options,
     fetch,
