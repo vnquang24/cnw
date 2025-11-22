@@ -92,3 +92,64 @@ export type BucketItemDto = {
    */
   lastModified: string;
 };
+
+export type CreateVideoDto = {
+  /**
+   * Video title
+   */
+  title: string;
+  /**
+   * Video description
+   */
+  description?: string;
+  /**
+   * Original video file URL in MinIO
+   */
+  originalFile: string;
+  /**
+   * HLS playlist (.m3u8) URL
+   */
+  hlsPlaylistUrl?: string;
+  /**
+   * Video thumbnail/poster URL
+   */
+  thumbnailUrl?: string;
+  /**
+   * Video duration in seconds
+   */
+  duration?: number;
+  /**
+   * Video resolution (e.g., 1920x1080)
+   */
+  resolution?: string;
+  /**
+   * File size in bytes
+   */
+  fileSize?: number;
+};
+
+export type CreateVideoCommentDto = {
+  /**
+   * Comment content
+   */
+  content: string;
+  /**
+   * Video timestamp in seconds where comment is placed
+   */
+  timestamp: number;
+  /**
+   * Parent comment ID for replies
+   */
+  parentId?: string;
+};
+
+export type UpdateVideoCommentDto = {
+  /**
+   * Updated comment content
+   */
+  content?: string;
+  /**
+   * Mark comment as resolved
+   */
+  isResolved?: boolean;
+};

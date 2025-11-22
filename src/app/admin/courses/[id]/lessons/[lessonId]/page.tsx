@@ -15,6 +15,9 @@ import {
   Modal,
   App,
 } from "antd";
+import HLSPlayer from "@/components/video/HLSPlayer";
+import VideoPreviewModal from "@/components/video/VideoPreviewModal";
+import ChunkedUploadModal from "@/components/video/ChunkedUploadModal";
 import {
   BookOpen,
   Plus,
@@ -25,9 +28,12 @@ import {
   TestTube,
   ArrowLeft,
   Clock,
+  Video,
+  Play,
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import type { Prisma, WordType } from "@prisma/client";
+import { getCookie } from "cookies-next";
 import {
   useFindUniqueLesson,
   useFindManyComponent,
@@ -36,10 +42,18 @@ import {
   useDeleteComponent,
   useCreateWord,
   useUpdateWord,
+  useCreateVideoContent,
+  useUpdateVideoContent,
+  useFindManyVideoContent,
 } from "@/generated/hooks";
+import {
+  useVideoControllerUploadVideo,
+  useVideoControllerProcessVideoToHLS,
+} from "@/generated/api/cnwComponents";
 import { useQueryClient } from "@tanstack/react-query";
 import ContentModal from "@/components/modal/ContentModal";
 import WordModal from "@/components/modal/WordModal";
+import VideoModal from "@/components/modal/VideoModal";
 
 const { Title, Text } = Typography;
 
@@ -50,6 +64,7 @@ interface ComponentData {
   indexInLesson: number;
   wordId?: string | null;
   testId?: string | null;
+  videoId?: string | null;
   word?: {
     id: string;
     content: string;
@@ -60,6 +75,14 @@ interface ComponentData {
     id: string;
     name: string;
     duration: number;
+  } | null;
+  video?: {
+    id: string;
+    title: string;
+    description?: string | null;
+    hlsPlaylistUrl?: string | null;
+    thumbnailUrl?: string | null;
+    duration?: number | null;
   } | null;
 }
 
@@ -75,6 +98,27 @@ interface WordFormData {
   indexInLesson: number;
 }
 
+interface VideoFormData {
+  title: string;
+  description?: string;
+  indexInLesson: number;
+}
+
+interface VideoTabProps {
+  components: ComponentData[];
+  loading: boolean;
+  onAdd: () => void;
+  onAddLarge: () => void;
+  onEdit: (component: ComponentData) => void;
+  onDelete: (id: string) => void;
+  onPreviewVideo: (video: {
+    title: string;
+    hlsUrl: string;
+    thumbnailUrl?: string;
+  }) => void;
+  isPreviewOpening: boolean;
+}
+
 export default function LessonDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -88,6 +132,7 @@ export default function LessonDetailPage() {
   // Modal states
   const [contentModalOpen, setContentModalOpen] = useState(false);
   const [wordModalOpen, setWordModalOpen] = useState(false);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [editingContent, setEditingContent] = useState<{
     content: string;
     indexInLesson: number;
@@ -101,6 +146,21 @@ export default function LessonDetailPage() {
     wordId: string;
     componentId: string;
   } | null>(null);
+  const [editingVideo, setEditingVideo] = useState<{
+    title: string;
+    description?: string;
+    indexInLesson: number;
+    id: string;
+    videoId: string;
+    componentId: string;
+  } | null>(null);
+  const [previewVideo, setPreviewVideo] = useState<{
+    title: string;
+    hlsUrl: string;
+    thumbnailUrl?: string;
+  } | null>(null);
+  const [isPreviewOpening, setIsPreviewOpening] = useState(false);
+  const [chunkedUploadModalOpen, setChunkedUploadModalOpen] = useState(false);
 
   // Fetch lesson data
   const {
@@ -184,12 +244,42 @@ export default function LessonDetailPage() {
     },
   );
 
+  const { data: videoComponents, isLoading: videoLoading } =
+    useFindManyComponent(
+      {
+        where: {
+          lessonId,
+          componentType: "VIDEO",
+        },
+        include: {
+          video: {
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              hlsPlaylistUrl: true,
+              thumbnailUrl: true,
+              duration: true,
+            },
+          },
+        },
+        orderBy: { indexInLesson: "asc" },
+      },
+      {
+        enabled: !!lessonId,
+      },
+    );
+
   // Mutations
   const createComponentMutation = useCreateComponent();
   const updateComponentMutation = useUpdateComponent();
   const deleteComponentMutation = useDeleteComponent();
   const createWordMutation = useCreateWord();
   const updateWordMutation = useUpdateWord();
+  const createVideoMutation = useCreateVideoContent();
+  const updateVideoMutation = useUpdateVideoContent();
+  const uploadVideoMutation = useVideoControllerUploadVideo();
+  const processHLSMutation = useVideoControllerProcessVideoToHLS();
 
   // Loading state
   if (lessonLoading) {
@@ -339,6 +429,175 @@ export default function LessonDetailPage() {
     }
   };
 
+  // Video handlers
+  const handleAddVideo = () => {
+    setEditingVideo(null);
+    setVideoModalOpen(true);
+  };
+
+  const handleAddLargeVideo = () => {
+    setChunkedUploadModalOpen(true);
+  };
+
+  const handleEditVideo = (component: ComponentData) => {
+    if (component.video) {
+      setEditingVideo({
+        title: component.video.title,
+        description: component.video.description || undefined,
+        indexInLesson: component.indexInLesson,
+        id: component.id,
+        videoId: component.video.id,
+        componentId: component.id,
+      });
+      setVideoModalOpen(true);
+    }
+  };
+
+  const handleSubmitVideo = async (
+    values: VideoFormData,
+    file: File,
+    onProgress?: (progress: number) => void,
+  ) => {
+    try {
+      if (editingVideo) {
+        // Update existing video metadata only
+        onProgress?.(20);
+        await updateVideoMutation.mutateAsync({
+          where: { id: editingVideo.videoId },
+          data: {
+            title: values.title,
+            description: values.description,
+          },
+        });
+
+        onProgress?.(70);
+        await updateComponentMutation.mutateAsync({
+          where: { id: editingVideo.componentId },
+          data: {
+            indexInLesson: values.indexInLesson,
+          },
+        });
+
+        onProgress?.(100);
+        message.success("Cập nhật video thành công!");
+      } else {
+        // Validate file exists
+        if (!file) {
+          message.error("Không có file được chọn!");
+          throw new Error("No file selected");
+        }
+
+        console.log("Uploading file:", file.name, file.size, file.type);
+        onProgress?.(10);
+
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append("file", file, file.name);
+        formData.append("title", values.title);
+        if (values.description) {
+          formData.append("description", values.description);
+        }
+
+        // Get access token from cookies
+        const accessToken = getCookie("accessToken");
+
+        // Upload video with XMLHttpRequest for progress tracking
+        const baseUrl =
+          process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000";
+
+        const uploadedVideo = await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+
+          xhr.upload.addEventListener("progress", (event) => {
+            if (event.lengthComputable) {
+              const progress = Math.round((event.loaded / event.total) * 60); // 10-70%
+              onProgress?.(10 + progress);
+            }
+          });
+
+          xhr.addEventListener("load", () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const response = JSON.parse(xhr.responseText);
+                resolve(response);
+              } catch (error) {
+                reject(new Error("Invalid JSON response"));
+              }
+            } else {
+              try {
+                const error = JSON.parse(xhr.responseText);
+                reject(new Error(error.message || "Upload failed"));
+              } catch {
+                reject(new Error(`Upload failed with status ${xhr.status}`));
+              }
+            }
+          });
+
+          xhr.addEventListener("error", () => {
+            reject(new Error("Network error during upload"));
+          });
+
+          xhr.open("POST", `${baseUrl}/api/video/upload`);
+          if (accessToken) {
+            xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`);
+          }
+
+          xhr.send(formData);
+        });
+
+        onProgress?.(70);
+        console.log("Upload success:", uploadedVideo);
+
+        // Create component linking to video
+        await createComponentMutation.mutateAsync({
+          data: {
+            lessonId,
+            componentType: "VIDEO",
+            videoId: (uploadedVideo as any).id,
+            indexInLesson: values.indexInLesson,
+          },
+        });
+
+        onProgress?.(80);
+        message.success("Upload video thành công! Đang xử lý HLS...");
+
+        // Trigger HLS processing asynchronously (don't block UI)
+        processHLSMutation
+          .mutateAsync({
+            pathParams: { id: (uploadedVideo as any).id },
+          })
+          .then(() => {
+            // Refresh data when HLS processing is complete
+            queryClient.invalidateQueries({
+              queryKey: [
+                "findManyComponent",
+                { where: { lessonId, componentType: "VIDEO" } },
+              ],
+            });
+            message.success("Video đã được xử lý thành HLS format!");
+          })
+          .catch((error) => {
+            console.error("HLS processing error:", error);
+            message.warning(
+              "Upload thành công nhưng xử lý HLS thất bại. Video vẫn có thể xem được.",
+            );
+          });
+      }
+
+      // Refetch video components
+      queryClient.invalidateQueries({
+        queryKey: [
+          "findManyComponent",
+          { where: { lessonId, componentType: "VIDEO" } },
+        ],
+      });
+    } catch (error) {
+      console.error("Error with video:", error);
+      message.error("Có lỗi xảy ra khi upload video!");
+      throw error;
+    }
+  };
+
   // Delete handlers
   const handleDeleteComponent = async (componentId: string) => {
     Modal.confirm({
@@ -420,6 +679,33 @@ export default function LessonDetailPage() {
           onEdit={handleEditWord}
           onDelete={handleDeleteComponent}
           getWordTypeLabel={getWordTypeLabel}
+        />
+      ),
+    },
+    {
+      key: "video",
+      label: (
+        <span className="flex items-center gap-2">
+          <Video className="w-4 h-4" />
+          Video ({videoComponents?.length || 0})
+        </span>
+      ),
+      children: (
+        <VideoTab
+          components={(videoComponents || []) as ComponentData[]}
+          loading={videoLoading}
+          onAdd={handleAddVideo}
+          onAddLarge={handleAddLargeVideo}
+          onEdit={handleEditVideo}
+          onDelete={handleDeleteComponent}
+          onPreviewVideo={(video) => {
+            setIsPreviewOpening(true);
+            setPreviewVideo(video);
+            setTimeout(() => {
+              setIsPreviewOpening(false);
+            }, 500);
+          }}
+          isPreviewOpening={isPreviewOpening}
         />
       ),
     },
@@ -529,6 +815,81 @@ export default function LessonDetailPage() {
           title={editingWord ? "Sửa từ vựng" : "Thêm từ vựng"}
           nextIndex={(wordComponents?.length || 0) + 1}
         />
+
+        <VideoModal
+          open={videoModalOpen}
+          onCancel={() => setVideoModalOpen(false)}
+          onSubmit={handleSubmitVideo}
+          editingData={editingVideo}
+          title={editingVideo ? "Sửa video" : "Upload video"}
+          nextIndex={(videoComponents?.length || 0) + 1}
+        />
+
+        {/* Video Preview Modal */}
+        <VideoPreviewModal
+          open={!!previewVideo}
+          onClose={() => {
+            setPreviewVideo(null);
+            setIsPreviewOpening(false);
+          }}
+          title={previewVideo?.title || "Video"}
+          src={previewVideo?.hlsUrl || ""}
+          poster={previewVideo?.thumbnailUrl}
+        />
+
+        {/* Chunked Upload Modal */}
+        <ChunkedUploadModal
+          open={chunkedUploadModalOpen}
+          onCancel={() => setChunkedUploadModalOpen(false)}
+          title="Upload Video Lớn (Multi-GB)"
+          onSuccess={async (result) => {
+            console.log("Chunked upload success:", result);
+
+            // Create component linking to video
+            try {
+              await createComponentMutation.mutateAsync({
+                data: {
+                  lessonId,
+                  componentType: "VIDEO",
+                  videoId: result.id,
+                  indexInLesson: (videoComponents?.length || 0) + 1,
+                },
+              });
+
+              // Trigger HLS processing asynchronously
+              processHLSMutation
+                .mutateAsync({
+                  pathParams: { id: result.id },
+                })
+                .then(() => {
+                  queryClient.invalidateQueries({
+                    queryKey: [
+                      "findManyComponent",
+                      { where: { lessonId, componentType: "VIDEO" } },
+                    ],
+                  });
+                  message.success("Video lớn đã được xử lý thành HLS format!");
+                })
+                .catch((error) => {
+                  console.error("HLS processing error:", error);
+                  message.warning(
+                    "Upload thành công nhưng xử lý HLS thất bại. Video vẫn có thể xem được.",
+                  );
+                });
+
+              // Refresh video components
+              queryClient.invalidateQueries({
+                queryKey: [
+                  "findManyComponent",
+                  { where: { lessonId, componentType: "VIDEO" } },
+                ],
+              });
+            } catch (error) {
+              console.error("Error creating video component:", error);
+              message.error("Upload thành công nhưng không thể tạo component!");
+            }
+          }}
+        />
       </div>
     </div>
   );
@@ -545,6 +906,15 @@ interface TabProps {
 
 interface WordTabProps extends TabProps {
   getWordTypeLabel: (type: string) => string;
+}
+
+interface VideoTabProps extends TabProps {
+  onPreviewVideo: (video: {
+    title: string;
+    hlsUrl: string;
+    thumbnailUrl?: string;
+  }) => void;
+  isPreviewOpening: boolean;
 }
 
 function ContentTab({
@@ -772,6 +1142,173 @@ function WordTab({
                 className="bg-green-600 hover:bg-green-700!"
               >
                 Thêm từ vựng đầu tiên
+              </Button>
+            </Empty>
+          ),
+        }}
+      />
+    </div>
+  );
+}
+
+function VideoTab({
+  components,
+  loading,
+  onAdd,
+  onAddLarge,
+  onEdit,
+  onDelete,
+  onPreviewVideo,
+  isPreviewOpening,
+}: VideoTabProps) {
+  const formatDuration = (seconds: number | null | undefined) => {
+    if (!seconds) return "Chưa xử lý";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const columns = [
+    {
+      title: "Vị trí",
+      dataIndex: "indexInLesson",
+      key: "index",
+      width: 80,
+      align: "center" as const,
+      render: (index: number) => (
+        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-100 text-purple-700 font-semibold">
+          {index}
+        </span>
+      ),
+    },
+    {
+      title: "Video",
+      key: "video",
+      render: (_: unknown, record: ComponentData) => (
+        <div>
+          <div className="font-semibold text-gray-900 mb-1">
+            {record.video?.title}
+          </div>
+          {record.video?.description && (
+            <div className="text-sm text-gray-600 line-clamp-1">
+              {record.video.description}
+            </div>
+          )}
+          <div className="flex items-center gap-3 mt-2">
+            <div className="flex items-center gap-1 text-sm text-gray-600">
+              <Clock className="w-4 h-4" />
+              <span>{formatDuration(record.video?.duration)}</span>
+            </div>
+            {record.video?.hlsPlaylistUrl && (
+              <Tag color="success">HLS Ready</Tag>
+            )}
+            {!record.video?.hlsPlaylistUrl && (
+              <Tag color="processing">Đang xử lý...</Tag>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      width: 180,
+      align: "center" as const,
+      render: (_: unknown, record: ComponentData) => (
+        <Space>
+          {record.video?.hlsPlaylistUrl && (
+            <Button
+              type="link"
+              size="small"
+              icon={<Play className="w-4 h-4" />}
+              loading={isPreviewOpening}
+              onClick={() => {
+                if (isPreviewOpening) return;
+
+                onPreviewVideo({
+                  title: record.video?.title || "Video",
+                  hlsUrl: record.video?.hlsPlaylistUrl || "",
+                  thumbnailUrl: record.video?.thumbnailUrl || undefined,
+                });
+              }}
+            >
+              Xem
+            </Button>
+          )}
+          <Button
+            size="small"
+            icon={<Edit className="w-4 h-4" />}
+            onClick={() => onEdit(record)}
+          >
+            Sửa
+          </Button>
+          <Button
+            size="small"
+            icon={<Trash2 className="w-4 h-4" />}
+            onClick={() => onDelete(record.id)}
+            danger
+          >
+            Xóa
+          </Button>
+        </Space>
+      ),
+    },
+  ];
+
+  return (
+    <div className="space-y-4 p-6">
+      <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+            <Video className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <Text className="font-semibold text-gray-900">Video bài giảng</Text>
+            <Text type="secondary" className="text-sm block">
+              Quản lý video bài giảng với HLS streaming
+            </Text>
+          </div>
+        </div>
+        <Space>
+          <Button
+            type="primary"
+            icon={<Plus className="w-4 h-4" />}
+            onClick={onAdd}
+            className="bg-purple-600 hover:bg-purple-700!"
+          >
+            Upload video
+          </Button>
+          {/* <Button
+            type="primary"
+            ghost
+            icon={<Plus className="w-4 h-4" />}
+            onClick={onAddLarge}
+            className="border-purple-600 text-purple-600 hover:bg-purple-50!"
+          >
+            Upload lớn (GB)
+          </Button> */}
+        </Space>
+      </div>
+
+      <Table
+        columns={columns}
+        dataSource={components}
+        loading={loading}
+        rowKey="id"
+        pagination={{
+          pageSize: 10,
+          showTotal: (total) => `Tổng ${total} video`,
+        }}
+        locale={{
+          emptyText: (
+            <Empty description="Chưa có video nào">
+              <Button
+                type="primary"
+                icon={<Plus className="w-4 h-4" />}
+                onClick={onAdd}
+                className="bg-purple-600 hover:bg-purple-700!"
+              >
+                Upload video đầu tiên
               </Button>
             </Empty>
           ),

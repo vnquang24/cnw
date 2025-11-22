@@ -18,6 +18,8 @@ export * from "./admin-course-manager";
 export * from "./user-word";
 export * from "./test-result";
 export * from "./user-note";
+export * from "./video-content";
+export * from "./video-comment";
 export * from "./user";
 export * from "./user-group";
 export * from "./permission";

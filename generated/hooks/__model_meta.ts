@@ -301,6 +301,13 @@ const metadata: ModelMeta = {
             { name: "@default", args: [{ name: "value", value: 10 }] },
           ],
         },
+        passScore: {
+          name: "passScore",
+          type: "Int",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: 5 }] },
+          ],
+        },
         shuffleQuestions: {
           name: "shuffleQuestions",
           type: "Boolean",
@@ -313,13 +320,6 @@ const metadata: ModelMeta = {
           type: "Boolean",
           attributes: [
             { name: "@default", args: [{ name: "value", value: false }] },
-          ],
-        },
-        passScore: {
-          name: "passScore",
-          type: "Int",
-          attributes: [
-            { name: "@default", args: [{ name: "value", value: 5 }] },
           ],
         },
         questions: {
@@ -636,6 +636,13 @@ const metadata: ModelMeta = {
           isForeignKey: true,
           relationField: "word",
         },
+        videoId: {
+          name: "videoId",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "video",
+        },
         content: {
           name: "content",
           type: "String",
@@ -670,6 +677,15 @@ const metadata: ModelMeta = {
           backLink: "components",
           isRelationOwner: true,
           foreignKeyMapping: { id: "wordId" },
+        },
+        video: {
+          name: "video",
+          type: "VideoContent",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "components",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "videoId" },
         },
         userWords: {
           name: "userWords",
@@ -1214,6 +1230,217 @@ const metadata: ModelMeta = {
         },
       },
     },
+    videoContent: {
+      name: "VideoContent",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        title: {
+          name: "title",
+          type: "String",
+        },
+        originalFile: {
+          name: "originalFile",
+          type: "String",
+        },
+        hlsPlaylistUrl: {
+          name: "hlsPlaylistUrl",
+          type: "String",
+        },
+        thumbnailUrl: {
+          name: "thumbnailUrl",
+          type: "String",
+          isOptional: true,
+        },
+        duration: {
+          name: "duration",
+          type: "Int",
+          isOptional: true,
+        },
+        resolution: {
+          name: "resolution",
+          type: "String",
+          isOptional: true,
+        },
+        fileSize: {
+          name: "fileSize",
+          type: "Int",
+          isOptional: true,
+        },
+        uploadedBy: {
+          name: "uploadedBy",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "uploader",
+        },
+        processedAt: {
+          name: "processedAt",
+          type: "DateTime",
+          isOptional: true,
+        },
+        uploader: {
+          name: "uploader",
+          type: "User",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "uploadedVideos",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "uploadedBy" },
+        },
+        components: {
+          name: "components",
+          type: "Component",
+          isDataModel: true,
+          isArray: true,
+          backLink: "video",
+        },
+        videoComments: {
+          name: "videoComments",
+          type: "VideoComment",
+          isDataModel: true,
+          isArray: true,
+          backLink: "video",
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    videoComment: {
+      name: "VideoComment",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        videoId: {
+          name: "videoId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "video",
+        },
+        userId: {
+          name: "userId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "user",
+        },
+        content: {
+          name: "content",
+          type: "String",
+        },
+        timestamp: {
+          name: "timestamp",
+          type: "Int",
+        },
+        parentId: {
+          name: "parentId",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "parent",
+        },
+        isResolved: {
+          name: "isResolved",
+          type: "Boolean",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: false }] },
+          ],
+        },
+        video: {
+          name: "video",
+          type: "VideoContent",
+          isDataModel: true,
+          backLink: "videoComments",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "videoId" },
+        },
+        user: {
+          name: "user",
+          type: "User",
+          isDataModel: true,
+          backLink: "videoComments",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "userId" },
+        },
+        parent: {
+          name: "parent",
+          type: "VideoComment",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "replies",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "parentId" },
+        },
+        replies: {
+          name: "replies",
+          type: "VideoComment",
+          isDataModel: true,
+          isArray: true,
+          backLink: "parent",
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
     user: {
       name: "User",
       fields: {
@@ -1395,6 +1622,20 @@ const metadata: ModelMeta = {
           isDataModel: true,
           isArray: true,
           backLink: "uploader",
+        },
+        uploadedVideos: {
+          name: "uploadedVideos",
+          type: "VideoContent",
+          isDataModel: true,
+          isArray: true,
+          backLink: "uploader",
+        },
+        videoComments: {
+          name: "videoComments",
+          type: "VideoComment",
+          isDataModel: true,
+          isArray: true,
+          backLink: "user",
         },
       },
       uniqueConstraints: {

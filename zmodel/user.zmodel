@@ -35,6 +35,8 @@ model User extends Base {
   createdCourses  Course[]       @relation("CourseCreator")
   createdLessons  Lesson[]       @relation("LessonCreator")
   uploadedFiles   MediaFile[]    @relation("MediaUploader")
+  uploadedVideos  VideoContent[] @relation("VideoUploader")
+  videoComments   VideoComment[] @relation("VideoCommenter")
 
   @@unique([email, phone])
   @@auth

@@ -4,7 +4,7 @@
 
 /* eslint-disable */
 
-import type { Prisma, Test } from "@prisma/client";
+import type { Prisma, VideoContent } from "@prisma/client";
 import type {
   UseMutationOptions,
   UseQueryOptions,
@@ -36,48 +36,12 @@ import type {
   UseSuspenseInfiniteQueryOptions,
 } from "@tanstack/react-query";
 
-export function useCreateTest(
-  options?: Omit<
-    UseMutationOptions<Test | undefined, DefaultError, Prisma.TestCreateArgs> &
-      ExtraMutationOptions,
-    "mutationFn"
-  >,
-) {
-  const { endpoint, fetch } = getHooksContext();
-  const _mutation = useModelMutation<
-    Prisma.TestCreateArgs,
-    DefaultError,
-    Test,
-    true
-  >("Test", "POST", `${endpoint}/test/create`, metadata, options, fetch, true);
-  const mutation = {
-    ..._mutation,
-    mutateAsync: async <T extends Prisma.TestCreateArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestCreateArgs>,
-      options?: Omit<
-        UseMutationOptions<
-          CheckSelect<T, Test, Prisma.TestGetPayload<T>> | undefined,
-          DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestCreateArgs>
-        > &
-          ExtraMutationOptions,
-        "mutationFn"
-      >,
-    ) => {
-      return (await _mutation.mutateAsync(args, options as any)) as
-        | CheckSelect<T, Test, Prisma.TestGetPayload<T>>
-        | undefined;
-    },
-  };
-  return mutation;
-}
-
-export function useCreateManyTest(
+export function useCreateVideoContent(
   options?: Omit<
     UseMutationOptions<
-      Prisma.BatchPayload,
+      VideoContent | undefined,
       DefaultError,
-      Prisma.TestCreateManyArgs
+      Prisma.VideoContentCreateArgs
     > &
       ExtraMutationOptions,
     "mutationFn"
@@ -85,14 +49,63 @@ export function useCreateManyTest(
 ) {
   const { endpoint, fetch } = getHooksContext();
   const _mutation = useModelMutation<
-    Prisma.TestCreateManyArgs,
+    Prisma.VideoContentCreateArgs,
+    DefaultError,
+    VideoContent,
+    true
+  >(
+    "VideoContent",
+    "POST",
+    `${endpoint}/videoContent/create`,
+    metadata,
+    options,
+    fetch,
+    true,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.VideoContentCreateArgs>(
+      args: Prisma.SelectSubset<T, Prisma.VideoContentCreateArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          | CheckSelect<T, VideoContent, Prisma.VideoContentGetPayload<T>>
+          | undefined,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.VideoContentCreateArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(args, options as any)) as
+        | CheckSelect<T, VideoContent, Prisma.VideoContentGetPayload<T>>
+        | undefined;
+    },
+  };
+  return mutation;
+}
+
+export function useCreateManyVideoContent(
+  options?: Omit<
+    UseMutationOptions<
+      Prisma.BatchPayload,
+      DefaultError,
+      Prisma.VideoContentCreateManyArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.VideoContentCreateManyArgs,
     DefaultError,
     Prisma.BatchPayload,
     false
   >(
-    "Test",
+    "VideoContent",
     "POST",
-    `${endpoint}/test/createMany`,
+    `${endpoint}/videoContent/createMany`,
     metadata,
     options,
     fetch,
@@ -100,13 +113,13 @@ export function useCreateManyTest(
   );
   const mutation = {
     ..._mutation,
-    mutateAsync: async <T extends Prisma.TestCreateManyArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestCreateManyArgs>,
+    mutateAsync: async <T extends Prisma.VideoContentCreateManyArgs>(
+      args: Prisma.SelectSubset<T, Prisma.VideoContentCreateManyArgs>,
       options?: Omit<
         UseMutationOptions<
           Prisma.BatchPayload,
           DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestCreateManyArgs>
+          Prisma.SelectSubset<T, Prisma.VideoContentCreateManyArgs>
         > &
           ExtraMutationOptions,
         "mutationFn"
@@ -121,35 +134,35 @@ export function useCreateManyTest(
   return mutation;
 }
 
-export function useFindManyTest<
-  TArgs extends Prisma.TestFindManyArgs,
+export function useFindManyVideoContent<
+  TArgs extends Prisma.VideoContentFindManyArgs,
   TQueryFnData = Array<
-    Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean }
+    Prisma.VideoContentGetPayload<TArgs> & { $optimistic?: boolean }
   >,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindManyArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.VideoContentFindManyArgs>,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
     ExtraQueryOptions,
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findMany`,
+    "VideoContent",
+    `${endpoint}/videoContent/findMany`,
     args,
     options,
     fetch,
   );
 }
 
-export function useInfiniteFindManyTest<
-  TArgs extends Prisma.TestFindManyArgs,
-  TQueryFnData = Array<Prisma.TestGetPayload<TArgs>>,
+export function useInfiniteFindManyVideoContent<
+  TArgs extends Prisma.VideoContentFindManyArgs,
+  TQueryFnData = Array<Prisma.VideoContentGetPayload<TArgs>>,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindManyArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.VideoContentFindManyArgs>,
   options?: Omit<
     UseInfiniteQueryOptions<TQueryFnData, TError, InfiniteData<TData>>,
     "queryKey" | "initialPageParam"
@@ -158,23 +171,23 @@ export function useInfiniteFindManyTest<
   options = options ?? { getNextPageParam: () => null };
   const { endpoint, fetch } = getHooksContext();
   return useInfiniteModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findMany`,
+    "VideoContent",
+    `${endpoint}/videoContent/findMany`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseFindManyTest<
-  TArgs extends Prisma.TestFindManyArgs,
+export function useSuspenseFindManyVideoContent<
+  TArgs extends Prisma.VideoContentFindManyArgs,
   TQueryFnData = Array<
-    Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean }
+    Prisma.VideoContentGetPayload<TArgs> & { $optimistic?: boolean }
   >,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindManyArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.VideoContentFindManyArgs>,
   options?: Omit<
     UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
     "queryKey"
@@ -183,21 +196,21 @@ export function useSuspenseFindManyTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findMany`,
+    "VideoContent",
+    `${endpoint}/videoContent/findMany`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseInfiniteFindManyTest<
-  TArgs extends Prisma.TestFindManyArgs,
-  TQueryFnData = Array<Prisma.TestGetPayload<TArgs>>,
+export function useSuspenseInfiniteFindManyVideoContent<
+  TArgs extends Prisma.VideoContentFindManyArgs,
+  TQueryFnData = Array<Prisma.VideoContentGetPayload<TArgs>>,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindManyArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.VideoContentFindManyArgs>,
   options?: Omit<
     UseSuspenseInfiniteQueryOptions<TQueryFnData, TError, InfiniteData<TData>>,
     "queryKey" | "initialPageParam"
@@ -206,41 +219,45 @@ export function useSuspenseInfiniteFindManyTest<
   options = options ?? { getNextPageParam: () => null };
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseInfiniteModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findMany`,
+    "VideoContent",
+    `${endpoint}/videoContent/findMany`,
     args,
     options,
     fetch,
   );
 }
 
-export function useFindUniqueTest<
-  TArgs extends Prisma.TestFindUniqueArgs,
-  TQueryFnData = Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean },
+export function useFindUniqueVideoContent<
+  TArgs extends Prisma.VideoContentFindUniqueArgs,
+  TQueryFnData = Prisma.VideoContentGetPayload<TArgs> & {
+    $optimistic?: boolean;
+  },
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args: Prisma.SelectSubset<TArgs, Prisma.TestFindUniqueArgs>,
+  args: Prisma.SelectSubset<TArgs, Prisma.VideoContentFindUniqueArgs>,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
     ExtraQueryOptions,
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findUnique`,
+    "VideoContent",
+    `${endpoint}/videoContent/findUnique`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseFindUniqueTest<
-  TArgs extends Prisma.TestFindUniqueArgs,
-  TQueryFnData = Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean },
+export function useSuspenseFindUniqueVideoContent<
+  TArgs extends Prisma.VideoContentFindUniqueArgs,
+  TQueryFnData = Prisma.VideoContentGetPayload<TArgs> & {
+    $optimistic?: boolean;
+  },
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args: Prisma.SelectSubset<TArgs, Prisma.TestFindUniqueArgs>,
+  args: Prisma.SelectSubset<TArgs, Prisma.VideoContentFindUniqueArgs>,
   options?: Omit<
     UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
     "queryKey"
@@ -249,41 +266,45 @@ export function useSuspenseFindUniqueTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findUnique`,
+    "VideoContent",
+    `${endpoint}/videoContent/findUnique`,
     args,
     options,
     fetch,
   );
 }
 
-export function useFindFirstTest<
-  TArgs extends Prisma.TestFindFirstArgs,
-  TQueryFnData = Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean },
+export function useFindFirstVideoContent<
+  TArgs extends Prisma.VideoContentFindFirstArgs,
+  TQueryFnData = Prisma.VideoContentGetPayload<TArgs> & {
+    $optimistic?: boolean;
+  },
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindFirstArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.VideoContentFindFirstArgs>,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
     ExtraQueryOptions,
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findFirst`,
+    "VideoContent",
+    `${endpoint}/videoContent/findFirst`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseFindFirstTest<
-  TArgs extends Prisma.TestFindFirstArgs,
-  TQueryFnData = Prisma.TestGetPayload<TArgs> & { $optimistic?: boolean },
+export function useSuspenseFindFirstVideoContent<
+  TArgs extends Prisma.VideoContentFindFirstArgs,
+  TQueryFnData = Prisma.VideoContentGetPayload<TArgs> & {
+    $optimistic?: boolean;
+  },
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestFindFirstArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.VideoContentFindFirstArgs>,
   options?: Omit<
     UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
     "queryKey"
@@ -292,56 +313,20 @@ export function useSuspenseFindFirstTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/findFirst`,
+    "VideoContent",
+    `${endpoint}/videoContent/findFirst`,
     args,
     options,
     fetch,
   );
 }
 
-export function useUpdateTest(
-  options?: Omit<
-    UseMutationOptions<Test | undefined, DefaultError, Prisma.TestUpdateArgs> &
-      ExtraMutationOptions,
-    "mutationFn"
-  >,
-) {
-  const { endpoint, fetch } = getHooksContext();
-  const _mutation = useModelMutation<
-    Prisma.TestUpdateArgs,
-    DefaultError,
-    Test,
-    true
-  >("Test", "PUT", `${endpoint}/test/update`, metadata, options, fetch, true);
-  const mutation = {
-    ..._mutation,
-    mutateAsync: async <T extends Prisma.TestUpdateArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestUpdateArgs>,
-      options?: Omit<
-        UseMutationOptions<
-          CheckSelect<T, Test, Prisma.TestGetPayload<T>> | undefined,
-          DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestUpdateArgs>
-        > &
-          ExtraMutationOptions,
-        "mutationFn"
-      >,
-    ) => {
-      return (await _mutation.mutateAsync(args, options as any)) as
-        | CheckSelect<T, Test, Prisma.TestGetPayload<T>>
-        | undefined;
-    },
-  };
-  return mutation;
-}
-
-export function useUpdateManyTest(
+export function useUpdateVideoContent(
   options?: Omit<
     UseMutationOptions<
-      Prisma.BatchPayload,
+      VideoContent | undefined,
       DefaultError,
-      Prisma.TestUpdateManyArgs
+      Prisma.VideoContentUpdateArgs
     > &
       ExtraMutationOptions,
     "mutationFn"
@@ -349,95 +334,14 @@ export function useUpdateManyTest(
 ) {
   const { endpoint, fetch } = getHooksContext();
   const _mutation = useModelMutation<
-    Prisma.TestUpdateManyArgs,
+    Prisma.VideoContentUpdateArgs,
     DefaultError,
-    Prisma.BatchPayload,
-    false
+    VideoContent,
+    true
   >(
-    "Test",
+    "VideoContent",
     "PUT",
-    `${endpoint}/test/updateMany`,
-    metadata,
-    options,
-    fetch,
-    false,
-  );
-  const mutation = {
-    ..._mutation,
-    mutateAsync: async <T extends Prisma.TestUpdateManyArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestUpdateManyArgs>,
-      options?: Omit<
-        UseMutationOptions<
-          Prisma.BatchPayload,
-          DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestUpdateManyArgs>
-        > &
-          ExtraMutationOptions,
-        "mutationFn"
-      >,
-    ) => {
-      return (await _mutation.mutateAsync(
-        args,
-        options as any,
-      )) as Prisma.BatchPayload;
-    },
-  };
-  return mutation;
-}
-
-export function useUpsertTest(
-  options?: Omit<
-    UseMutationOptions<Test | undefined, DefaultError, Prisma.TestUpsertArgs> &
-      ExtraMutationOptions,
-    "mutationFn"
-  >,
-) {
-  const { endpoint, fetch } = getHooksContext();
-  const _mutation = useModelMutation<
-    Prisma.TestUpsertArgs,
-    DefaultError,
-    Test,
-    true
-  >("Test", "POST", `${endpoint}/test/upsert`, metadata, options, fetch, true);
-  const mutation = {
-    ..._mutation,
-    mutateAsync: async <T extends Prisma.TestUpsertArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestUpsertArgs>,
-      options?: Omit<
-        UseMutationOptions<
-          CheckSelect<T, Test, Prisma.TestGetPayload<T>> | undefined,
-          DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestUpsertArgs>
-        > &
-          ExtraMutationOptions,
-        "mutationFn"
-      >,
-    ) => {
-      return (await _mutation.mutateAsync(args, options as any)) as
-        | CheckSelect<T, Test, Prisma.TestGetPayload<T>>
-        | undefined;
-    },
-  };
-  return mutation;
-}
-
-export function useDeleteTest(
-  options?: Omit<
-    UseMutationOptions<Test | undefined, DefaultError, Prisma.TestDeleteArgs> &
-      ExtraMutationOptions,
-    "mutationFn"
-  >,
-) {
-  const { endpoint, fetch } = getHooksContext();
-  const _mutation = useModelMutation<
-    Prisma.TestDeleteArgs,
-    DefaultError,
-    Test,
-    true
-  >(
-    "Test",
-    "DELETE",
-    `${endpoint}/test/delete`,
+    `${endpoint}/videoContent/update`,
     metadata,
     options,
     fetch,
@@ -445,32 +349,33 @@ export function useDeleteTest(
   );
   const mutation = {
     ..._mutation,
-    mutateAsync: async <T extends Prisma.TestDeleteArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestDeleteArgs>,
+    mutateAsync: async <T extends Prisma.VideoContentUpdateArgs>(
+      args: Prisma.SelectSubset<T, Prisma.VideoContentUpdateArgs>,
       options?: Omit<
         UseMutationOptions<
-          CheckSelect<T, Test, Prisma.TestGetPayload<T>> | undefined,
+          | CheckSelect<T, VideoContent, Prisma.VideoContentGetPayload<T>>
+          | undefined,
           DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestDeleteArgs>
+          Prisma.SelectSubset<T, Prisma.VideoContentUpdateArgs>
         > &
           ExtraMutationOptions,
         "mutationFn"
       >,
     ) => {
       return (await _mutation.mutateAsync(args, options as any)) as
-        | CheckSelect<T, Test, Prisma.TestGetPayload<T>>
+        | CheckSelect<T, VideoContent, Prisma.VideoContentGetPayload<T>>
         | undefined;
     },
   };
   return mutation;
 }
 
-export function useDeleteManyTest(
+export function useUpdateManyVideoContent(
   options?: Omit<
     UseMutationOptions<
       Prisma.BatchPayload,
       DefaultError,
-      Prisma.TestDeleteManyArgs
+      Prisma.VideoContentUpdateManyArgs
     > &
       ExtraMutationOptions,
     "mutationFn"
@@ -478,14 +383,14 @@ export function useDeleteManyTest(
 ) {
   const { endpoint, fetch } = getHooksContext();
   const _mutation = useModelMutation<
-    Prisma.TestDeleteManyArgs,
+    Prisma.VideoContentUpdateManyArgs,
     DefaultError,
     Prisma.BatchPayload,
     false
   >(
-    "Test",
-    "DELETE",
-    `${endpoint}/test/deleteMany`,
+    "VideoContent",
+    "PUT",
+    `${endpoint}/videoContent/updateMany`,
     metadata,
     options,
     fetch,
@@ -493,13 +398,13 @@ export function useDeleteManyTest(
   );
   const mutation = {
     ..._mutation,
-    mutateAsync: async <T extends Prisma.TestDeleteManyArgs>(
-      args: Prisma.SelectSubset<T, Prisma.TestDeleteManyArgs>,
+    mutateAsync: async <T extends Prisma.VideoContentUpdateManyArgs>(
+      args: Prisma.SelectSubset<T, Prisma.VideoContentUpdateManyArgs>,
       options?: Omit<
         UseMutationOptions<
           Prisma.BatchPayload,
           DefaultError,
-          Prisma.SelectSubset<T, Prisma.TestDeleteManyArgs>
+          Prisma.SelectSubset<T, Prisma.VideoContentUpdateManyArgs>
         > &
           ExtraMutationOptions,
         "mutationFn"
@@ -514,33 +419,180 @@ export function useDeleteManyTest(
   return mutation;
 }
 
-export function useAggregateTest<
-  TArgs extends Prisma.TestAggregateArgs,
-  TQueryFnData = Prisma.GetTestAggregateType<TArgs>,
+export function useUpsertVideoContent(
+  options?: Omit<
+    UseMutationOptions<
+      VideoContent | undefined,
+      DefaultError,
+      Prisma.VideoContentUpsertArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.VideoContentUpsertArgs,
+    DefaultError,
+    VideoContent,
+    true
+  >(
+    "VideoContent",
+    "POST",
+    `${endpoint}/videoContent/upsert`,
+    metadata,
+    options,
+    fetch,
+    true,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.VideoContentUpsertArgs>(
+      args: Prisma.SelectSubset<T, Prisma.VideoContentUpsertArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          | CheckSelect<T, VideoContent, Prisma.VideoContentGetPayload<T>>
+          | undefined,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.VideoContentUpsertArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(args, options as any)) as
+        | CheckSelect<T, VideoContent, Prisma.VideoContentGetPayload<T>>
+        | undefined;
+    },
+  };
+  return mutation;
+}
+
+export function useDeleteVideoContent(
+  options?: Omit<
+    UseMutationOptions<
+      VideoContent | undefined,
+      DefaultError,
+      Prisma.VideoContentDeleteArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.VideoContentDeleteArgs,
+    DefaultError,
+    VideoContent,
+    true
+  >(
+    "VideoContent",
+    "DELETE",
+    `${endpoint}/videoContent/delete`,
+    metadata,
+    options,
+    fetch,
+    true,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.VideoContentDeleteArgs>(
+      args: Prisma.SelectSubset<T, Prisma.VideoContentDeleteArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          | CheckSelect<T, VideoContent, Prisma.VideoContentGetPayload<T>>
+          | undefined,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.VideoContentDeleteArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(args, options as any)) as
+        | CheckSelect<T, VideoContent, Prisma.VideoContentGetPayload<T>>
+        | undefined;
+    },
+  };
+  return mutation;
+}
+
+export function useDeleteManyVideoContent(
+  options?: Omit<
+    UseMutationOptions<
+      Prisma.BatchPayload,
+      DefaultError,
+      Prisma.VideoContentDeleteManyArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.VideoContentDeleteManyArgs,
+    DefaultError,
+    Prisma.BatchPayload,
+    false
+  >(
+    "VideoContent",
+    "DELETE",
+    `${endpoint}/videoContent/deleteMany`,
+    metadata,
+    options,
+    fetch,
+    false,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.VideoContentDeleteManyArgs>(
+      args: Prisma.SelectSubset<T, Prisma.VideoContentDeleteManyArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          Prisma.BatchPayload,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.VideoContentDeleteManyArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(
+        args,
+        options as any,
+      )) as Prisma.BatchPayload;
+    },
+  };
+  return mutation;
+}
+
+export function useAggregateVideoContent<
+  TArgs extends Prisma.VideoContentAggregateArgs,
+  TQueryFnData = Prisma.GetVideoContentAggregateType<TArgs>,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args: Prisma.SelectSubset<TArgs, Prisma.TestAggregateArgs>,
+  args: Prisma.SelectSubset<TArgs, Prisma.VideoContentAggregateArgs>,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
     ExtraQueryOptions,
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/aggregate`,
+    "VideoContent",
+    `${endpoint}/videoContent/aggregate`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseAggregateTest<
-  TArgs extends Prisma.TestAggregateArgs,
-  TQueryFnData = Prisma.GetTestAggregateType<TArgs>,
+export function useSuspenseAggregateVideoContent<
+  TArgs extends Prisma.VideoContentAggregateArgs,
+  TQueryFnData = Prisma.GetVideoContentAggregateType<TArgs>,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args: Prisma.SelectSubset<TArgs, Prisma.TestAggregateArgs>,
+  args: Prisma.SelectSubset<TArgs, Prisma.VideoContentAggregateArgs>,
   options?: Omit<
     UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
     "queryKey"
@@ -549,23 +601,23 @@ export function useSuspenseAggregateTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/aggregate`,
+    "VideoContent",
+    `${endpoint}/videoContent/aggregate`,
     args,
     options,
     fetch,
   );
 }
 
-export function useGroupByTest<
-  TArgs extends Prisma.TestGroupByArgs,
+export function useGroupByVideoContent<
+  TArgs extends Prisma.VideoContentGroupByArgs,
   HasSelectOrTake extends Prisma.Or<
     Prisma.Extends<"skip", Prisma.Keys<TArgs>>,
     Prisma.Extends<"take", Prisma.Keys<TArgs>>
   >,
   OrderByArg extends Prisma.True extends HasSelectOrTake
-    ? { orderBy: Prisma.TestGroupByArgs["orderBy"] }
-    : { orderBy?: Prisma.TestGroupByArgs["orderBy"] },
+    ? { orderBy: Prisma.VideoContentGroupByArgs["orderBy"] }
+    : { orderBy?: Prisma.VideoContentGroupByArgs["orderBy"] },
   OrderFields extends Prisma.ExcludeUnderscoreKeys<
     Prisma.Keys<Prisma.MaybeTupleToUnion<TArgs["orderBy"]>>
   >,
@@ -618,13 +670,19 @@ export function useGroupByTest<
               }[OrderFields],
   TQueryFnData = {} extends InputErrors
     ? Array<
-        PickEnumerable<Prisma.TestGroupByOutputType, TArgs["by"]> & {
+        PickEnumerable<Prisma.VideoContentGroupByOutputType, TArgs["by"]> & {
           [P in keyof TArgs &
-            keyof Prisma.TestGroupByOutputType]: P extends "_count"
+            keyof Prisma.VideoContentGroupByOutputType]: P extends "_count"
             ? TArgs[P] extends boolean
               ? number
-              : Prisma.GetScalarType<TArgs[P], Prisma.TestGroupByOutputType[P]>
-            : Prisma.GetScalarType<TArgs[P], Prisma.TestGroupByOutputType[P]>;
+              : Prisma.GetScalarType<
+                  TArgs[P],
+                  Prisma.VideoContentGroupByOutputType[P]
+                >
+            : Prisma.GetScalarType<
+                TArgs[P],
+                Prisma.VideoContentGroupByOutputType[P]
+              >;
         }
       >
     : InputErrors,
@@ -633,7 +691,11 @@ export function useGroupByTest<
 >(
   args: Prisma.SelectSubset<
     TArgs,
-    Prisma.SubsetIntersection<TArgs, Prisma.TestGroupByArgs, OrderByArg> &
+    Prisma.SubsetIntersection<
+      TArgs,
+      Prisma.VideoContentGroupByArgs,
+      OrderByArg
+    > &
       InputErrors
   >,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
@@ -641,23 +703,23 @@ export function useGroupByTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/groupBy`,
+    "VideoContent",
+    `${endpoint}/videoContent/groupBy`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseGroupByTest<
-  TArgs extends Prisma.TestGroupByArgs,
+export function useSuspenseGroupByVideoContent<
+  TArgs extends Prisma.VideoContentGroupByArgs,
   HasSelectOrTake extends Prisma.Or<
     Prisma.Extends<"skip", Prisma.Keys<TArgs>>,
     Prisma.Extends<"take", Prisma.Keys<TArgs>>
   >,
   OrderByArg extends Prisma.True extends HasSelectOrTake
-    ? { orderBy: Prisma.TestGroupByArgs["orderBy"] }
-    : { orderBy?: Prisma.TestGroupByArgs["orderBy"] },
+    ? { orderBy: Prisma.VideoContentGroupByArgs["orderBy"] }
+    : { orderBy?: Prisma.VideoContentGroupByArgs["orderBy"] },
   OrderFields extends Prisma.ExcludeUnderscoreKeys<
     Prisma.Keys<Prisma.MaybeTupleToUnion<TArgs["orderBy"]>>
   >,
@@ -710,13 +772,19 @@ export function useSuspenseGroupByTest<
               }[OrderFields],
   TQueryFnData = {} extends InputErrors
     ? Array<
-        PickEnumerable<Prisma.TestGroupByOutputType, TArgs["by"]> & {
+        PickEnumerable<Prisma.VideoContentGroupByOutputType, TArgs["by"]> & {
           [P in keyof TArgs &
-            keyof Prisma.TestGroupByOutputType]: P extends "_count"
+            keyof Prisma.VideoContentGroupByOutputType]: P extends "_count"
             ? TArgs[P] extends boolean
               ? number
-              : Prisma.GetScalarType<TArgs[P], Prisma.TestGroupByOutputType[P]>
-            : Prisma.GetScalarType<TArgs[P], Prisma.TestGroupByOutputType[P]>;
+              : Prisma.GetScalarType<
+                  TArgs[P],
+                  Prisma.VideoContentGroupByOutputType[P]
+                >
+            : Prisma.GetScalarType<
+                TArgs[P],
+                Prisma.VideoContentGroupByOutputType[P]
+              >;
         }
       >
     : InputErrors,
@@ -725,7 +793,11 @@ export function useSuspenseGroupByTest<
 >(
   args: Prisma.SelectSubset<
     TArgs,
-    Prisma.SubsetIntersection<TArgs, Prisma.TestGroupByArgs, OrderByArg> &
+    Prisma.SubsetIntersection<
+      TArgs,
+      Prisma.VideoContentGroupByArgs,
+      OrderByArg
+    > &
       InputErrors
   >,
   options?: Omit<
@@ -736,55 +808,55 @@ export function useSuspenseGroupByTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/groupBy`,
+    "VideoContent",
+    `${endpoint}/videoContent/groupBy`,
     args,
     options,
     fetch,
   );
 }
 
-export function useCountTest<
-  TArgs extends Prisma.TestCountArgs,
+export function useCountVideoContent<
+  TArgs extends Prisma.VideoContentCountArgs,
   TQueryFnData = TArgs extends { select: any }
     ? TArgs["select"] extends true
       ? number
       : Prisma.GetScalarType<
           TArgs["select"],
-          Prisma.TestCountAggregateOutputType
+          Prisma.VideoContentCountAggregateOutputType
         >
     : number,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestCountArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.VideoContentCountArgs>,
   options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
     ExtraQueryOptions,
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/count`,
+    "VideoContent",
+    `${endpoint}/videoContent/count`,
     args,
     options,
     fetch,
   );
 }
 
-export function useSuspenseCountTest<
-  TArgs extends Prisma.TestCountArgs,
+export function useSuspenseCountVideoContent<
+  TArgs extends Prisma.VideoContentCountArgs,
   TQueryFnData = TArgs extends { select: any }
     ? TArgs["select"] extends true
       ? number
       : Prisma.GetScalarType<
           TArgs["select"],
-          Prisma.TestCountAggregateOutputType
+          Prisma.VideoContentCountAggregateOutputType
         >
     : number,
   TData = TQueryFnData,
   TError = DefaultError,
 >(
-  args?: Prisma.SelectSubset<TArgs, Prisma.TestCountArgs>,
+  args?: Prisma.SelectSubset<TArgs, Prisma.VideoContentCountArgs>,
   options?: Omit<
     UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
     "queryKey"
@@ -793,27 +865,28 @@ export function useSuspenseCountTest<
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useSuspenseModelQuery<TQueryFnData, TData, TError>(
-    "Test",
-    `${endpoint}/test/count`,
+    "VideoContent",
+    `${endpoint}/videoContent/count`,
     args,
     options,
     fetch,
   );
 }
 
-export function useCheckTest<TError = DefaultError>(
+export function useCheckVideoContent<TError = DefaultError>(
   args: {
     operation: PolicyCrudKind;
     where?: {
       id?: string;
       description?: string;
-      name?: string;
+      title?: string;
+      originalFile?: string;
+      hlsPlaylistUrl?: string;
+      thumbnailUrl?: string;
       duration?: number;
-      maxAttempts?: number;
-      maxScore?: number;
-      passScore?: number;
-      shuffleQuestions?: boolean;
-      shuffleAnswers?: boolean;
+      resolution?: string;
+      fileSize?: number;
+      uploadedBy?: string;
     };
   },
   options?: Omit<UseQueryOptions<boolean, TError, boolean>, "queryKey"> &
@@ -821,8 +894,8 @@ export function useCheckTest<TError = DefaultError>(
 ) {
   const { endpoint, fetch } = getHooksContext();
   return useModelQuery<boolean, boolean, TError>(
-    "Test",
-    `${endpoint}/test/check`,
+    "VideoContent",
+    `${endpoint}/videoContent/check`,
     args,
     options,
     fetch,

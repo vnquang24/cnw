@@ -93,6 +93,7 @@ enum ComponentType {
   WORD
   TEST
   PARAGRAPH
+  VIDEO
 }
 
 enum TestResultStatus {
@@ -169,9 +170,9 @@ model Test {
   duration         Int
   maxAttempts      Int
   maxScore         Int         @default(10)
+  passScore        Int         @default(5)
   shuffleQuestions Boolean     @default(false)
   shuffleAnswers   Boolean     @default(false)
-  passScore        Int         @default(5)
   questions        Question[]
   components       Component[]
 }
@@ -230,11 +231,13 @@ model Component {
   componentType ComponentType
   testId        String?
   wordId        String?
+  videoId       String?
   content       String?       @db.Text()
   indexInLesson Int
   lesson        Lesson        @relation(fields: [lessonId], references: [id])
   test          Test?         @relation(fields: [testId], references: [id])
   word          Word?         @relation(fields: [wordId], references: [id])
+  video         VideoContent? @relation(fields: [videoId], references: [id])
   userWords     UserWord[]
   testResults   TestResult[]
   userNotes     UserNote[]
@@ -335,6 +338,46 @@ model UserNote {
   @@unique([userId, componentId])
 }
 
+model VideoContent {
+  id             String         @id() @default(cuid())
+  description    String         @default("")
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt()
+  deleted        DateTime?
+  title          String         @db.VarChar(255)
+  originalFile   String         @db.VarChar(500)
+  hlsPlaylistUrl String         @db.VarChar(500)
+  thumbnailUrl   String?        @db.VarChar(500)
+  duration       Int?
+  resolution     String?        @db.VarChar(50)
+  fileSize       Int?
+  uploadedBy     String?
+  processedAt    DateTime?
+  uploader       User?          @relation("VideoUploader", fields: [uploadedBy], references: [id])
+  components     Component[]
+  videoComments  VideoComment[]
+}
+
+model VideoComment {
+  id          String         @id() @default(cuid())
+  description String         @default("")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt()
+  deleted     DateTime?
+  videoId     String
+  userId      String
+  content     String         @db.Text()
+  timestamp   Int
+  parentId    String?
+  isResolved  Boolean        @default(false)
+  video       VideoContent   @relation(fields: [videoId], references: [id])
+  user        User           @relation("VideoCommenter", fields: [userId], references: [id])
+  parent      VideoComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies     VideoComment[] @relation("CommentReplies")
+
+  @@index([videoId, timestamp])
+}
+
 model User {
   id                  String               @id() @default(cuid())
   description         String               @default("")
@@ -365,6 +408,8 @@ model User {
   createdCourses      Course[]             @relation("CourseCreator")
   createdLessons      Lesson[]             @relation("LessonCreator")
   uploadedFiles       MediaFile[]          @relation("MediaUploader")
+  uploadedVideos      VideoContent[]       @relation("VideoUploader")
+  videoComments       VideoComment[]       @relation("VideoCommenter")
 
   @@unique([email, phone])
 }

@@ -864,6 +864,7 @@ export function useCheckComponent<TError = DefaultError>(
       componentType?: ComponentType;
       testId?: string;
       wordId?: string;
+      videoId?: string;
       content?: string;
       indexInLesson?: number;
     };

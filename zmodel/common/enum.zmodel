@@ -91,6 +91,7 @@ enum ComponentType {
   WORD
   TEST
   PARAGRAPH
+  VIDEO
 }
 
 enum TestResultStatus {

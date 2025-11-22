@@ -17,6 +17,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Tăng giới hạn body size cho Server Actions (nếu dùng)
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "500mb",
+    },
+  },
 };
 
 export default nextConfig;

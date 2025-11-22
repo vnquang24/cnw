@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -20,6 +20,8 @@ import {
   Table,
   Divider,
   Tabs,
+  Input,
+  message,
 } from "antd";
 import type { Prisma } from "@prisma/client";
 import { StatusTag } from "@/components/ui/status-tag";
@@ -44,10 +46,16 @@ import {
   useFindManyUserLesson,
   useFindManyComponent,
   useFindManyTestResult,
+  useFindUniqueVideoContent,
+  useFindManyVideoComment,
+  useCreateVideoComment,
 } from "@/generated/hooks";
 import { getUserId } from "@/lib/auth";
+import EnhancedVideoPlayer from "@/components/video/EnhancedVideoPlayer";
+import { Video } from "lucide-react";
 
 const { Title, Text, Paragraph } = Typography;
+const { TextArea } = Input;
 
 const lessonStatusConfig: Record<
   string,
@@ -75,6 +83,7 @@ const componentLabel: Record<string, string> = {
   WORD: "Từ vựng",
   TEST: "Bài kiểm tra",
   PARAGRAPH: "Nội dung học",
+  VIDEO: "Video bài giảng",
 };
 
 export default function LessonLearningPage() {
@@ -138,6 +147,7 @@ export default function LessonLearningPage() {
             },
           },
         },
+        video: true,
       },
       orderBy: { indexInLesson: "asc" as const },
     }),
@@ -181,6 +191,14 @@ export default function LessonLearningPage() {
     () =>
       (components ?? []).filter(
         (component) => component.componentType === "TEST",
+      ),
+    [components],
+  );
+
+  const videoComponents = useMemo(
+    () =>
+      (components ?? []).filter(
+        (component) => component.componentType === "VIDEO" && component.video,
       ),
     [components],
   );
@@ -428,11 +446,60 @@ export default function LessonLearningPage() {
         </Card>
       )}
 
-      {paragraphComponents.length > 0 || testComponents.length > 0 ? (
+      {paragraphComponents.length > 0 ||
+      testComponents.length > 0 ||
+      videoComponents.length > 0 ? (
         <Card title="Nội dung bài học">
           <Tabs
-            defaultActiveKey="content"
+            defaultActiveKey={videoComponents.length > 0 ? "videos" : "content"}
             items={[
+              ...(videoComponents.length > 0
+                ? [
+                    {
+                      key: "videos",
+                      label: (
+                        <Space size={8}>
+                          <Video size={16} />
+                          <span>Video bài giảng</span>
+                          <Tag color="purple">{videoComponents.length}</Tag>
+                        </Space>
+                      ),
+                      children: (
+                        <Space
+                          direction="vertical"
+                          size={16}
+                          style={{ width: "100%" }}
+                        >
+                          {videoComponents.map((component, index) => {
+                            const order =
+                              (component.indexInLesson ?? index) + 1;
+                            return (
+                              <Suspense
+                                key={component.id}
+                                fallback={
+                                  <Card>
+                                    <div className="flex justify-center py-8">
+                                      <Spin
+                                        size="large"
+                                        tip="Đang tải video..."
+                                      />
+                                    </div>
+                                  </Card>
+                                }
+                              >
+                                <VideoComponentCard
+                                  component={component}
+                                  order={order}
+                                  userId={userId}
+                                />
+                              </Suspense>
+                            );
+                          })}
+                        </Space>
+                      ),
+                    },
+                  ]
+                : []),
               ...(paragraphComponents.length > 0
                 ? [
                     {
@@ -559,6 +626,248 @@ export default function LessonLearningPage() {
           }}
         />
       )}
+    </Space>
+  );
+}
+
+// Component to display video card with player and comments
+interface VideoComponentCardProps {
+  component: any;
+  order: number;
+  userId: string | null;
+}
+
+function VideoComponentCard({
+  component,
+  order,
+  userId,
+}: VideoComponentCardProps) {
+  const video = component.video;
+  const [noteText, setNoteText] = useState("");
+  const [currentTime, setCurrentTime] = useState(0);
+
+  // Fetch video comments
+  const videoCommentsArgs = useMemo(
+    () => ({
+      where: {
+        videoId: video?.id ?? "",
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            avatarUrl: true,
+          },
+        },
+      },
+      orderBy: { timestamp: "asc" as const },
+    }),
+    [video?.id],
+  );
+
+  const { data: comments, refetch: refetchComments } = useFindManyVideoComment(
+    videoCommentsArgs,
+    {
+      enabled: Boolean(video?.id),
+    },
+  );
+
+  // Create comment mutation
+  const createCommentMutation = useCreateVideoComment({
+    onSuccess: () => {
+      message.success("Đã thêm ghi chú thành công!");
+      setNoteText("");
+      refetchComments();
+    },
+    onError: (error) => {
+      message.error("Có lỗi khi thêm ghi chú: " + error.message);
+    },
+  });
+
+  // Handle adding note
+  const handleAddNote = () => {
+    if (!noteText.trim() || !userId || !video?.id) {
+      message.warning("Vui lòng nhập nội dung ghi chú!");
+      return;
+    }
+
+    createCommentMutation.mutate({
+      data: {
+        content: noteText.trim(),
+        timestamp: Math.floor(currentTime),
+        userId: userId,
+        videoId: video.id,
+      },
+    });
+  };
+
+  if (!video) {
+    return (
+      <Card>
+        <Empty description="Video chưa được tải lên" />
+      </Card>
+    );
+  }
+
+  // Check if video has HLS playlist or fallback URL
+  const videoSrc =
+    video.hlsPlaylistUrl ||
+    `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000"}/api/video/${video.id}/stream/playlist.m3u8`;
+
+  const hasValidVideo = video.hlsPlaylistUrl || video.originalUrl;
+
+  return (
+    <Space direction="vertical" size={16} style={{ width: "100%" }}>
+      <Card title={`${order}. ${componentLabel.VIDEO}`}>
+        <Space direction="vertical" size={16} style={{ width: "100%" }}>
+          {hasValidVideo ? (
+            <div className="video-player-container">
+              <EnhancedVideoPlayer
+                videoId={video.id}
+                src={videoSrc}
+                poster={video.thumbnailUrl || undefined}
+                title={video.title}
+                userId={userId || undefined}
+                className="w-full rounded-lg"
+                width="100%"
+                height="auto"
+                onTimeUpdate={(currentTime, duration) => {
+                  setCurrentTime(currentTime);
+                }}
+              />
+
+              {/* Video metadata */}
+              <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                <Space direction="vertical" size={4} style={{ width: "100%" }}>
+                  <Text strong>{video.title}</Text>
+                  {video.duration && (
+                    <InfoBadge
+                      icon={<Video size={14} />}
+                      text={`Thời lượng: ${Math.floor(video.duration / 60)}:${String(Math.floor(video.duration % 60)).padStart(2, "0")}`}
+                      type="secondary"
+                      size="small"
+                    />
+                  )}
+                  {!video.hlsPlaylistUrl && (
+                    <InfoBadge
+                      icon="⏳"
+                      text="Video đang được xử lý để tối ưu streaming..."
+                      type="warning"
+                      size="small"
+                    />
+                  )}
+                  {video.hlsPlaylistUrl && (
+                    <InfoBadge
+                      icon="✅"
+                      text="Video sẵn sàng streaming chất lượng cao"
+                      type="success"
+                      size="small"
+                    />
+                  )}
+                </Space>
+              </div>
+
+              {/* Quick note section */}
+              {userId && (
+                <div className="mt-3 p-3 bg-blue-50 rounded-md border border-blue-200">
+                  <Space
+                    direction="vertical"
+                    size={8}
+                    style={{ width: "100%" }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <Text strong className="text-blue-800 text-sm">
+                        📝 Ghi chú tại: {Math.floor(currentTime / 60)}:
+                        {String(Math.floor(currentTime % 60)).padStart(2, "0")}
+                      </Text>
+                    </div>
+                    <TextArea
+                      value={noteText}
+                      onChange={(e) => setNoteText(e.target.value)}
+                      placeholder="Nhập ghi chú của bạn tại thời điểm này trong video..."
+                      rows={2}
+                      maxLength={500}
+                      showCount
+                      size="small"
+                    />
+                    <div className="flex justify-between items-center">
+                      <Text type="secondary" className="text-xs">
+                        Lưu tại {Math.floor(currentTime)}s
+                      </Text>
+                      <Button
+                        type="primary"
+                        onClick={handleAddNote}
+                        loading={createCommentMutation.isPending}
+                        disabled={!noteText.trim()}
+                        size="small"
+                      >
+                        Thêm
+                      </Button>
+                    </div>
+                  </Space>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Card>
+              <Empty
+                description="Video đang được xử lý, vui lòng quay lại sau"
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
+            </Card>
+          )}
+
+          {/* Comments section with fixed height and scroll */}
+          {comments && comments.length > 0 && (
+            <Card
+              size="small"
+              type="inner"
+              title={`Ghi chú (${comments.length})`}
+            >
+              <div className="max-h-64 overflow-y-auto">
+                <Space direction="vertical" size={8} style={{ width: "100%" }}>
+                  {comments.map((comment) => (
+                    <div
+                      key={comment.id}
+                      className="flex items-start gap-2 p-2 bg-gray-50 rounded"
+                    >
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium shrink-0">
+                        {comment.user?.name?.charAt(0) || "U"}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="text-sm font-medium truncate">
+                            {comment.user?.name || "Unknown"}
+                          </div>
+                          <div className="text-xs text-gray-500 whitespace-nowrap">
+                            {Math.floor(comment.timestamp / 60)}:
+                            {String(
+                              Math.floor(comment.timestamp % 60),
+                            ).padStart(2, "0")}
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-700 overflow-wrap-break-word">
+                          {comment.content}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </Space>
+              </div>
+            </Card>
+          )}
+          {video.description && (
+            <Card size="small" type="inner">
+              <Space direction="vertical" size={8}>
+                <Text strong>Mô tả:</Text>
+                <Paragraph style={{ marginBottom: 0 }}>
+                  {video.description}
+                </Paragraph>
+              </Space>
+            </Card>
+          )}
+        </Space>
+      </Card>
     </Space>
   );
 }

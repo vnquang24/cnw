@@ -49,9 +49,10 @@ model Test extends Base {
   duration           Int
   maxAttempts        Int
   maxScore           Int     @default(10)
+  passScore          Int     @default(5)  // Score required to pass (out of maxScore)
   shuffleQuestions   Boolean @default(false)
   shuffleAnswers     Boolean @default(false)
-  passScore          Int     @default(5)
+
   // Relations
   questions  Question[]
   components Component[]
@@ -101,16 +102,18 @@ model Component extends Base {
   componentType  ComponentType
   testId         String?
   wordId         String?
+  videoId        String?
   content        String?       @db.Text
   indexInLesson  Int
 
   // Relations
-  lesson      Lesson       @relation(fields: [lessonId], references: [id])
-  test        Test?        @relation(fields: [testId], references: [id])
-  word        Word?        @relation(fields: [wordId], references: [id])
-  userWords   UserWord[]
-  testResults TestResult[]
-  userNotes   UserNote[]
+  lesson        Lesson         @relation(fields: [lessonId], references: [id])
+  test          Test?          @relation(fields: [testId], references: [id])
+  word          Word?          @relation(fields: [wordId], references: [id])
+  video         VideoContent?  @relation(fields: [videoId], references: [id])
+  userWords     UserWord[]
+  testResults   TestResult[]
+  userNotes     UserNote[]
 }
 
 // UserCourse model
@@ -194,4 +197,40 @@ model UserNote extends Base {
   component Component @relation(fields: [componentId], references: [id])
 
   @@unique([userId, componentId]) // One note per user per component
+}
+
+// VideoContent model - For HLS video streaming
+model VideoContent extends Base {
+  title           String   @db.VarChar(255)
+  originalFile    String   @db.VarChar(500)  // Original video file URL in MinIO
+  hlsPlaylistUrl  String   @db.VarChar(500)  // HLS m3u8 playlist URL
+  thumbnailUrl    String?  @db.VarChar(500)  // Video thumbnail/poster
+  duration        Int?                        // Video duration in seconds
+  resolution      String?  @db.VarChar(50)   // e.g., "1920x1080"
+  fileSize        Int?                        // Original file size in bytes
+  uploadedBy      String?                     // User who uploaded the video
+  processedAt     DateTime?                   // When HLS processing completed
+
+  // Relations
+  uploader       User?          @relation("VideoUploader", fields: [uploadedBy], references: [id])
+  components     Component[]
+  videoComments  VideoComment[]
+}
+
+// VideoComment model - For timeline-based comments on videos
+model VideoComment extends Base {
+  videoId     String
+  userId      String
+  content     String   @db.Text
+  timestamp   Int                           // Comment timestamp in seconds
+  parentId    String?                       // For reply comments
+  isResolved  Boolean  @default(false)     // For marking comments as resolved
+
+  // Relations
+  video       VideoContent     @relation(fields: [videoId], references: [id])
+  user        User             @relation("VideoCommenter", fields: [userId], references: [id])
+  parent      VideoComment?    @relation("CommentReplies", fields: [parentId], references: [id])
+  replies     VideoComment[]   @relation("CommentReplies")
+
+  @@index([videoId, timestamp])  // Optimize queries by video and timestamp
 }
