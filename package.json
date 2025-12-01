@@ -6,7 +6,6 @@
     "dev": "NODE_OPTIONS='--max-old-space-size=8192' next dev --turbopack",
     "dev-window": "cross-env NODE_OPTIONS='--max-old-space-size=8192' next dev --turbopack",
     "build": "NODE_OPTIONS='--max-old-space-size=8192' next build --turbopack",
-    "dev-window": "cross-env NODE_OPTIONS='--max-old-space-size=10000' next dev --turbopack",
     "build-window": "cross-env NODE_OPTIONS='--max-old-space-size=8192' next build --turbopack",
     "start": "next start",
     "lint": "biome check",
