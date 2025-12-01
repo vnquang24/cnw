@@ -92,12 +92,15 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gray-50 ">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <Title level={1} className="!text-white !mb-6">
+      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12 sm:py-16 md:py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+          <Title
+            level={1}
+            className="!text-white !mb-6 text-2xl sm:text-3xl md:text-4xl"
+          >
             Về EduSystem
           </Title>
-          <Paragraph className="text-xl text-blue-100 leading-relaxed">
+          <Paragraph className="text-base sm:text-lg md:text-xl text-blue-100 leading-relaxed">
             Chúng tôi tin rằng giáo dục là chìa khóa mở ra tương lai. EduSystem
             được thành lập với sứ mệnh democratize education - mang giáo dục
             chất lượng cao đến với mọi người, ở mọi nơi, vào mọi lúc.
@@ -106,8 +109,8 @@ export default function AboutPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-white ">
-        <div className="max-w-6xl mx-auto px-4">
+      <section className="py-12 sm:py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <Row gutter={[32, 32]}>
             {stats.map((stat, index) => (
               <Col xs={12} md={6} key={index}>
@@ -130,16 +133,19 @@ export default function AboutPage() {
       </section>
 
       {/* Mission & Vision */}
-      <section className="py-16">
-        <div className="max-w-6xl mx-auto px-4">
+      <section className="py-12 sm:py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <Row gutter={[48, 48]} align="middle">
             <Col xs={24} lg={12}>
               <div>
-                <Title level={2} className="flex items-center">
+                <Title
+                  level={2}
+                  className="flex items-center text-xl sm:text-2xl"
+                >
                   <RocketOutlined className="mr-3 text-blue-500" />
                   Tầm nhìn
                 </Title>
-                <Paragraph className="text-lg leading-relaxed">
+                <Paragraph className="text-base sm:text-lg leading-relaxed">
                   Trở thành nền tảng giáo dục trực tuyến hàng đầu Việt Nam, nơi
                   mọi người có thể tiếp cận kiến thức chất lượng cao và phát
                   triển kỹ năng cần thiết cho thế kỷ 21.
@@ -147,11 +153,14 @@ export default function AboutPage() {
               </div>
 
               <div className="mt-8">
-                <Title level={2} className="flex items-center">
+                <Title
+                  level={2}
+                  className="flex items-center text-xl sm:text-2xl"
+                >
                   <HeartOutlined className="mr-3 text-red-500" />
                   Sứ mệnh
                 </Title>
-                <Paragraph className="text-lg leading-relaxed">
+                <Paragraph className="text-base sm:text-lg leading-relaxed">
                   Chúng tôi cam kết mang đến trải nghiệm học tập tuyệt vời thông
                   qua:
                 </Paragraph>
@@ -179,7 +188,7 @@ export default function AboutPage() {
             </Col>
 
             <Col xs={24} lg={12}>
-              <Card className="h-full bg-gradient-to-br from-blue-50 to-purple-50  ">
+              <Card className="h-full bg-gradient-to-br from-blue-50 to-purple-50">
                 <Title level={3}>Hành trình phát triển</Title>
                 <Timeline
                   items={[
@@ -252,11 +261,16 @@ export default function AboutPage() {
       </section>
 
       {/* Features */}
-      <section className="py-16 bg-white ">
-        <div className="max-w-6xl mx-auto px-4">
+      <section className="py-12 sm:py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
-            <Title level={2}>Tại sao chọn EduSystem?</Title>
-            <Paragraph type="secondary" className="text-lg max-w-2xl mx-auto">
+            <Title level={2} className="text-2xl sm:text-3xl">
+              Tại sao chọn EduSystem?
+            </Title>
+            <Paragraph
+              type="secondary"
+              className="text-base sm:text-lg max-w-2xl mx-auto"
+            >
               Chúng tôi không chỉ cung cấp khóa học, mà còn tạo ra một hệ sinh
               thái học tập toàn diện cho sự phát triển của bạn
             </Paragraph>
@@ -277,11 +291,13 @@ export default function AboutPage() {
       </section>
 
       {/* Team */}
-      <section className="py-16">
-        <div className="max-w-6xl mx-auto px-4">
+      <section className="py-12 sm:py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
-            <Title level={2}>Đội ngũ lãnh đạo</Title>
-            <Paragraph type="secondary" className="text-lg">
+            <Title level={2} className="text-2xl sm:text-3xl">
+              Đội ngũ lãnh đạo
+            </Title>
+            <Paragraph type="secondary" className="text-base sm:text-lg">
               Những con người đam mê và tâm huyết đằng sau EduSystem
             </Paragraph>
           </div>
@@ -308,16 +324,16 @@ export default function AboutPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
-        <div className="max-w-4xl mx-auto text-center px-4">
-          <Title level={2} className="!text-white !mb-4">
+      <section className="py-12 sm:py-16 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6">
+          <Title level={2} className="!text-white !mb-4 text-2xl sm:text-3xl">
             Sẵn sàng bắt đầu hành trình học tập?
           </Title>
-          <Paragraph className="text-xl text-blue-100 mb-8">
+          <Paragraph className="text-base sm:text-lg md:text-xl text-blue-100 mb-8">
             Tham gia cùng hàng nghìn học viên đang phát triển kỹ năng và xây
             dựng sự nghiệp
           </Paragraph>
-          <Space size="large">
+          <Space size="large" className="flex-wrap justify-center">
             <Button
               type="primary"
               size="large"

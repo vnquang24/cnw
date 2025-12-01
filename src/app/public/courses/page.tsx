@@ -164,20 +164,22 @@ export default function CoursesPage() {
   return (
     <div className="min-h-screen bg-gray-50 ">
       {/* Header */}
-      <section className="bg-white  py-8 border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <Title level={1}>Tất cả khóa học</Title>
-          <Paragraph type="secondary" className="text-lg">
+      <section className="bg-white py-6 sm:py-8 border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <Title level={1} className="text-2xl sm:text-3xl md:text-4xl">
+            Tất cả khóa học
+          </Title>
+          <Paragraph type="secondary" className="text-base sm:text-lg">
             Khám phá {filteredCourses.length} khóa học chất lượng cao từ các
             chuyên gia
           </Paragraph>
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Row gutter={24}>
           {/* Filters Sidebar */}
-          <Col xs={24} lg={6}>
+          <Col xs={0} lg={6}>
             <Card className="sticky top-4">
               <div className="flex justify-between items-center mb-4">
                 <Title level={4}>Bộ lọc</Title>
@@ -257,7 +259,7 @@ export default function CoursesPage() {
           {/* Main Content */}
           <Col xs={24} lg={18}>
             {/* Sort and View Controls */}
-            <div className="flex justify-between items-center mb-6 bg-white  p-4 rounded-lg">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 bg-white p-4 rounded-lg">
               <div className="flex items-center space-x-4">
                 <Text>
                   Hiển thị {startIndex + 1}-
@@ -266,9 +268,13 @@ export default function CoursesPage() {
                 </Text>
               </div>
 
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
                 <Text>Sắp xếp:</Text>
-                <Select value={sortBy} onChange={setSortBy} className="w-40">
+                <Select
+                  value={sortBy}
+                  onChange={setSortBy}
+                  className="w-full sm:w-40"
+                >
                   <Option value="popular">Phổ biến nhất</Option>
                   <Option value="rating">Đánh giá cao nhất</Option>
                   <Option value="newest">Mới nhất</Option>
@@ -278,7 +284,7 @@ export default function CoursesPage() {
 
                 <Button
                   icon={<FilterOutlined />}
-                  className="lg:hidden"
+                  className="lg:hidden w-full sm:w-auto"
                   onClick={() => setShowFilters(!showFilters)}
                 >
                   Lọc
@@ -290,11 +296,11 @@ export default function CoursesPage() {
             {currentCourses.length > 0 ? (
               <Row gutter={[24, 24]}>
                 {currentCourses.map((course) => (
-                  <Col xs={24} sm={12} xl={8} key={course.id}>
+                  <Col xs={24} sm={12} lg={8} key={course.id}>
                     <Card
                       hoverable
                       cover={
-                        <div className="relative bg-gradient-to-br from-blue-50 to-indigo-100 h-48">
+                        <div className="relative bg-gradient-to-br from-blue-50 to-indigo-100 h-40 sm:h-48">
                           <div className="absolute inset-0 flex items-center justify-center">
                             <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center">
                               <BookOutlined className="text-blue-600 text-2xl" />

@@ -56,10 +56,15 @@ export default function InstructorsPage() {
   return (
     <div className="min-h-screen bg-gray-50 ">
       {/* Header */}
-      <section className="bg-white  py-12 border-b">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <Title level={1}>Đội ngũ giảng viên</Title>
-          <Paragraph type="secondary" className="text-lg max-w-2xl mx-auto">
+      <section className="bg-white py-8 sm:py-12 border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
+          <Title level={1} className="text-2xl sm:text-3xl md:text-4xl">
+            Đội ngũ giảng viên
+          </Title>
+          <Paragraph
+            type="secondary"
+            className="text-base sm:text-lg max-w-2xl mx-auto"
+          >
             Học từ những chuyên gia hàng đầu trong ngành, với kinh nghiệm thực
             tế phong phú và đam mê chia sẻ kiến thức
           </Paragraph>
@@ -96,8 +101,8 @@ export default function InstructorsPage() {
       </section>
 
       {/* Instructors Grid */}
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="py-8 sm:py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {isLoading ? (
             <div className="flex justify-center items-center py-20">
               <Spin size="large" />
@@ -260,12 +265,12 @@ export default function InstructorsPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="max-w-4xl mx-auto text-center px-4">
-          <Title level={2} className="!text-white !mb-4">
+      <section className="py-12 sm:py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6">
+          <Title level={2} className="!text-white !mb-4 text-2xl sm:text-3xl">
             Bạn muốn trở thành giảng viên?
           </Title>
-          <Paragraph className="text-xl text-blue-100 mb-8">
+          <Paragraph className="text-base sm:text-lg md:text-xl text-blue-100 mb-8">
             Chia sẻ kiến thức và kinh nghiệm của bạn với hàng nghìn học viên
             trên toàn quốc
           </Paragraph>

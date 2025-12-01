@@ -36,26 +36,26 @@ const { Title, Text, Paragraph } = Typography;
 // Hero Section Component
 const HeroSection = () => {
   return (
-    <section className="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-20">
-      <div className="container mx-auto px-4">
+    <section className="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 sm:py-16 md:py-20">
+      <div className="container mx-auto px-4 sm:px-6">
         <Row align="middle" gutter={[48, 32]}>
           <Col lg={12} md={24} sm={24}>
             <div className="space-y-6">
               <Title
                 level={1}
-                className="text-5xl font-bold text-gray-900 mb-4"
+                className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4"
               >
                 Học tập không giới hạn với{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
                   CNW Platform
                 </span>
               </Title>
-              <Paragraph className="text-xl text-gray-600 leading-relaxed">
+              <Paragraph className="text-base sm:text-lg md:text-xl text-gray-600 leading-relaxed">
                 Khám phá hàng nghìn khóa học chất lượng cao từ các chuyên gia
                 hàng đầu. Nâng cao kỹ năng và phát triển sự nghiệp của bạn ngay
                 hôm nay.
               </Paragraph>
-              <Space size="large" className="mt-8">
+              <Space size="large" className="mt-6 sm:mt-8 flex-wrap">
                 <Button
                   type="primary"
                   size="large"
@@ -75,8 +75,8 @@ const HeroSection = () => {
             </div>
           </Col>
           <Col lg={12} md={24} sm={24}>
-            <div className="relative">
-              <div className="bg-white rounded-2xl shadow-2xl p-8 transform rotate-3 hover:rotate-0 transition-transform duration-300">
+            <div className="relative mt-8 lg:mt-0">
+              <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 transform rotate-0 sm:rotate-3 hover:rotate-0 transition-transform duration-300">
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -184,8 +184,8 @@ const StatsSection = () => {
     ];
   }, [courses, users, userCourses]);
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-4">
+    <section className="py-12 sm:py-16 bg-white">
+      <div className="container mx-auto px-4 sm:px-6">
         <Row gutter={[32, 32]} justify="center">
           {stats.map((stat, index) => (
             <Col key={index} lg={6} md={12} sm={24}>
@@ -194,7 +194,7 @@ const StatsSection = () => {
                   <div className="flex justify-center">{stat.icon}</div>
                   <Title
                     level={2}
-                    className="text-3xl font-bold text-gray-900 mb-0"
+                    className="text-2xl sm:text-3xl font-bold text-gray-900 mb-0"
                   >
                     {stat.number}
                   </Title>
@@ -326,13 +326,16 @@ const FeaturedCoursesSection = () => {
   }
 
   return (
-    <section className="py-16 bg-gray-50">
-      <div className="container mx-auto px-4">
+    <section className="py-12 sm:py-16 bg-gray-50">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center mb-12">
-          <Title level={2} className="text-3xl font-bold text-gray-900 mb-4">
+          <Title
+            level={2}
+            className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4"
+          >
             Khóa học nổi bật
           </Title>
-          <Paragraph className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <Paragraph className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
             Những khóa học được yêu thích nhất từ cộng đồng học viên. Được thiết
             kế bởi các chuyên gia hàng đầu trong ngành.
           </Paragraph>
@@ -390,13 +393,16 @@ const FeaturesSection = () => {
   ];
 
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-4">
+    <section className="py-12 sm:py-16 bg-white">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="text-center mb-12">
-          <Title level={2} className="text-3xl font-bold text-gray-900 mb-4">
+          <Title
+            level={2}
+            className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4"
+          >
             Tại sao chọn CNW Platform?
           </Title>
-          <Paragraph className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <Paragraph className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
             Chúng tôi cung cấp trải nghiệm học tập tốt nhất với những tính năng
             ưu việt
           </Paragraph>
@@ -428,17 +434,20 @@ const FeaturesSection = () => {
 // CTA Section
 const CTASection = () => {
   return (
-    <section className="py-16 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
-      <div className="container mx-auto px-4 text-center">
+    <section className="py-12 sm:py-16 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+      <div className="container mx-auto px-4 sm:px-6 text-center">
         <div className="max-w-3xl mx-auto space-y-6">
-          <Title level={2} className="text-3xl font-bold text-white mb-4">
+          <Title
+            level={2}
+            className="text-2xl sm:text-3xl font-bold text-white mb-4"
+          >
             Sẵn sàng bắt đầu hành trình học tập?
           </Title>
-          <Paragraph className="text-xl text-blue-100">
+          <Paragraph className="text-base sm:text-lg md:text-xl text-blue-100">
             Tham gia cùng hàng nghìn học viên đã tin tưởng và lựa chọn CNW
             Platform để phát triển kỹ năng và sự nghiệp của họ.
           </Paragraph>
-          <div className="space-x-4 pt-4">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-0 sm:space-x-4 pt-4 justify-center items-center">
             <Button
               type="primary"
               size="large"
