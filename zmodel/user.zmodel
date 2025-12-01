@@ -10,6 +10,7 @@ model User extends Base {
   gender          Gender?
   role            UserRole       @default(USER)
   rememberDigest  String         @default("")
+  avatarUrl       String?        @db.VarChar(500) // URL của avatar trên MinIO
   
   // Giữ lại các trường từ model cũ
   phone           String?        @unique
@@ -26,11 +27,16 @@ model User extends Base {
   userLessons     UserLesson[]
   userWords       UserWord[]
   testResults     TestResult[]
+  gradedResults   TestResult[]   @relation("GradedBy")
   adminCourseManagers AdminCourseManager[]
+  userNotes       UserNote[]
   
   // Created content
   createdCourses  Course[]       @relation("CourseCreator")
   createdLessons  Lesson[]       @relation("LessonCreator")
+  uploadedFiles   MediaFile[]    @relation("MediaUploader")
+  uploadedVideos  VideoContent[] @relation("VideoUploader")
+  videoComments   VideoComment[] @relation("VideoCommenter")
 
   @@unique([email, phone])
   @@auth

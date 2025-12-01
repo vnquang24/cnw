@@ -3,332 +3,875 @@
  ******************************************************************************/
 
 /* eslint-disable */
-// @ts-nocheck
 
 import type { Prisma, UserWord } from "@prisma/client";
-import type { UseMutationOptions, UseQueryOptions, UseInfiniteQueryOptions, InfiniteData } from '@tanstack/react-query';
-import { getHooksContext } from '@zenstackhq/tanstack-query/runtime-v5/react';
-import { useModelQuery, useInfiniteModelQuery, useModelMutation } from '@zenstackhq/tanstack-query/runtime-v5/react';
-import type { PickEnumerable, CheckSelect, QueryError, ExtraQueryOptions, ExtraMutationOptions } from '@zenstackhq/tanstack-query/runtime-v5';
-import type { PolicyCrudKind } from '@zenstackhq/runtime'
-import metadata from './__model_meta';
+import type {
+  UseMutationOptions,
+  UseQueryOptions,
+  UseInfiniteQueryOptions,
+  InfiniteData,
+} from "@tanstack/react-query";
+import { getHooksContext } from "@zenstackhq/tanstack-query/runtime-v5/react";
+import {
+  useModelQuery,
+  useInfiniteModelQuery,
+  useModelMutation,
+} from "@zenstackhq/tanstack-query/runtime-v5/react";
+import type {
+  PickEnumerable,
+  CheckSelect,
+  QueryError,
+  ExtraQueryOptions,
+  ExtraMutationOptions,
+} from "@zenstackhq/tanstack-query/runtime-v5";
+import type { PolicyCrudKind } from "@zenstackhq/runtime";
+import metadata from "./__model_meta";
 type DefaultError = QueryError;
-import { useSuspenseModelQuery, useSuspenseInfiniteModelQuery } from '@zenstackhq/tanstack-query/runtime-v5/react';
-import type { UseSuspenseQueryOptions, UseSuspenseInfiniteQueryOptions } from '@tanstack/react-query';
+import {
+  useSuspenseModelQuery,
+  useSuspenseInfiniteModelQuery,
+} from "@zenstackhq/tanstack-query/runtime-v5/react";
+import type {
+  UseSuspenseQueryOptions,
+  UseSuspenseInfiniteQueryOptions,
+} from "@tanstack/react-query";
 
-export function useCreateUserWord(options?: Omit<(UseMutationOptions<(UserWord | undefined), DefaultError, Prisma.UserWordCreateArgs> & ExtraMutationOptions), 'mutationFn'>) {
-    const { endpoint, fetch } = getHooksContext();
-    const _mutation =
-        useModelMutation<Prisma.UserWordCreateArgs, DefaultError, UserWord, true>('UserWord', 'POST', `${endpoint}/userWord/create`, metadata, options, fetch, true)
-        ;
-    const mutation = {
-        ..._mutation,
-        mutateAsync: async <T extends Prisma.UserWordCreateArgs>(
-            args: Prisma.SelectSubset<T, Prisma.UserWordCreateArgs>,
-            options?: Omit<(UseMutationOptions<(CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>> | undefined), DefaultError, Prisma.SelectSubset<T, Prisma.UserWordCreateArgs>> & ExtraMutationOptions), 'mutationFn'>
-        ) => {
-            return (await _mutation.mutateAsync(
-                args,
-                options as any
-            )) as (CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>> | undefined);
-        },
-    };
-    return mutation;
+export function useCreateUserWord(
+  options?: Omit<
+    UseMutationOptions<
+      UserWord | undefined,
+      DefaultError,
+      Prisma.UserWordCreateArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.UserWordCreateArgs,
+    DefaultError,
+    UserWord,
+    true
+  >(
+    "UserWord",
+    "POST",
+    `${endpoint}/userWord/create`,
+    metadata,
+    options,
+    fetch,
+    true,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.UserWordCreateArgs>(
+      args: Prisma.SelectSubset<T, Prisma.UserWordCreateArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>> | undefined,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.UserWordCreateArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(args, options as any)) as
+        | CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>>
+        | undefined;
+    },
+  };
+  return mutation;
 }
 
-export function useCreateManyUserWord(options?: Omit<(UseMutationOptions<Prisma.BatchPayload, DefaultError, Prisma.UserWordCreateManyArgs> & ExtraMutationOptions), 'mutationFn'>) {
-    const { endpoint, fetch } = getHooksContext();
-    const _mutation =
-        useModelMutation<Prisma.UserWordCreateManyArgs, DefaultError, Prisma.BatchPayload, false>('UserWord', 'POST', `${endpoint}/userWord/createMany`, metadata, options, fetch, false)
-        ;
-    const mutation = {
-        ..._mutation,
-        mutateAsync: async <T extends Prisma.UserWordCreateManyArgs>(
-            args: Prisma.SelectSubset<T, Prisma.UserWordCreateManyArgs>,
-            options?: Omit<(UseMutationOptions<Prisma.BatchPayload, DefaultError, Prisma.SelectSubset<T, Prisma.UserWordCreateManyArgs>> & ExtraMutationOptions), 'mutationFn'>
-        ) => {
-            return (await _mutation.mutateAsync(
-                args,
-                options as any
-            )) as Prisma.BatchPayload;
-        },
-    };
-    return mutation;
+export function useCreateManyUserWord(
+  options?: Omit<
+    UseMutationOptions<
+      Prisma.BatchPayload,
+      DefaultError,
+      Prisma.UserWordCreateManyArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.UserWordCreateManyArgs,
+    DefaultError,
+    Prisma.BatchPayload,
+    false
+  >(
+    "UserWord",
+    "POST",
+    `${endpoint}/userWord/createMany`,
+    metadata,
+    options,
+    fetch,
+    false,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.UserWordCreateManyArgs>(
+      args: Prisma.SelectSubset<T, Prisma.UserWordCreateManyArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          Prisma.BatchPayload,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.UserWordCreateManyArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(
+        args,
+        options as any,
+      )) as Prisma.BatchPayload;
+    },
+  };
+  return mutation;
 }
 
-export function useFindManyUserWord<TArgs extends Prisma.UserWordFindManyArgs, TQueryFnData = Array<Prisma.UserWordGetPayload<TArgs> & { $optimistic?: boolean }>, TData = TQueryFnData, TError = DefaultError>(args?: Prisma.SelectSubset<TArgs, Prisma.UserWordFindManyArgs>, options?: (Omit<UseQueryOptions<TQueryFnData, TError, TData>, 'queryKey'> & ExtraQueryOptions)) {
-    const { endpoint, fetch } = getHooksContext();
-    return useModelQuery<TQueryFnData, TData, TError>('UserWord', `${endpoint}/userWord/findMany`, args, options, fetch);
+export function useFindManyUserWord<
+  TArgs extends Prisma.UserWordFindManyArgs,
+  TQueryFnData = Array<
+    Prisma.UserWordGetPayload<TArgs> & { $optimistic?: boolean }
+  >,
+  TData = TQueryFnData,
+  TError = DefaultError,
+>(
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserWordFindManyArgs>,
+  options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
+    ExtraQueryOptions,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  return useModelQuery<TQueryFnData, TData, TError>(
+    "UserWord",
+    `${endpoint}/userWord/findMany`,
+    args,
+    options,
+    fetch,
+  );
 }
 
-export function useInfiniteFindManyUserWord<TArgs extends Prisma.UserWordFindManyArgs, TQueryFnData = Array<Prisma.UserWordGetPayload<TArgs>>, TData = TQueryFnData, TError = DefaultError>(args?: Prisma.SelectSubset<TArgs, Prisma.UserWordFindManyArgs>, options?: Omit<UseInfiniteQueryOptions<TQueryFnData, TError, InfiniteData<TData>>, 'queryKey' | 'initialPageParam'>) {
-    options = options ?? { getNextPageParam: () => null };
-    const { endpoint, fetch } = getHooksContext();
-    return useInfiniteModelQuery<TQueryFnData, TData, TError>('UserWord', `${endpoint}/userWord/findMany`, args, options, fetch);
+export function useInfiniteFindManyUserWord<
+  TArgs extends Prisma.UserWordFindManyArgs,
+  TQueryFnData = Array<Prisma.UserWordGetPayload<TArgs>>,
+  TData = TQueryFnData,
+  TError = DefaultError,
+>(
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserWordFindManyArgs>,
+  options?: Omit<
+    UseInfiniteQueryOptions<TQueryFnData, TError, InfiniteData<TData>>,
+    "queryKey" | "initialPageParam"
+  >,
+) {
+  options = options ?? { getNextPageParam: () => null };
+  const { endpoint, fetch } = getHooksContext();
+  return useInfiniteModelQuery<TQueryFnData, TData, TError>(
+    "UserWord",
+    `${endpoint}/userWord/findMany`,
+    args,
+    options,
+    fetch,
+  );
 }
 
-export function useSuspenseFindManyUserWord<TArgs extends Prisma.UserWordFindManyArgs, TQueryFnData = Array<Prisma.UserWordGetPayload<TArgs> & { $optimistic?: boolean }>, TData = TQueryFnData, TError = DefaultError>(args?: Prisma.SelectSubset<TArgs, Prisma.UserWordFindManyArgs>, options?: (Omit<UseSuspenseQueryOptions<TQueryFnData, TError, TData>, 'queryKey'> & ExtraQueryOptions)) {
-    const { endpoint, fetch } = getHooksContext();
-    return useSuspenseModelQuery<TQueryFnData, TData, TError>('UserWord', `${endpoint}/userWord/findMany`, args, options, fetch);
+export function useSuspenseFindManyUserWord<
+  TArgs extends Prisma.UserWordFindManyArgs,
+  TQueryFnData = Array<
+    Prisma.UserWordGetPayload<TArgs> & { $optimistic?: boolean }
+  >,
+  TData = TQueryFnData,
+  TError = DefaultError,
+>(
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserWordFindManyArgs>,
+  options?: Omit<
+    UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
+    "queryKey"
+  > &
+    ExtraQueryOptions,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  return useSuspenseModelQuery<TQueryFnData, TData, TError>(
+    "UserWord",
+    `${endpoint}/userWord/findMany`,
+    args,
+    options,
+    fetch,
+  );
 }
 
-export function useSuspenseInfiniteFindManyUserWord<TArgs extends Prisma.UserWordFindManyArgs, TQueryFnData = Array<Prisma.UserWordGetPayload<TArgs>>, TData = TQueryFnData, TError = DefaultError>(args?: Prisma.SelectSubset<TArgs, Prisma.UserWordFindManyArgs>, options?: Omit<UseSuspenseInfiniteQueryOptions<TQueryFnData, TError, InfiniteData<TData>>, 'queryKey' | 'initialPageParam'>) {
-    options = options ?? { getNextPageParam: () => null };
-    const { endpoint, fetch } = getHooksContext();
-    return useSuspenseInfiniteModelQuery<TQueryFnData, TData, TError>('UserWord', `${endpoint}/userWord/findMany`, args, options, fetch);
+export function useSuspenseInfiniteFindManyUserWord<
+  TArgs extends Prisma.UserWordFindManyArgs,
+  TQueryFnData = Array<Prisma.UserWordGetPayload<TArgs>>,
+  TData = TQueryFnData,
+  TError = DefaultError,
+>(
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserWordFindManyArgs>,
+  options?: Omit<
+    UseSuspenseInfiniteQueryOptions<TQueryFnData, TError, InfiniteData<TData>>,
+    "queryKey" | "initialPageParam"
+  >,
+) {
+  options = options ?? { getNextPageParam: () => null };
+  const { endpoint, fetch } = getHooksContext();
+  return useSuspenseInfiniteModelQuery<TQueryFnData, TData, TError>(
+    "UserWord",
+    `${endpoint}/userWord/findMany`,
+    args,
+    options,
+    fetch,
+  );
 }
 
-export function useFindUniqueUserWord<TArgs extends Prisma.UserWordFindUniqueArgs, TQueryFnData = Prisma.UserWordGetPayload<TArgs> & { $optimistic?: boolean }, TData = TQueryFnData, TError = DefaultError>(args: Prisma.SelectSubset<TArgs, Prisma.UserWordFindUniqueArgs>, options?: (Omit<UseQueryOptions<TQueryFnData, TError, TData>, 'queryKey'> & ExtraQueryOptions)) {
-    const { endpoint, fetch } = getHooksContext();
-    return useModelQuery<TQueryFnData, TData, TError>('UserWord', `${endpoint}/userWord/findUnique`, args, options, fetch);
+export function useFindUniqueUserWord<
+  TArgs extends Prisma.UserWordFindUniqueArgs,
+  TQueryFnData = Prisma.UserWordGetPayload<TArgs> & { $optimistic?: boolean },
+  TData = TQueryFnData,
+  TError = DefaultError,
+>(
+  args: Prisma.SelectSubset<TArgs, Prisma.UserWordFindUniqueArgs>,
+  options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
+    ExtraQueryOptions,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  return useModelQuery<TQueryFnData, TData, TError>(
+    "UserWord",
+    `${endpoint}/userWord/findUnique`,
+    args,
+    options,
+    fetch,
+  );
 }
 
-export function useSuspenseFindUniqueUserWord<TArgs extends Prisma.UserWordFindUniqueArgs, TQueryFnData = Prisma.UserWordGetPayload<TArgs> & { $optimistic?: boolean }, TData = TQueryFnData, TError = DefaultError>(args: Prisma.SelectSubset<TArgs, Prisma.UserWordFindUniqueArgs>, options?: (Omit<UseSuspenseQueryOptions<TQueryFnData, TError, TData>, 'queryKey'> & ExtraQueryOptions)) {
-    const { endpoint, fetch } = getHooksContext();
-    return useSuspenseModelQuery<TQueryFnData, TData, TError>('UserWord', `${endpoint}/userWord/findUnique`, args, options, fetch);
+export function useSuspenseFindUniqueUserWord<
+  TArgs extends Prisma.UserWordFindUniqueArgs,
+  TQueryFnData = Prisma.UserWordGetPayload<TArgs> & { $optimistic?: boolean },
+  TData = TQueryFnData,
+  TError = DefaultError,
+>(
+  args: Prisma.SelectSubset<TArgs, Prisma.UserWordFindUniqueArgs>,
+  options?: Omit<
+    UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
+    "queryKey"
+  > &
+    ExtraQueryOptions,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  return useSuspenseModelQuery<TQueryFnData, TData, TError>(
+    "UserWord",
+    `${endpoint}/userWord/findUnique`,
+    args,
+    options,
+    fetch,
+  );
 }
 
-export function useFindFirstUserWord<TArgs extends Prisma.UserWordFindFirstArgs, TQueryFnData = Prisma.UserWordGetPayload<TArgs> & { $optimistic?: boolean }, TData = TQueryFnData, TError = DefaultError>(args?: Prisma.SelectSubset<TArgs, Prisma.UserWordFindFirstArgs>, options?: (Omit<UseQueryOptions<TQueryFnData, TError, TData>, 'queryKey'> & ExtraQueryOptions)) {
-    const { endpoint, fetch } = getHooksContext();
-    return useModelQuery<TQueryFnData, TData, TError>('UserWord', `${endpoint}/userWord/findFirst`, args, options, fetch);
+export function useFindFirstUserWord<
+  TArgs extends Prisma.UserWordFindFirstArgs,
+  TQueryFnData = Prisma.UserWordGetPayload<TArgs> & { $optimistic?: boolean },
+  TData = TQueryFnData,
+  TError = DefaultError,
+>(
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserWordFindFirstArgs>,
+  options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
+    ExtraQueryOptions,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  return useModelQuery<TQueryFnData, TData, TError>(
+    "UserWord",
+    `${endpoint}/userWord/findFirst`,
+    args,
+    options,
+    fetch,
+  );
 }
 
-export function useSuspenseFindFirstUserWord<TArgs extends Prisma.UserWordFindFirstArgs, TQueryFnData = Prisma.UserWordGetPayload<TArgs> & { $optimistic?: boolean }, TData = TQueryFnData, TError = DefaultError>(args?: Prisma.SelectSubset<TArgs, Prisma.UserWordFindFirstArgs>, options?: (Omit<UseSuspenseQueryOptions<TQueryFnData, TError, TData>, 'queryKey'> & ExtraQueryOptions)) {
-    const { endpoint, fetch } = getHooksContext();
-    return useSuspenseModelQuery<TQueryFnData, TData, TError>('UserWord', `${endpoint}/userWord/findFirst`, args, options, fetch);
+export function useSuspenseFindFirstUserWord<
+  TArgs extends Prisma.UserWordFindFirstArgs,
+  TQueryFnData = Prisma.UserWordGetPayload<TArgs> & { $optimistic?: boolean },
+  TData = TQueryFnData,
+  TError = DefaultError,
+>(
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserWordFindFirstArgs>,
+  options?: Omit<
+    UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
+    "queryKey"
+  > &
+    ExtraQueryOptions,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  return useSuspenseModelQuery<TQueryFnData, TData, TError>(
+    "UserWord",
+    `${endpoint}/userWord/findFirst`,
+    args,
+    options,
+    fetch,
+  );
 }
 
-export function useUpdateUserWord(options?: Omit<(UseMutationOptions<(UserWord | undefined), DefaultError, Prisma.UserWordUpdateArgs> & ExtraMutationOptions), 'mutationFn'>) {
-    const { endpoint, fetch } = getHooksContext();
-    const _mutation =
-        useModelMutation<Prisma.UserWordUpdateArgs, DefaultError, UserWord, true>('UserWord', 'PUT', `${endpoint}/userWord/update`, metadata, options, fetch, true)
-        ;
-    const mutation = {
-        ..._mutation,
-        mutateAsync: async <T extends Prisma.UserWordUpdateArgs>(
-            args: Prisma.SelectSubset<T, Prisma.UserWordUpdateArgs>,
-            options?: Omit<(UseMutationOptions<(CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>> | undefined), DefaultError, Prisma.SelectSubset<T, Prisma.UserWordUpdateArgs>> & ExtraMutationOptions), 'mutationFn'>
-        ) => {
-            return (await _mutation.mutateAsync(
-                args,
-                options as any
-            )) as (CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>> | undefined);
-        },
-    };
-    return mutation;
+export function useUpdateUserWord(
+  options?: Omit<
+    UseMutationOptions<
+      UserWord | undefined,
+      DefaultError,
+      Prisma.UserWordUpdateArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.UserWordUpdateArgs,
+    DefaultError,
+    UserWord,
+    true
+  >(
+    "UserWord",
+    "PUT",
+    `${endpoint}/userWord/update`,
+    metadata,
+    options,
+    fetch,
+    true,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.UserWordUpdateArgs>(
+      args: Prisma.SelectSubset<T, Prisma.UserWordUpdateArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>> | undefined,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.UserWordUpdateArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(args, options as any)) as
+        | CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>>
+        | undefined;
+    },
+  };
+  return mutation;
 }
 
-export function useUpdateManyUserWord(options?: Omit<(UseMutationOptions<Prisma.BatchPayload, DefaultError, Prisma.UserWordUpdateManyArgs> & ExtraMutationOptions), 'mutationFn'>) {
-    const { endpoint, fetch } = getHooksContext();
-    const _mutation =
-        useModelMutation<Prisma.UserWordUpdateManyArgs, DefaultError, Prisma.BatchPayload, false>('UserWord', 'PUT', `${endpoint}/userWord/updateMany`, metadata, options, fetch, false)
-        ;
-    const mutation = {
-        ..._mutation,
-        mutateAsync: async <T extends Prisma.UserWordUpdateManyArgs>(
-            args: Prisma.SelectSubset<T, Prisma.UserWordUpdateManyArgs>,
-            options?: Omit<(UseMutationOptions<Prisma.BatchPayload, DefaultError, Prisma.SelectSubset<T, Prisma.UserWordUpdateManyArgs>> & ExtraMutationOptions), 'mutationFn'>
-        ) => {
-            return (await _mutation.mutateAsync(
-                args,
-                options as any
-            )) as Prisma.BatchPayload;
-        },
-    };
-    return mutation;
+export function useUpdateManyUserWord(
+  options?: Omit<
+    UseMutationOptions<
+      Prisma.BatchPayload,
+      DefaultError,
+      Prisma.UserWordUpdateManyArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.UserWordUpdateManyArgs,
+    DefaultError,
+    Prisma.BatchPayload,
+    false
+  >(
+    "UserWord",
+    "PUT",
+    `${endpoint}/userWord/updateMany`,
+    metadata,
+    options,
+    fetch,
+    false,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.UserWordUpdateManyArgs>(
+      args: Prisma.SelectSubset<T, Prisma.UserWordUpdateManyArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          Prisma.BatchPayload,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.UserWordUpdateManyArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(
+        args,
+        options as any,
+      )) as Prisma.BatchPayload;
+    },
+  };
+  return mutation;
 }
 
-export function useUpsertUserWord(options?: Omit<(UseMutationOptions<(UserWord | undefined), DefaultError, Prisma.UserWordUpsertArgs> & ExtraMutationOptions), 'mutationFn'>) {
-    const { endpoint, fetch } = getHooksContext();
-    const _mutation =
-        useModelMutation<Prisma.UserWordUpsertArgs, DefaultError, UserWord, true>('UserWord', 'POST', `${endpoint}/userWord/upsert`, metadata, options, fetch, true)
-        ;
-    const mutation = {
-        ..._mutation,
-        mutateAsync: async <T extends Prisma.UserWordUpsertArgs>(
-            args: Prisma.SelectSubset<T, Prisma.UserWordUpsertArgs>,
-            options?: Omit<(UseMutationOptions<(CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>> | undefined), DefaultError, Prisma.SelectSubset<T, Prisma.UserWordUpsertArgs>> & ExtraMutationOptions), 'mutationFn'>
-        ) => {
-            return (await _mutation.mutateAsync(
-                args,
-                options as any
-            )) as (CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>> | undefined);
-        },
-    };
-    return mutation;
+export function useUpsertUserWord(
+  options?: Omit<
+    UseMutationOptions<
+      UserWord | undefined,
+      DefaultError,
+      Prisma.UserWordUpsertArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.UserWordUpsertArgs,
+    DefaultError,
+    UserWord,
+    true
+  >(
+    "UserWord",
+    "POST",
+    `${endpoint}/userWord/upsert`,
+    metadata,
+    options,
+    fetch,
+    true,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.UserWordUpsertArgs>(
+      args: Prisma.SelectSubset<T, Prisma.UserWordUpsertArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>> | undefined,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.UserWordUpsertArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(args, options as any)) as
+        | CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>>
+        | undefined;
+    },
+  };
+  return mutation;
 }
 
-export function useDeleteUserWord(options?: Omit<(UseMutationOptions<(UserWord | undefined), DefaultError, Prisma.UserWordDeleteArgs> & ExtraMutationOptions), 'mutationFn'>) {
-    const { endpoint, fetch } = getHooksContext();
-    const _mutation =
-        useModelMutation<Prisma.UserWordDeleteArgs, DefaultError, UserWord, true>('UserWord', 'DELETE', `${endpoint}/userWord/delete`, metadata, options, fetch, true)
-        ;
-    const mutation = {
-        ..._mutation,
-        mutateAsync: async <T extends Prisma.UserWordDeleteArgs>(
-            args: Prisma.SelectSubset<T, Prisma.UserWordDeleteArgs>,
-            options?: Omit<(UseMutationOptions<(CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>> | undefined), DefaultError, Prisma.SelectSubset<T, Prisma.UserWordDeleteArgs>> & ExtraMutationOptions), 'mutationFn'>
-        ) => {
-            return (await _mutation.mutateAsync(
-                args,
-                options as any
-            )) as (CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>> | undefined);
-        },
-    };
-    return mutation;
+export function useDeleteUserWord(
+  options?: Omit<
+    UseMutationOptions<
+      UserWord | undefined,
+      DefaultError,
+      Prisma.UserWordDeleteArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.UserWordDeleteArgs,
+    DefaultError,
+    UserWord,
+    true
+  >(
+    "UserWord",
+    "DELETE",
+    `${endpoint}/userWord/delete`,
+    metadata,
+    options,
+    fetch,
+    true,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.UserWordDeleteArgs>(
+      args: Prisma.SelectSubset<T, Prisma.UserWordDeleteArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>> | undefined,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.UserWordDeleteArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(args, options as any)) as
+        | CheckSelect<T, UserWord, Prisma.UserWordGetPayload<T>>
+        | undefined;
+    },
+  };
+  return mutation;
 }
 
-export function useDeleteManyUserWord(options?: Omit<(UseMutationOptions<Prisma.BatchPayload, DefaultError, Prisma.UserWordDeleteManyArgs> & ExtraMutationOptions), 'mutationFn'>) {
-    const { endpoint, fetch } = getHooksContext();
-    const _mutation =
-        useModelMutation<Prisma.UserWordDeleteManyArgs, DefaultError, Prisma.BatchPayload, false>('UserWord', 'DELETE', `${endpoint}/userWord/deleteMany`, metadata, options, fetch, false)
-        ;
-    const mutation = {
-        ..._mutation,
-        mutateAsync: async <T extends Prisma.UserWordDeleteManyArgs>(
-            args: Prisma.SelectSubset<T, Prisma.UserWordDeleteManyArgs>,
-            options?: Omit<(UseMutationOptions<Prisma.BatchPayload, DefaultError, Prisma.SelectSubset<T, Prisma.UserWordDeleteManyArgs>> & ExtraMutationOptions), 'mutationFn'>
-        ) => {
-            return (await _mutation.mutateAsync(
-                args,
-                options as any
-            )) as Prisma.BatchPayload;
-        },
-    };
-    return mutation;
+export function useDeleteManyUserWord(
+  options?: Omit<
+    UseMutationOptions<
+      Prisma.BatchPayload,
+      DefaultError,
+      Prisma.UserWordDeleteManyArgs
+    > &
+      ExtraMutationOptions,
+    "mutationFn"
+  >,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  const _mutation = useModelMutation<
+    Prisma.UserWordDeleteManyArgs,
+    DefaultError,
+    Prisma.BatchPayload,
+    false
+  >(
+    "UserWord",
+    "DELETE",
+    `${endpoint}/userWord/deleteMany`,
+    metadata,
+    options,
+    fetch,
+    false,
+  );
+  const mutation = {
+    ..._mutation,
+    mutateAsync: async <T extends Prisma.UserWordDeleteManyArgs>(
+      args: Prisma.SelectSubset<T, Prisma.UserWordDeleteManyArgs>,
+      options?: Omit<
+        UseMutationOptions<
+          Prisma.BatchPayload,
+          DefaultError,
+          Prisma.SelectSubset<T, Prisma.UserWordDeleteManyArgs>
+        > &
+          ExtraMutationOptions,
+        "mutationFn"
+      >,
+    ) => {
+      return (await _mutation.mutateAsync(
+        args,
+        options as any,
+      )) as Prisma.BatchPayload;
+    },
+  };
+  return mutation;
 }
 
-export function useAggregateUserWord<TArgs extends Prisma.UserWordAggregateArgs, TQueryFnData = Prisma.GetUserWordAggregateType<TArgs>, TData = TQueryFnData, TError = DefaultError>(args: Prisma.SelectSubset<TArgs, Prisma.UserWordAggregateArgs>, options?: (Omit<UseQueryOptions<TQueryFnData, TError, TData>, 'queryKey'> & ExtraQueryOptions)) {
-    const { endpoint, fetch } = getHooksContext();
-    return useModelQuery<TQueryFnData, TData, TError>('UserWord', `${endpoint}/userWord/aggregate`, args, options, fetch);
+export function useAggregateUserWord<
+  TArgs extends Prisma.UserWordAggregateArgs,
+  TQueryFnData = Prisma.GetUserWordAggregateType<TArgs>,
+  TData = TQueryFnData,
+  TError = DefaultError,
+>(
+  args: Prisma.SelectSubset<TArgs, Prisma.UserWordAggregateArgs>,
+  options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
+    ExtraQueryOptions,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  return useModelQuery<TQueryFnData, TData, TError>(
+    "UserWord",
+    `${endpoint}/userWord/aggregate`,
+    args,
+    options,
+    fetch,
+  );
 }
 
-export function useSuspenseAggregateUserWord<TArgs extends Prisma.UserWordAggregateArgs, TQueryFnData = Prisma.GetUserWordAggregateType<TArgs>, TData = TQueryFnData, TError = DefaultError>(args: Prisma.SelectSubset<TArgs, Prisma.UserWordAggregateArgs>, options?: (Omit<UseSuspenseQueryOptions<TQueryFnData, TError, TData>, 'queryKey'> & ExtraQueryOptions)) {
-    const { endpoint, fetch } = getHooksContext();
-    return useSuspenseModelQuery<TQueryFnData, TData, TError>('UserWord', `${endpoint}/userWord/aggregate`, args, options, fetch);
+export function useSuspenseAggregateUserWord<
+  TArgs extends Prisma.UserWordAggregateArgs,
+  TQueryFnData = Prisma.GetUserWordAggregateType<TArgs>,
+  TData = TQueryFnData,
+  TError = DefaultError,
+>(
+  args: Prisma.SelectSubset<TArgs, Prisma.UserWordAggregateArgs>,
+  options?: Omit<
+    UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
+    "queryKey"
+  > &
+    ExtraQueryOptions,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  return useSuspenseModelQuery<TQueryFnData, TData, TError>(
+    "UserWord",
+    `${endpoint}/userWord/aggregate`,
+    args,
+    options,
+    fetch,
+  );
 }
 
-export function useGroupByUserWord<TArgs extends Prisma.UserWordGroupByArgs, HasSelectOrTake extends Prisma.Or<Prisma.Extends<'skip', Prisma.Keys<TArgs>>, Prisma.Extends<'take', Prisma.Keys<TArgs>>>, OrderByArg extends Prisma.True extends HasSelectOrTake ? { orderBy: Prisma.UserWordGroupByArgs['orderBy'] } : { orderBy?: Prisma.UserWordGroupByArgs['orderBy'] }, OrderFields extends Prisma.ExcludeUnderscoreKeys<Prisma.Keys<Prisma.MaybeTupleToUnion<TArgs['orderBy']>>>, ByFields extends Prisma.MaybeTupleToUnion<TArgs['by']>, ByValid extends Prisma.Has<ByFields, OrderFields>, HavingFields extends Prisma.GetHavingFields<TArgs['having']>, HavingValid extends Prisma.Has<ByFields, HavingFields>, ByEmpty extends TArgs['by'] extends never[] ? Prisma.True : Prisma.False, InputErrors extends ByEmpty extends Prisma.True
+export function useGroupByUserWord<
+  TArgs extends Prisma.UserWordGroupByArgs,
+  HasSelectOrTake extends Prisma.Or<
+    Prisma.Extends<"skip", Prisma.Keys<TArgs>>,
+    Prisma.Extends<"take", Prisma.Keys<TArgs>>
+  >,
+  OrderByArg extends Prisma.True extends HasSelectOrTake
+    ? { orderBy: Prisma.UserWordGroupByArgs["orderBy"] }
+    : { orderBy?: Prisma.UserWordGroupByArgs["orderBy"] },
+  OrderFields extends Prisma.ExcludeUnderscoreKeys<
+    Prisma.Keys<Prisma.MaybeTupleToUnion<TArgs["orderBy"]>>
+  >,
+  ByFields extends Prisma.MaybeTupleToUnion<TArgs["by"]>,
+  ByValid extends Prisma.Has<ByFields, OrderFields>,
+  HavingFields extends Prisma.GetHavingFields<TArgs["having"]>,
+  HavingValid extends Prisma.Has<ByFields, HavingFields>,
+  ByEmpty extends TArgs["by"] extends never[] ? Prisma.True : Prisma.False,
+  InputErrors extends ByEmpty extends Prisma.True
     ? `Error: "by" must not be empty.`
     : HavingValid extends Prisma.False
-    ? {
-        [P in HavingFields]: P extends ByFields
-        ? never
-        : P extends string
-        ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-        : [
-            Error,
-            'Field ',
-            P,
-            ` in "having" needs to be provided in "by"`,
-        ]
-    }[HavingFields]
-    : 'take' extends Prisma.Keys<TArgs>
-    ? 'orderBy' extends Prisma.Keys<TArgs>
-    ? ByValid extends Prisma.True
-    ? {}
-    : {
-        [P in OrderFields]: P extends ByFields
-        ? never
-        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-    }[OrderFields]
-    : 'Error: If you provide "take", you also need to provide "orderBy"'
-    : 'skip' extends Prisma.Keys<TArgs>
-    ? 'orderBy' extends Prisma.Keys<TArgs>
-    ? ByValid extends Prisma.True
-    ? {}
-    : {
-        [P in OrderFields]: P extends ByFields
-        ? never
-        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-    }[OrderFields]
-    : 'Error: If you provide "skip", you also need to provide "orderBy"'
-    : ByValid extends Prisma.True
-    ? {}
-    : {
-        [P in OrderFields]: P extends ByFields
-        ? never
-        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-    }[OrderFields], TQueryFnData = {} extends InputErrors ?
-    Array<PickEnumerable<Prisma.UserWordGroupByOutputType, TArgs['by']> &
-    {
-        [P in ((keyof TArgs) & (keyof Prisma.UserWordGroupByOutputType))]: P extends '_count'
-        ? TArgs[P] extends boolean
-        ? number
-        : Prisma.GetScalarType<TArgs[P], Prisma.UserWordGroupByOutputType[P]>
-        : Prisma.GetScalarType<TArgs[P], Prisma.UserWordGroupByOutputType[P]>
-    }
-    > : InputErrors, TData = TQueryFnData, TError = DefaultError>(args: Prisma.SelectSubset<TArgs, Prisma.SubsetIntersection<TArgs, Prisma.UserWordGroupByArgs, OrderByArg> & InputErrors>, options?: (Omit<UseQueryOptions<TQueryFnData, TError, TData>, 'queryKey'> & ExtraQueryOptions)) {
-    const { endpoint, fetch } = getHooksContext();
-    return useModelQuery<TQueryFnData, TData, TError>('UserWord', `${endpoint}/userWord/groupBy`, args, options, fetch);
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+              ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+              : [
+                  Error,
+                  "Field ",
+                  P,
+                  ` in "having" needs to be provided in "by"`,
+                ];
+        }[HavingFields]
+      : "take" extends Prisma.Keys<TArgs>
+        ? "orderBy" extends Prisma.Keys<TArgs>
+          ? ByValid extends Prisma.True
+            ? {}
+            : {
+                [P in OrderFields]: P extends ByFields
+                  ? never
+                  : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+              }[OrderFields]
+          : 'Error: If you provide "take", you also need to provide "orderBy"'
+        : "skip" extends Prisma.Keys<TArgs>
+          ? "orderBy" extends Prisma.Keys<TArgs>
+            ? ByValid extends Prisma.True
+              ? {}
+              : {
+                  [P in OrderFields]: P extends ByFields
+                    ? never
+                    : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                }[OrderFields]
+            : 'Error: If you provide "skip", you also need to provide "orderBy"'
+          : ByValid extends Prisma.True
+            ? {}
+            : {
+                [P in OrderFields]: P extends ByFields
+                  ? never
+                  : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+              }[OrderFields],
+  TQueryFnData = {} extends InputErrors
+    ? Array<
+        PickEnumerable<Prisma.UserWordGroupByOutputType, TArgs["by"]> & {
+          [P in keyof TArgs &
+            keyof Prisma.UserWordGroupByOutputType]: P extends "_count"
+            ? TArgs[P] extends boolean
+              ? number
+              : Prisma.GetScalarType<
+                  TArgs[P],
+                  Prisma.UserWordGroupByOutputType[P]
+                >
+            : Prisma.GetScalarType<
+                TArgs[P],
+                Prisma.UserWordGroupByOutputType[P]
+              >;
+        }
+      >
+    : InputErrors,
+  TData = TQueryFnData,
+  TError = DefaultError,
+>(
+  args: Prisma.SelectSubset<
+    TArgs,
+    Prisma.SubsetIntersection<TArgs, Prisma.UserWordGroupByArgs, OrderByArg> &
+      InputErrors
+  >,
+  options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
+    ExtraQueryOptions,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  return useModelQuery<TQueryFnData, TData, TError>(
+    "UserWord",
+    `${endpoint}/userWord/groupBy`,
+    args,
+    options,
+    fetch,
+  );
 }
 
-export function useSuspenseGroupByUserWord<TArgs extends Prisma.UserWordGroupByArgs, HasSelectOrTake extends Prisma.Or<Prisma.Extends<'skip', Prisma.Keys<TArgs>>, Prisma.Extends<'take', Prisma.Keys<TArgs>>>, OrderByArg extends Prisma.True extends HasSelectOrTake ? { orderBy: Prisma.UserWordGroupByArgs['orderBy'] } : { orderBy?: Prisma.UserWordGroupByArgs['orderBy'] }, OrderFields extends Prisma.ExcludeUnderscoreKeys<Prisma.Keys<Prisma.MaybeTupleToUnion<TArgs['orderBy']>>>, ByFields extends Prisma.MaybeTupleToUnion<TArgs['by']>, ByValid extends Prisma.Has<ByFields, OrderFields>, HavingFields extends Prisma.GetHavingFields<TArgs['having']>, HavingValid extends Prisma.Has<ByFields, HavingFields>, ByEmpty extends TArgs['by'] extends never[] ? Prisma.True : Prisma.False, InputErrors extends ByEmpty extends Prisma.True
+export function useSuspenseGroupByUserWord<
+  TArgs extends Prisma.UserWordGroupByArgs,
+  HasSelectOrTake extends Prisma.Or<
+    Prisma.Extends<"skip", Prisma.Keys<TArgs>>,
+    Prisma.Extends<"take", Prisma.Keys<TArgs>>
+  >,
+  OrderByArg extends Prisma.True extends HasSelectOrTake
+    ? { orderBy: Prisma.UserWordGroupByArgs["orderBy"] }
+    : { orderBy?: Prisma.UserWordGroupByArgs["orderBy"] },
+  OrderFields extends Prisma.ExcludeUnderscoreKeys<
+    Prisma.Keys<Prisma.MaybeTupleToUnion<TArgs["orderBy"]>>
+  >,
+  ByFields extends Prisma.MaybeTupleToUnion<TArgs["by"]>,
+  ByValid extends Prisma.Has<ByFields, OrderFields>,
+  HavingFields extends Prisma.GetHavingFields<TArgs["having"]>,
+  HavingValid extends Prisma.Has<ByFields, HavingFields>,
+  ByEmpty extends TArgs["by"] extends never[] ? Prisma.True : Prisma.False,
+  InputErrors extends ByEmpty extends Prisma.True
     ? `Error: "by" must not be empty.`
     : HavingValid extends Prisma.False
-    ? {
-        [P in HavingFields]: P extends ByFields
-        ? never
-        : P extends string
-        ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-        : [
-            Error,
-            'Field ',
-            P,
-            ` in "having" needs to be provided in "by"`,
-        ]
-    }[HavingFields]
-    : 'take' extends Prisma.Keys<TArgs>
-    ? 'orderBy' extends Prisma.Keys<TArgs>
-    ? ByValid extends Prisma.True
-    ? {}
-    : {
-        [P in OrderFields]: P extends ByFields
-        ? never
-        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-    }[OrderFields]
-    : 'Error: If you provide "take", you also need to provide "orderBy"'
-    : 'skip' extends Prisma.Keys<TArgs>
-    ? 'orderBy' extends Prisma.Keys<TArgs>
-    ? ByValid extends Prisma.True
-    ? {}
-    : {
-        [P in OrderFields]: P extends ByFields
-        ? never
-        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-    }[OrderFields]
-    : 'Error: If you provide "skip", you also need to provide "orderBy"'
-    : ByValid extends Prisma.True
-    ? {}
-    : {
-        [P in OrderFields]: P extends ByFields
-        ? never
-        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-    }[OrderFields], TQueryFnData = {} extends InputErrors ?
-    Array<PickEnumerable<Prisma.UserWordGroupByOutputType, TArgs['by']> &
-    {
-        [P in ((keyof TArgs) & (keyof Prisma.UserWordGroupByOutputType))]: P extends '_count'
-        ? TArgs[P] extends boolean
-        ? number
-        : Prisma.GetScalarType<TArgs[P], Prisma.UserWordGroupByOutputType[P]>
-        : Prisma.GetScalarType<TArgs[P], Prisma.UserWordGroupByOutputType[P]>
-    }
-    > : InputErrors, TData = TQueryFnData, TError = DefaultError>(args: Prisma.SelectSubset<TArgs, Prisma.SubsetIntersection<TArgs, Prisma.UserWordGroupByArgs, OrderByArg> & InputErrors>, options?: (Omit<UseSuspenseQueryOptions<TQueryFnData, TError, TData>, 'queryKey'> & ExtraQueryOptions)) {
-    const { endpoint, fetch } = getHooksContext();
-    return useSuspenseModelQuery<TQueryFnData, TData, TError>('UserWord', `${endpoint}/userWord/groupBy`, args, options, fetch);
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+              ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+              : [
+                  Error,
+                  "Field ",
+                  P,
+                  ` in "having" needs to be provided in "by"`,
+                ];
+        }[HavingFields]
+      : "take" extends Prisma.Keys<TArgs>
+        ? "orderBy" extends Prisma.Keys<TArgs>
+          ? ByValid extends Prisma.True
+            ? {}
+            : {
+                [P in OrderFields]: P extends ByFields
+                  ? never
+                  : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+              }[OrderFields]
+          : 'Error: If you provide "take", you also need to provide "orderBy"'
+        : "skip" extends Prisma.Keys<TArgs>
+          ? "orderBy" extends Prisma.Keys<TArgs>
+            ? ByValid extends Prisma.True
+              ? {}
+              : {
+                  [P in OrderFields]: P extends ByFields
+                    ? never
+                    : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                }[OrderFields]
+            : 'Error: If you provide "skip", you also need to provide "orderBy"'
+          : ByValid extends Prisma.True
+            ? {}
+            : {
+                [P in OrderFields]: P extends ByFields
+                  ? never
+                  : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+              }[OrderFields],
+  TQueryFnData = {} extends InputErrors
+    ? Array<
+        PickEnumerable<Prisma.UserWordGroupByOutputType, TArgs["by"]> & {
+          [P in keyof TArgs &
+            keyof Prisma.UserWordGroupByOutputType]: P extends "_count"
+            ? TArgs[P] extends boolean
+              ? number
+              : Prisma.GetScalarType<
+                  TArgs[P],
+                  Prisma.UserWordGroupByOutputType[P]
+                >
+            : Prisma.GetScalarType<
+                TArgs[P],
+                Prisma.UserWordGroupByOutputType[P]
+              >;
+        }
+      >
+    : InputErrors,
+  TData = TQueryFnData,
+  TError = DefaultError,
+>(
+  args: Prisma.SelectSubset<
+    TArgs,
+    Prisma.SubsetIntersection<TArgs, Prisma.UserWordGroupByArgs, OrderByArg> &
+      InputErrors
+  >,
+  options?: Omit<
+    UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
+    "queryKey"
+  > &
+    ExtraQueryOptions,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  return useSuspenseModelQuery<TQueryFnData, TData, TError>(
+    "UserWord",
+    `${endpoint}/userWord/groupBy`,
+    args,
+    options,
+    fetch,
+  );
 }
 
-export function useCountUserWord<TArgs extends Prisma.UserWordCountArgs, TQueryFnData = TArgs extends { select: any; } ? TArgs['select'] extends true ? number : Prisma.GetScalarType<TArgs['select'], Prisma.UserWordCountAggregateOutputType> : number, TData = TQueryFnData, TError = DefaultError>(args?: Prisma.SelectSubset<TArgs, Prisma.UserWordCountArgs>, options?: (Omit<UseQueryOptions<TQueryFnData, TError, TData>, 'queryKey'> & ExtraQueryOptions)) {
-    const { endpoint, fetch } = getHooksContext();
-    return useModelQuery<TQueryFnData, TData, TError>('UserWord', `${endpoint}/userWord/count`, args, options, fetch);
+export function useCountUserWord<
+  TArgs extends Prisma.UserWordCountArgs,
+  TQueryFnData = TArgs extends { select: any }
+    ? TArgs["select"] extends true
+      ? number
+      : Prisma.GetScalarType<
+          TArgs["select"],
+          Prisma.UserWordCountAggregateOutputType
+        >
+    : number,
+  TData = TQueryFnData,
+  TError = DefaultError,
+>(
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserWordCountArgs>,
+  options?: Omit<UseQueryOptions<TQueryFnData, TError, TData>, "queryKey"> &
+    ExtraQueryOptions,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  return useModelQuery<TQueryFnData, TData, TError>(
+    "UserWord",
+    `${endpoint}/userWord/count`,
+    args,
+    options,
+    fetch,
+  );
 }
 
-export function useSuspenseCountUserWord<TArgs extends Prisma.UserWordCountArgs, TQueryFnData = TArgs extends { select: any; } ? TArgs['select'] extends true ? number : Prisma.GetScalarType<TArgs['select'], Prisma.UserWordCountAggregateOutputType> : number, TData = TQueryFnData, TError = DefaultError>(args?: Prisma.SelectSubset<TArgs, Prisma.UserWordCountArgs>, options?: (Omit<UseSuspenseQueryOptions<TQueryFnData, TError, TData>, 'queryKey'> & ExtraQueryOptions)) {
-    const { endpoint, fetch } = getHooksContext();
-    return useSuspenseModelQuery<TQueryFnData, TData, TError>('UserWord', `${endpoint}/userWord/count`, args, options, fetch);
+export function useSuspenseCountUserWord<
+  TArgs extends Prisma.UserWordCountArgs,
+  TQueryFnData = TArgs extends { select: any }
+    ? TArgs["select"] extends true
+      ? number
+      : Prisma.GetScalarType<
+          TArgs["select"],
+          Prisma.UserWordCountAggregateOutputType
+        >
+    : number,
+  TData = TQueryFnData,
+  TError = DefaultError,
+>(
+  args?: Prisma.SelectSubset<TArgs, Prisma.UserWordCountArgs>,
+  options?: Omit<
+    UseSuspenseQueryOptions<TQueryFnData, TError, TData>,
+    "queryKey"
+  > &
+    ExtraQueryOptions,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  return useSuspenseModelQuery<TQueryFnData, TData, TError>(
+    "UserWord",
+    `${endpoint}/userWord/count`,
+    args,
+    options,
+    fetch,
+  );
 }
 
-export function useCheckUserWord<TError = DefaultError>(args: { operation: PolicyCrudKind; where?: { id?: string; description?: string; userId?: string; componentId?: string }; }, options?: (Omit<UseQueryOptions<boolean, TError, boolean>, 'queryKey'> & ExtraQueryOptions)) {
-    const { endpoint, fetch } = getHooksContext();
-    return useModelQuery<boolean, boolean, TError>('UserWord', `${endpoint}/userWord/check`, args, options, fetch);
+export function useCheckUserWord<TError = DefaultError>(
+  args: {
+    operation: PolicyCrudKind;
+    where?: {
+      id?: string;
+      description?: string;
+      userId?: string;
+      componentId?: string;
+    };
+  },
+  options?: Omit<UseQueryOptions<boolean, TError, boolean>, "queryKey"> &
+    ExtraQueryOptions,
+) {
+  const { endpoint, fetch } = getHooksContext();
+  return useModelQuery<boolean, boolean, TError>(
+    "UserWord",
+    `${endpoint}/userWord/check`,
+    args,
+    options,
+    fetch,
+  );
 }

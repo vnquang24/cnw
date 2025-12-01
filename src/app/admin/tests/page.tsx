@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Card,
   Table,
@@ -16,10 +16,12 @@ import {
   Modal,
   Form,
   InputNumber,
-  message,
+  App,
   Drawer,
   Descriptions,
   Spin,
+  TreeSelect,
+  Checkbox,
 } from "antd";
 import {
   FileText,
@@ -32,38 +34,94 @@ import {
   Eye,
   Trash2,
 } from "lucide-react";
+import type { Prisma } from "@prisma/client";
 import {
   useFindManyTest,
   useCreateTest,
   useUpdateTest,
   useDeleteTest,
+  useFindManyCourse,
+  useFindManyLesson,
+  useFindManyComponent,
+  useCreateComponent,
+  useUpdateComponent,
+  useDeleteComponent,
 } from "@/generated/hooks";
-import { useFindManyQuestion } from "@/generated/hooks";
-import { useFindManyTestResult } from "@/generated/hooks";
-import type { Test } from "@prisma/client";
 import ManageQuestions from "./components/ManageQuestions";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-interface TestWithStats extends Test {
+interface TestWithStats {
+  id: string;
+  name: string;
+  duration: number;
+  maxAttempts: number;
+  maxScore?: number;
+  passScore?: number;
+  shuffleQuestions?: boolean;
+  shuffleAnswers?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
   questionsCount?: number;
   attemptsCount?: number;
   avgScore?: number;
+  questions?: any[];
+  components?: any[];
 }
 
 export default function TestsPage() {
+  const { message } = App.useApp();
   const [selectedTest, setSelectedTest] = useState<TestWithStats | null>(null);
   const [modalState, setModalState] = useState<{
     type: "create" | "edit" | "view" | "results" | "questions" | null;
     open: boolean;
   }>({ type: null, open: false });
-  const [searchText, setSearchText] = useState("");
-  const [sortOrder, setSortOrder] = useState("newest");
+  const [filterTrigger, setFilterTrigger] = useState(0);
 
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
-  const [searchForm] = Form.useForm();
+  const [filterForm] = Form.useForm();
+
+  // Fetch courses and lessons
+  const { data: courses } = useFindManyCourse({
+    include: {
+      lessons: {
+        orderBy: { position: "asc" },
+        select: {
+          id: true,
+          title: true,
+          courseId: true,
+        },
+      },
+    },
+  });
+
+  // Fetch components for the selected test
+  const { data: testComponents } = useFindManyComponent(
+    {
+      where: { testId: selectedTest?.id },
+      select: {
+        id: true,
+        lessonId: true,
+        indexInLesson: true,
+      },
+    },
+    {
+      enabled: !!selectedTest?.id && modalState.type === "edit",
+    },
+  );
+
+  // Update form when editing
+  useEffect(() => {
+    if (modalState.type === "edit" && Array.isArray(testComponents)) {
+      const lessonIds = testComponents
+        .map((comp) => comp.lessonId)
+        .filter((id): id is string => typeof id === "string");
+      editForm.setFieldsValue({ lessons: lessonIds });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [testComponents, modalState.type, editForm]);
 
   // Fetch data
   const { data: tests, isLoading: testsLoading } = useFindManyTest({
@@ -86,6 +144,8 @@ export default function TestsPage() {
   const createTest = useCreateTest();
   const updateTest = useUpdateTest();
   const deleteTest = useDeleteTest();
+  const createComponent = useCreateComponent();
+  const deleteComponent = useDeleteComponent();
 
   // Transform data to include stats
   const testsWithStats: TestWithStats[] = useMemo(() => {
@@ -111,6 +171,7 @@ export default function TestsPage() {
         questionsCount,
         attemptsCount,
         avgScore,
+        maxScore: test.maxScore || 10,
       };
     });
   }, [tests]);
@@ -118,18 +179,38 @@ export default function TestsPage() {
   // Handle create test
   const handleCreateTest = async (values: any) => {
     try {
-      await createTest.mutateAsync({
+      const createdTest = await createTest.mutateAsync({
         data: {
           name: values.name,
           duration: values.duration,
           maxAttempts: values.maxAttempts,
+          maxScore: values.maxScore,
+          passScore: values.passScore ?? 5,
+          shuffleQuestions: values.shuffleQuestions ?? false,
+          shuffleAnswers: values.shuffleAnswers ?? false,
         },
       });
+
+      // Create components for selected lessons
+      if (createdTest && values.lessons && values.lessons.length > 0) {
+        for (const lessonId of values.lessons) {
+          await createComponent.mutateAsync({
+            data: {
+              lessonId: lessonId,
+              componentType: "TEST",
+              testId: createdTest.id,
+              indexInLesson: 999, // Default position, can be adjusted later
+            },
+          });
+        }
+      }
+
       message.success("Tạo bài kiểm tra thành công!");
       setModalState({ type: null, open: false });
       createForm.resetFields();
     } catch (error) {
       message.error("Có lỗi xảy ra khi tạo bài kiểm tra!");
+      console.error(error);
     }
   };
 
@@ -144,14 +225,54 @@ export default function TestsPage() {
           name: values.name,
           duration: values.duration,
           maxAttempts: values.maxAttempts,
+          maxScore: values.maxScore,
+          passScore: values.passScore ?? 5,
+          shuffleQuestions: values.shuffleQuestions ?? false,
+          shuffleAnswers: values.shuffleAnswers ?? false,
         },
       });
+
+      // Handle lesson changes
+      const oldLessonIds = testComponents?.map((comp) => comp.lessonId) || [];
+      const newLessonIds = values.lessons || [];
+
+      // Remove components for unselected lessons
+      const lessonsToRemove = oldLessonIds.filter(
+        (id) => !newLessonIds.includes(id),
+      );
+      for (const lessonId of lessonsToRemove) {
+        const componentToDelete = testComponents?.find(
+          (comp) => comp.lessonId === lessonId,
+        );
+        if (componentToDelete) {
+          await deleteComponent.mutateAsync({
+            where: { id: componentToDelete.id },
+          });
+        }
+      }
+
+      // Add components for newly selected lessons
+      const lessonsToAdd = newLessonIds.filter(
+        (id: string) => !oldLessonIds.includes(id),
+      );
+      for (const lessonId of lessonsToAdd) {
+        await createComponent.mutateAsync({
+          data: {
+            lessonId: lessonId,
+            componentType: "TEST",
+            testId: selectedTest.id,
+            indexInLesson: 999, // Default position, can be adjusted later
+          },
+        });
+      }
+
       message.success("Cập nhật bài kiểm tra thành công!");
       setModalState({ type: null, open: false });
       setSelectedTest(null);
       editForm.resetFields();
     } catch (error) {
       message.error("Có lỗi xảy ra khi cập nhật bài kiểm tra!");
+      console.error(error);
     }
   };
 
@@ -189,6 +310,10 @@ export default function TestsPage() {
       name: test.name,
       duration: test.duration,
       maxAttempts: test.maxAttempts,
+      maxScore: test.maxScore,
+      passScore: test.passScore ?? 5,
+      shuffleQuestions: test.shuffleQuestions ?? false,
+      shuffleAnswers: test.shuffleAnswers ?? false,
     });
     setModalState({ type: "edit", open: true });
   };
@@ -204,6 +329,21 @@ export default function TestsPage() {
     setSelectedTest(test);
     setModalState({ type: "questions", open: true });
   };
+
+  // Build tree data for lesson selection
+  const lessonTreeData = useMemo(() => {
+    if (!courses) return [];
+
+    return courses.map((course: any) => ({
+      title: course.title,
+      value: `course-${course.id}`,
+      selectable: false,
+      children: course.lessons?.map((lesson: any) => ({
+        title: lesson.title,
+        value: lesson.id,
+      })),
+    }));
+  }, [courses]);
 
   const columns = [
     {
@@ -257,19 +397,28 @@ export default function TestsPage() {
     },
     {
       title: "Điểm TB",
-      dataIndex: "avgScore",
       key: "avgScore",
-      render: (score: number) => {
-        const displayScore = score ? score.toFixed(1) : "0.0";
+      render: (_: any, record: TestWithStats) => {
+        const displayScore = record.avgScore
+          ? record.avgScore.toFixed(1)
+          : "0.0";
+        const maxScore = record.maxScore || 10;
+        const scorePercentage = record.avgScore
+          ? (record.avgScore / maxScore) * 100
+          : 0;
         return (
           <span
             style={{
               color:
-                score >= 8 ? "#52c41a" : score >= 6 ? "#fa8c16" : "#ff4d4f",
+                scorePercentage >= 80
+                  ? "#52c41a"
+                  : scorePercentage >= 60
+                    ? "#fa8c16"
+                    : "#ff4d4f",
               fontWeight: "bold",
             }}
           >
-            {displayScore}/10
+            {displayScore}/{maxScore}
           </span>
         );
       },
@@ -327,6 +476,10 @@ export default function TestsPage() {
 
   // Filter and sort tests
   const filteredAndSortedTests = useMemo(() => {
+    const formValues = filterForm.getFieldsValue();
+    const searchText = formValues.searchText || "";
+    const sortOrder = formValues.sortOrder || "newest";
+
     // Filter by search text
     let filtered = testsWithStats.filter((test) => {
       const matchesSearch = test.name
@@ -360,7 +513,7 @@ export default function TestsPage() {
     });
 
     return sorted;
-  }, [testsWithStats, searchText, sortOrder]);
+  }, [testsWithStats, filterTrigger]);
 
   return (
     <div>
@@ -413,17 +566,20 @@ export default function TestsPage() {
         <Col xs={24} sm={6}>
           <Card>
             <Statistic
-              title="Điểm trung bình"
+              title="Điểm trung bình (%)"
               value={
                 testsWithStats?.length > 0
-                  ? testsWithStats.reduce(
-                      (sum, test) => sum + (test.avgScore || 0),
-                      0,
-                    ) / testsWithStats.length
+                  ? testsWithStats.reduce((sum, test) => {
+                      const maxScore = test.maxScore || 10;
+                      const percentage = test.avgScore
+                        ? (test.avgScore / maxScore) * 100
+                        : 0;
+                      return sum + percentage;
+                    }, 0) / testsWithStats.length
                   : 0
               }
               precision={1}
-              suffix="/10"
+              suffix="%"
               valueStyle={{ color: "#52c41a" }}
             />
           </Card>
@@ -432,42 +588,49 @@ export default function TestsPage() {
 
       {/* Filters and Actions */}
       <Card style={{ marginBottom: 16 }}>
-        <Row gutter={[16, 16]} align="middle">
-          <Col flex="auto">
-            <Space size="middle">
-              <Input
-                placeholder="Tìm kiếm theo tên bài kiểm tra..."
-                prefix={<Search size={14} />}
-                style={{ width: 300 }}
-                allowClear
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-              />
-              <Select
-                style={{ width: 200 }}
-                placeholder="Sắp xếp theo"
-                value={sortOrder}
-                onChange={(value) => setSortOrder(value)}
+        <Form
+          form={filterForm}
+          layout="inline"
+          initialValues={{ searchText: "", sortOrder: "newest" }}
+          onValuesChange={() => {
+            // Trigger re-render when form values change
+            setFilterTrigger((prev) => prev + 1);
+          }}
+        >
+          <Row gutter={[16, 16]} align="middle" style={{ width: "100%" }}>
+            <Col flex="auto">
+              <Space size="middle">
+                <Form.Item name="searchText" style={{ marginBottom: 0 }}>
+                  <Input
+                    placeholder="Tìm kiếm theo tên bài kiểm tra..."
+                    prefix={<Search size={14} />}
+                    style={{ width: 300 }}
+                    allowClear
+                  />
+                </Form.Item>
+                <Form.Item name="sortOrder" style={{ marginBottom: 0 }}>
+                  <Select style={{ width: 200 }} placeholder="Sắp xếp theo">
+                    <Option value="newest">Mới nhất</Option>
+                    <Option value="oldest">Cũ nhất</Option>
+                    <Option value="name-asc">Tên A-Z</Option>
+                    <Option value="name-desc">Tên Z-A</Option>
+                    <Option value="most-questions">Nhiều câu hỏi nhất</Option>
+                    <Option value="highest-score">Điểm cao nhất</Option>
+                  </Select>
+                </Form.Item>
+              </Space>
+            </Col>
+            <Col>
+              <Button
+                type="primary"
+                icon={<Plus size={14} />}
+                onClick={() => setModalState({ type: "create", open: true })}
               >
-                <Option value="newest">Mới nhất</Option>
-                <Option value="oldest">Cũ nhất</Option>
-                <Option value="name-asc">Tên A-Z</Option>
-                <Option value="name-desc">Tên Z-A</Option>
-                <Option value="most-questions">Nhiều câu hỏi nhất</Option>
-                <Option value="highest-score">Điểm cao nhất</Option>
-              </Select>
-            </Space>
-          </Col>
-          <Col>
-            <Button
-              type="primary"
-              icon={<Plus size={14} />}
-              onClick={() => setModalState({ type: "create", open: true })}
-            >
-              Tạo bài kiểm tra mới
-            </Button>
-          </Col>
-        </Row>
+                Tạo bài kiểm tra mới
+              </Button>
+            </Col>
+          </Row>
+        </Form>
       </Card>
 
       {/* Tests Table */}
@@ -497,8 +660,14 @@ export default function TestsPage() {
         }}
         onOk={() => createForm.submit()}
         confirmLoading={createTest.isPending}
+        width={600}
       >
-        <Form form={createForm} layout="vertical" onFinish={handleCreateTest}>
+        <Form
+          form={createForm}
+          layout="vertical"
+          onFinish={handleCreateTest}
+          initialValues={{ maxScore: 10, passScore: 5 }}
+        >
           <Form.Item
             name="name"
             label="Tên bài kiểm tra"
@@ -532,6 +701,55 @@ export default function TestsPage() {
               placeholder="Nhập số lần làm"
             />
           </Form.Item>
+          <Form.Item
+            name="maxScore"
+            label="Điểm tối đa của bài kiểm tra"
+            rules={[{ required: true, message: "Vui lòng nhập điểm tối đa!" }]}
+            tooltip="Điểm tối đa mà học viên có thể đạt được trong bài kiểm tra này"
+          >
+            <InputNumber
+              min={1}
+              max={100}
+              style={{ width: "100%" }}
+              placeholder="Nhập điểm tối đa (VD: 10)"
+            />
+          </Form.Item>
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="shuffleQuestions"
+                valuePropName="checked"
+                initialValue={false}
+              >
+                <Checkbox>Trộn câu hỏi</Checkbox>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="shuffleAnswers"
+                valuePropName="checked"
+                initialValue={false}
+              >
+                <Checkbox>Trộn đáp án</Checkbox>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item
+            name="lessons"
+            label="Chọn bài học áp dụng"
+            tooltip="Chọn các bài học mà bài kiểm tra này sẽ được áp dụng"
+          >
+            <TreeSelect
+              treeData={lessonTreeData}
+              placeholder="Chọn bài học..."
+              multiple
+              treeCheckable
+              showCheckedStrategy={TreeSelect.SHOW_CHILD}
+              style={{ width: "100%" }}
+              maxTagCount="responsive"
+              treeDefaultExpandAll
+            />
+          </Form.Item>
         </Form>
       </Modal>
 
@@ -546,6 +764,7 @@ export default function TestsPage() {
         }}
         onOk={() => editForm.submit()}
         confirmLoading={updateTest.isPending}
+        width={600}
       >
         <Form form={editForm} layout="vertical" onFinish={handleEditTest}>
           <Form.Item
@@ -581,6 +800,47 @@ export default function TestsPage() {
               placeholder="Nhập số lần làm"
             />
           </Form.Item>
+          <Form.Item
+            name="maxScore"
+            label="Điểm tối đa của bài kiểm tra"
+            rules={[{ required: true, message: "Vui lòng nhập điểm tối đa!" }]}
+            tooltip="Điểm tối đa mà học viên có thể đạt được trong bài kiểm tra này"
+          >
+            <InputNumber
+              min={1}
+              max={100}
+              style={{ width: "100%" }}
+              placeholder="Nhập điểm tối đa (VD: 10)"
+            />
+          </Form.Item>
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item name="shuffleQuestions" valuePropName="checked">
+                <Checkbox>Trộn câu hỏi</Checkbox>
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item name="shuffleAnswers" valuePropName="checked">
+                <Checkbox>Trộn đáp án</Checkbox>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item
+            name="lessons"
+            label="Chọn bài học áp dụng"
+            tooltip="Chọn các bài học mà bài kiểm tra này sẽ được áp dụng"
+          >
+            <TreeSelect
+              treeData={lessonTreeData}
+              placeholder="Chọn bài học..."
+              multiple
+              treeCheckable
+              showCheckedStrategy={TreeSelect.SHOW_CHILD}
+              style={{ width: "100%" }}
+              maxTagCount="responsive"
+              treeDefaultExpandAll
+            />
+          </Form.Item>
         </Form>
       </Modal>
 
@@ -612,9 +872,31 @@ export default function TestsPage() {
             <Descriptions.Item label="Tổng lượt làm">
               {selectedTest.attemptsCount || 0}
             </Descriptions.Item>
+            <Descriptions.Item label="Điểm tối đa">
+              {selectedTest.maxScore || 10}
+            </Descriptions.Item>
+            <Descriptions.Item label="Điểm đạt">
+              <Tag color="green">
+                {selectedTest.passScore || 5}/{selectedTest.maxScore || 10}
+              </Tag>
+            </Descriptions.Item>
             <Descriptions.Item label="Điểm trung bình">
               {selectedTest.avgScore ? selectedTest.avgScore.toFixed(1) : "0.0"}
-              /10
+              /{selectedTest.maxScore || 10}
+            </Descriptions.Item>
+            <Descriptions.Item label="Trộn câu hỏi">
+              {selectedTest.shuffleQuestions ? (
+                <Tag color="blue">Có</Tag>
+              ) : (
+                <Tag>Không</Tag>
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item label="Trộn đáp án">
+              {selectedTest.shuffleAnswers ? (
+                <Tag color="blue">Có</Tag>
+              ) : (
+                <Tag>Không</Tag>
+              )}
             </Descriptions.Item>
             <Descriptions.Item label="Ngày tạo">
               {new Date(selectedTest.createdAt).toLocaleDateString("vi-VN")}
@@ -655,7 +937,7 @@ export default function TestsPage() {
                 {selectedTest.avgScore
                   ? selectedTest.avgScore.toFixed(1)
                   : "0.0"}
-                /10
+                /{selectedTest.maxScore || 10}
               </Descriptions.Item>
             </Descriptions>
             <div style={{ marginTop: 16, color: "#666" }}>
@@ -677,6 +959,8 @@ export default function TestsPage() {
             setModalState({ type: null, open: false });
             setSelectedTest(null);
           }}
+          shuffleQuestions={selectedTest.shuffleQuestions}
+          shuffleAnswers={selectedTest.shuffleAnswers}
         />
       )}
     </div>

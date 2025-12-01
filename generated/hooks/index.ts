@@ -3,25 +3,28 @@
  ******************************************************************************/
 
 /* eslint-disable */
-// @ts-nocheck
 
-export * from './course';
-export * from './lesson';
-export * from './word';
-export * from './test';
-export * from './question';
-export * from './answer';
-export * from './component';
-export * from './user-course';
-export * from './user-lesson';
-export * from './admin-course-manager';
-export * from './user-word';
-export * from './test-result';
-export * from './user';
-export * from './user-group';
-export * from './permission';
-export * from './refresh-token';
-export * from './device';
-export { getQueryKey } from '@zenstackhq/tanstack-query/runtime-v5';
-export { Provider } from '@zenstackhq/tanstack-query/runtime-v5/react';
-export { default as metadata } from './__model_meta';
+export * from "./course";
+export * from "./lesson";
+export * from "./word";
+export * from "./test";
+export * from "./media-file";
+export * from "./question";
+export * from "./answer";
+export * from "./component";
+export * from "./user-course";
+export * from "./user-lesson";
+export * from "./admin-course-manager";
+export * from "./user-word";
+export * from "./test-result";
+export * from "./user-note";
+export * from "./video-content";
+export * from "./video-comment";
+export * from "./user";
+export * from "./user-group";
+export * from "./permission";
+export * from "./refresh-token";
+export * from "./device";
+export { getQueryKey } from "@zenstackhq/tanstack-query/runtime-v5";
+export { Provider } from "@zenstackhq/tanstack-query/runtime-v5/react";
+export { default as metadata } from "./__model_meta";

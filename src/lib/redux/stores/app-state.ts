@@ -2,7 +2,7 @@ import { AppState } from "@/lib/redux/models/app-state";
 import { action } from "easy-peasy";
 
 const appState: AppState = {
-  isShowSidebar: true, // Thay đổi mặc định thành true để hiện sidebar
+  isShowSidebar: false, // Thay đổi mặc định thành true để hiện sidebar
   setIsShowSidebar: action((state, payload) => {
     state.isShowSidebar = payload;
   }),

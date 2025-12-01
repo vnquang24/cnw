@@ -167,7 +167,9 @@ export default function UserProgressPage() {
   if (!userId || isLoading || isFetching) {
     return (
       <div className="flex justify-center items-center h-72">
-        <Spin size="large" tip="Đang tải tiến độ học tập..." />
+        <Spin size="large" tip="Đang tải tiến độ học tập...">
+          <div style={{ minHeight: 50, minWidth: 100 }} />
+        </Spin>
       </div>
     );
   }

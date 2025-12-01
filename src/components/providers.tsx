@@ -7,6 +7,8 @@ import StoreProviderWrapper from "./store-provider";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toast } from "@/components/ui/toast";
 import AntdConfigProvider from "@/components/antd-config-provider";
+import { LessonViewModal, LessonEditModal } from "@/components/modal";
+import { LessonModalProvider } from "@/components/modal/LessonModalContext";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -20,7 +22,14 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         }}
       >
         <AntdConfigProvider>
-          <StoreProviderWrapper>{children}</StoreProviderWrapper>
+          <LessonModalProvider>
+            <StoreProviderWrapper>
+              {children}
+              {/* Render modals */}
+              <LessonViewModal />
+              <LessonEditModal />
+            </StoreProviderWrapper>
+          </LessonModalProvider>
         </AntdConfigProvider>
         <Toast position="top-center" />
         {process.env.NODE_ENV === "development" && <ReactQueryDevtools />}

@@ -18,11 +18,13 @@ import {
 } from "antd";
 import {
   ArrowLeft,
+  FileText,
   CheckCircle,
   XCircle,
   Trophy,
   RotateCcw,
   Home,
+  Clock,
 } from "lucide-react";
 import { useFindUniqueTest, useFindFirstTestResult } from "@/generated/hooks";
 import { getUserId } from "@/lib/auth";
@@ -32,6 +34,7 @@ const { Title, Text, Paragraph } = Typography;
 interface UserAnswer {
   questionId: string;
   selectedAnswerIds: string[];
+  essayAnswer?: string;
 }
 
 export default function TestResultPage() {
@@ -97,18 +100,58 @@ export default function TestResultPage() {
     enabled: Boolean(userId && componentId),
   });
 
-  const userAnswers = (result?.userAnswers as unknown as UserAnswer[]) ?? [];
+  // Parse userAnswers correctly - it's stored as Record<string, string | string[]>
+  const userAnswersMap = useMemo(() => {
+    try {
+      const answers =
+        (result?.userAnswers as Record<string, string | string[]>) ?? {};
+      return answers;
+    } catch (error) {
+      console.error("Error parsing user answers:", error);
+      return {};
+    }
+  }, [result?.userAnswers]);
+
   const questions = test?.questions ?? [];
   const isPassed = result?.status === "PASSED";
+  const isPending = result?.status === "PENDING";
+
+  // Parse feedback
+  const feedbackData = useMemo(() => {
+    try {
+      return result?.feedback ? JSON.parse(result.feedback) : {};
+    } catch (e) {
+      return { overall: result?.feedback };
+    }
+  }, [result?.feedback]);
+
+  // Parse question scores (new format)
+  const questionScores = useMemo(() => {
+    try {
+      return result?.questionScores ? (result.questionScores as any) : {};
+    } catch (e) {
+      return {};
+    }
+  }, [result?.questionScores]);
 
   // Calculate statistics
   const correctCount = useMemo(() => {
     let count = 0;
-    questions.forEach((question) => {
-      const userAnswer = userAnswers.find((a) => a.questionId === question.id);
-      const selectedIds = userAnswer?.selectedAnswerIds ?? [];
-      const correctAnswers = question.answers?.filter((a) => a.correct) ?? [];
-      const correctIds = correctAnswers.map((a) => a.id);
+    questions.forEach((question: any) => {
+      if (question.questionType === "ESSAY") {
+        // Skip essay questions for auto-calculation
+        return;
+      }
+
+      const userAnswer = userAnswersMap[question.id];
+      const selectedIds = Array.isArray(userAnswer)
+        ? userAnswer
+        : userAnswer
+          ? [userAnswer]
+          : [];
+      const correctAnswers =
+        question.answers?.filter((a: any) => a.correct) ?? [];
+      const correctIds = correctAnswers.map((a: any) => a.id);
 
       const isCorrect =
         selectedIds.length === correctIds.length &&
@@ -117,14 +160,16 @@ export default function TestResultPage() {
       if (isCorrect) count++;
     });
     return count;
-  }, [questions, userAnswers]);
+  }, [questions, userAnswersMap]);
 
   const incorrectCount = questions.length - correctCount;
 
   if (testLoading || resultLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <Spin size="large" tip="Đang tải kết quả..." />
+        <Spin size="large" tip="Đang tải kết quả...">
+          <div style={{ minHeight: 50, minWidth: 100 }} />
+        </Spin>
       </div>
     );
   }
@@ -153,10 +198,10 @@ export default function TestResultPage() {
             <Col xs={24} md={12}>
               <Space direction="vertical" size={12}>
                 <Tag
-                  color={isPassed ? "green" : "red"}
+                  color={isPending ? "blue" : isPassed ? "green" : "red"}
                   style={{ fontSize: 16, padding: "4px 12px" }}
                 >
-                  {isPassed ? "ĐẠT" : "CHƯA ĐẠT"}
+                  {isPending ? "ĐANG CHẤM" : isPassed ? "ĐẠT" : "CHƯA ĐẠT"}
                 </Tag>
                 <Title level={2} style={{ margin: 0 }}>
                   {test.name}
@@ -170,29 +215,40 @@ export default function TestResultPage() {
             <Col xs={24} md={12}>
               <Card
                 style={{
-                  background: isPassed
-                    ? "linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)"
-                    : "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
+                  background: isPending
+                    ? "linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)"
+                    : isPassed
+                      ? "linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)"
+                      : "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
                   border: "none",
                   textAlign: "center",
                 }}
               >
                 <Space direction="vertical" size={8} align="center">
-                  {isPassed ? (
+                  {isPending ? (
+                    <Clock size={48} color="#0284c7" />
+                  ) : isPassed ? (
                     <Trophy size={48} color="#10b981" />
                   ) : (
                     <RotateCcw size={48} color="#ef4444" />
                   )}
                   <Statistic
                     title="Điểm số"
-                    value={result.mark}
-                    suffix="/ 100"
+                    value={isPending ? "?" : result.mark}
+                    suffix={`/ ${test?.maxScore || 10}`}
                     valueStyle={{
-                      color: isPassed ? "#10b981" : "#ef4444",
+                      color: isPending
+                        ? "#0284c7"
+                        : isPassed
+                          ? "#10b981"
+                          : "#ef4444",
                       fontSize: 48,
                       fontWeight: "bold",
                     }}
                   />
+                  {isPending && (
+                    <Text type="secondary">Đang chờ giáo viên chấm điểm</Text>
+                  )}
                 </Space>
               </Card>
             </Col>
@@ -235,31 +291,75 @@ export default function TestResultPage() {
           </Col>
         </Row>
 
+        {isPending && (
+          <Alert
+            type="info"
+            showIcon
+            message="Bài làm đang chờ chấm điểm"
+            description="Bài kiểm tra của bạn có câu hỏi tự luận cần được giáo viên chấm điểm thủ công. Điểm số và kết quả cuối cùng sẽ được cập nhật sau khi giáo viên chấm xong."
+          />
+        )}
+
         {/* Detailed Answers */}
         <Card title="Chi tiết bài làm">
           <Space direction="vertical" size={24} style={{ width: "100%" }}>
-            {questions.map((question, qIdx) => {
-              const userAnswer = userAnswers.find(
-                (a) => a.questionId === question.id,
-              );
-              const selectedIds = userAnswer?.selectedAnswerIds ?? [];
+            {/* Overall Feedback - Displayed at top */}
+            {!isPending && feedbackData.overall && (
+              <Card
+                style={{
+                  backgroundColor: "#f0f9ff",
+                  border: "1px solid #bae6fd",
+                }}
+              >
+                <Title level={5} style={{ color: "#0284c7" }}>
+                  Nhận xét chung của giáo viên:
+                </Title>
+                <Paragraph>{feedbackData.overall}</Paragraph>
+              </Card>
+            )}
+
+            {questions.map((question: any, qIdx: number) => {
+              const userAnswer = userAnswersMap[question.id];
+              let selectedIds: string[] = [];
+              let essayAnswer = "";
+
+              if (question.questionType === "ESSAY") {
+                essayAnswer = typeof userAnswer === "string" ? userAnswer : "";
+              } else {
+                selectedIds = Array.isArray(userAnswer)
+                  ? userAnswer
+                  : userAnswer
+                    ? [userAnswer]
+                    : [];
+              }
+
               const correctAnswers =
-                question.answers?.filter((a) => a.correct) ?? [];
-              const correctIds = correctAnswers.map((a) => a.id);
+                question.answers?.filter((a: any) => a.correct) ?? [];
+              const correctIds = correctAnswers.map((a: any) => a.id);
 
               const isCorrect =
-                selectedIds.length === correctIds.length &&
-                selectedIds.every((id) => correctIds.includes(id));
+                question.questionType === "ESSAY"
+                  ? null
+                  : selectedIds.length === correctIds.length &&
+                    selectedIds.every((id) => correctIds.includes(id));
 
               return (
                 <Card
                   key={question.id}
                   size="small"
                   style={{
-                    backgroundColor: isCorrect ? "#f6ffed" : "#fff2e8",
-                    border: isCorrect
-                      ? "2px solid #b7eb8f"
-                      : "2px solid #ffbb96",
+                    backgroundColor:
+                      question.questionType === "ESSAY"
+                        ? "#fff"
+                        : isCorrect
+                          ? "#f6ffed"
+                          : "#fff2e8",
+                    border:
+                      question.questionType === "ESSAY"
+                        ? "1px solid #d9d9d9"
+                        : isCorrect
+                          ? "2px solid #b7eb8f"
+                          : "2px solid #ffbb96",
                   }}
                 >
                   <Space
@@ -269,17 +369,29 @@ export default function TestResultPage() {
                   >
                     {/* Question Header */}
                     <Space size={8} align="start">
-                      {isCorrect ? (
+                      {question.questionType === "ESSAY" ? (
+                        <FileText size={20} color="#1890ff" />
+                      ) : isCorrect ? (
                         <CheckCircle size={20} color="#52c41a" />
                       ) : (
                         <XCircle size={20} color="#fa8c16" />
                       )}
                       <div style={{ flex: 1 }}>
                         <Tag
-                          color={isCorrect ? "success" : "warning"}
+                          color={
+                            question.questionType === "ESSAY"
+                              ? "blue"
+                              : isCorrect
+                                ? "success"
+                                : "warning"
+                          }
                           style={{ marginBottom: 8 }}
                         >
-                          {isCorrect ? "Đúng" : "Sai"}
+                          {question.questionType === "ESSAY"
+                            ? "Tự luận"
+                            : isCorrect
+                              ? "Đúng"
+                              : "Sai"}
                         </Tag>
                         <Title level={5} style={{ margin: 0 }}>
                           Câu {qIdx + 1}: {question.content}
@@ -287,7 +399,9 @@ export default function TestResultPage() {
                         <Text type="secondary">
                           {question.questionType === "SINGLE_CHOICE"
                             ? "Chọn 1 đáp án"
-                            : "Chọn nhiều đáp án"}
+                            : question.questionType === "MULTIPLE_CHOICE"
+                              ? "Chọn nhiều đáp án"
+                              : `Tự luận (${question.points || 1} điểm)`}
                         </Text>
                       </div>
                     </Space>
@@ -300,7 +414,7 @@ export default function TestResultPage() {
                       size={8}
                       style={{ width: "100%", paddingLeft: 28 }}
                     >
-                      {question.answers?.map((answer, aIdx) => {
+                      {question.answers?.map((answer: any, aIdx: number) => {
                         const isSelected = selectedIds.includes(answer.id);
                         const isCorrectAnswer = answer.correct;
                         const showAsCorrect = isCorrectAnswer;
@@ -364,6 +478,119 @@ export default function TestResultPage() {
                         );
                       })}
                     </Space>
+
+                    {/* Essay Answer Display */}
+                    {question.questionType === "ESSAY" && (
+                      <div style={{ marginTop: 16 }}>
+                        <Text strong>Câu trả lời của bạn:</Text>
+                        <Card
+                          style={{ marginTop: 8, backgroundColor: "#fafafa" }}
+                          size="small"
+                        >
+                          <Paragraph
+                            style={{ whiteSpace: "pre-wrap", marginBottom: 0 }}
+                          >
+                            {essayAnswer || "Chưa trả lời"}
+                          </Paragraph>
+                        </Card>
+                      </div>
+                    )}
+
+                    {/* Feedback and score for all question types */}
+                    {!isPending &&
+                      (questionScores[question.id] ||
+                        feedbackData.questions?.[question.id]) && (
+                        <div style={{ marginTop: 16 }}>
+                          <Alert
+                            message={`Nhận xét của giáo viên - Câu ${qIdx + 1}`}
+                            description={
+                              <Space
+                                direction="vertical"
+                                style={{ width: "100%" }}
+                              >
+                                {(questionScores[question.id]?.feedback ||
+                                  feedbackData.questions?.[question.id]
+                                    ?.feedback) && (
+                                  <Text>
+                                    {questionScores[question.id]?.feedback ||
+                                      feedbackData.questions?.[question.id]
+                                        ?.feedback}
+                                  </Text>
+                                )}
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <Text
+                                    strong
+                                    type={
+                                      (questionScores[question.id]?.score ||
+                                        feedbackData.questions?.[question.id]
+                                          ?.score ||
+                                        0) > 0
+                                        ? "success"
+                                        : "danger"
+                                    }
+                                  >
+                                    Điểm:{" "}
+                                    {questionScores[question.id]?.score ||
+                                      feedbackData.questions?.[question.id]
+                                        ?.score ||
+                                      0}
+                                    /
+                                    {questionScores[question.id]?.maxScore ||
+                                      question.points ||
+                                      1}
+                                  </Text>
+                                  {question.questionType !== "ESSAY" && (
+                                    <Text
+                                      type="secondary"
+                                      style={{ fontSize: 12 }}
+                                    >
+                                      (Điểm tự động dựa trên đáp án{" "}
+                                      {isCorrect ? "đúng" : "sai"})
+                                    </Text>
+                                  )}
+                                </div>
+                              </Space>
+                            }
+                            type={
+                              question.questionType === "ESSAY"
+                                ? "info"
+                                : isCorrect
+                                  ? "success"
+                                  : "error"
+                            }
+                            showIcon
+                          />
+                        </div>
+                      )}
+
+                    {/* Show auto score for multiple choice even without feedback */}
+                    {!isPending &&
+                      question.questionType !== "ESSAY" &&
+                      !questionScores[question.id] &&
+                      !feedbackData.questions?.[question.id] && (
+                        <div style={{ marginTop: 16 }}>
+                          <Alert
+                            message={`Kết quả - Câu ${qIdx + 1}`}
+                            description={
+                              <Text
+                                strong
+                                type={isCorrect ? "success" : "danger"}
+                              >
+                                Điểm: {isCorrect ? question.points || 1 : 0}/
+                                {question.points || 1}
+                              </Text>
+                            }
+                            type={isCorrect ? "success" : "error"}
+                            showIcon
+                          />
+                        </div>
+                      )}
                   </Space>
                 </Card>
               );

@@ -28,9 +28,10 @@ export function CourseFormDialog({
 }: CourseFormDialogProps) {
   const [form] = Form.useForm<CourseFormData>();
 
-  // Reset form khi dialog mở/đóng hoặc initialData thay đổi
+  // Reset form khi dialog mở hoặc initialData thay đổi
   useEffect(() => {
     if (open) {
+      form.resetFields();
       if (initialData) {
         form.setFieldsValue({
           title: initialData.title,
@@ -40,18 +41,14 @@ export function CourseFormDialog({
           status: initialData.status,
         });
       } else {
-        // Reset form và set default values cho add mode
-        form.resetFields();
         form.setFieldsValue({
           level: "BEGINNER",
           status: "ACTIVE",
         });
       }
-    } else {
-      // Reset form khi đóng dialog
-      form.resetFields();
     }
-  }, [open, initialData, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialData]);
 
   const handleSubmit = async () => {
     try {

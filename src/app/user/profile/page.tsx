@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Alert,
-  Avatar,
   Card,
   Col,
   Descriptions,
@@ -15,11 +14,9 @@ import {
   Tag,
   Typography,
   Button,
-  Modal,
-  Form,
-  Input,
-  Select,
-  message,
+  App,
+  Progress,
+  Avatar,
 } from "antd";
 import {
   Award,
@@ -29,38 +26,50 @@ import {
   Phone,
   UserRound,
   Edit,
+  TrendingUp,
+  GraduationCap,
+  ClipboardCheck,
+  User,
+  Camera,
 } from "lucide-react";
+import Image from "next/image";
 import { useFindUniqueUser, useUpdateUser } from "@/generated/hooks";
+import {
+  useMinioControllerCreateUploadUrl,
+  fetchMinioControllerGetPublicUrl,
+} from "@/generated/api/cnwComponents";
 import { getUserId } from "@/lib/auth";
+import { formatDateForAPI, formatDateToVietnamese } from "@/lib/date-utils";
+import {
+  GENDER_DISPLAY_MAP,
+  type EditProfileFormValues,
+} from "@/lib/validations/profile.validation";
+import {
+  calculateCourseStats,
+  calculateLessonStats,
+  calculateTestStats,
+  getAvatarColorByRole,
+  getUserInitials,
+} from "@/lib/profile-utils";
+import EditProfileModal from "@/components/modal/EditProfileModal";
+import AvatarUploadModal from "@/components/modal/AvatarUploadModal";
 
 const { Title, Text } = Typography;
-const { Option } = Select;
-
-const genderMap: Record<string, string> = {
-  MALE: "Nam",
-  FEMALE: "Nữ",
-  OTHER: "Khác",
-};
-
-interface EditProfileFormValues {
-  phone?: string;
-  gender?: string;
-  birthday?: string; // Sử dụng string cho input date
-}
 
 export default function UserProfilePage() {
+  const { message } = App.useApp();
   const [userId, setUserId] = useState<string | null>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [form] = Form.useForm<EditProfileFormValues>();
+  const [isAvatarModalVisible, setIsAvatarModalVisible] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     setUserId(getUserId());
   }, []);
 
   const queryArgs = useMemo(() => {
-    if (!userId) return undefined;
     return {
-      where: { id: userId },
+      where: { id: userId || "" },
       include: {
         userCourses: true,
         userLessons: true,
@@ -79,57 +88,38 @@ export default function UserProfilePage() {
     isLoading,
     isFetching,
     error,
-    refetch, //Lấy refetch để cập nhật lại data sau khi edit
-  } = useFindUniqueUser(queryArgs!, {
+    refetch,
+  } = useFindUniqueUser(queryArgs, {
     enabled: Boolean(userId),
   });
 
   const updateUserMutation = useUpdateUser();
+  const createUploadUrlMutation = useMinioControllerCreateUploadUrl();
 
-  // Helper function để format date từ ISO string sang YYYY-MM-DD cho input date
-  const formatDateForInput = (dateString: string | undefined) => {
-    if (!dateString) return "";
-    try {
-      const date = new Date(dateString);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
-    } catch {
-      return undefined;
-    }
-  };
+  const courseStats = useMemo(
+    () => calculateCourseStats(user?.userCourses),
+    [user?.userCourses],
+  );
 
-  // Helper function để format date từ input sang ISO string cho API
-  const formatDateForAPI = (inputValue: string | undefined): string | null => {
-    if (!inputValue) return null;
-    try {
-      // Input date format là YYYY-MM-DD
-      const date = new Date(inputValue + "T00:00:00");
-      return date.toISOString();
-    } catch {
-      return null;
-    }
-  };
+  const lessonStats = useMemo(
+    () => calculateLessonStats(user?.userLessons),
+    [user?.userLessons],
+  );
 
-  // Hàm mở modal edit và set giá trị ban đầu cho form
-  const handleOpenEditModal = () => {
-    if (user) {
-      form.setFieldsValue({
-        phone: user.phone || undefined,
-        gender: user.gender || undefined,
-        birthday: formatDateForInput(user.birthday),
-      });
-      setIsEditModalVisible(true);
-    }
-  };
+  const testStats = useMemo(
+    () => calculateTestStats(user?.testResults),
+    [user?.testResults],
+  );
 
-  // Hàm xử lý submit form edit
   const handleEditSubmit = async (values: EditProfileFormValues) => {
     if (!userId) return;
 
     try {
-      const updateData: any = {};
+      const updateData: Record<string, unknown> = {};
+
+      if (values.name !== undefined) {
+        updateData.name = { set: values.name || null };
+      }
 
       if (values.phone !== undefined) {
         updateData.phone = { set: values.phone || null };
@@ -145,111 +135,110 @@ export default function UserProfilePage() {
 
       await updateUserMutation.mutateAsync({
         where: { id: userId },
-        data: updateData,
+        data: updateData as Record<string, unknown>,
       });
 
       message.success("Cập nhật thông tin thành công!");
       setIsEditModalVisible(false);
-      refetch(); // Refresh data
+      refetch();
     } catch (error) {
       message.error("Có lỗi xảy ra khi cập nhật thông tin!");
       console.error("Update error:", error);
     }
   };
 
-  // Hàm đóng modal
-  const handleCancelEdit = () => {
-    setIsEditModalVisible(false);
-    form.resetFields();
+  const handleAvatarUpload = async (file: File) => {
+    if (!userId) return;
+
+    setUploadingAvatar(true);
+    try {
+      console.log("Starting avatar upload...", {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+      });
+
+      // Step 1: Generate unique object name (chỉ giữ extension, bỏ tên file gốc)
+      const timestamp = Date.now();
+      const fileExtension = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const objectName = `avatars/${userId}-${timestamp}.${fileExtension}`;
+      console.log("Object name:", objectName);
+
+      // Step 2: Get presigned upload URL using hook
+      const { url: uploadUrl } = await createUploadUrlMutation.mutateAsync({
+        body: { path: objectName },
+      });
+
+      if (!uploadUrl) {
+        throw new Error("Không thể tạo URL upload");
+      }
+
+      console.log("Presigned upload URL received");
+
+      // Step 3: Upload file directly to MinIO using presigned URL (no auth needed)
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("Không thể upload file lên MinIO");
+      }
+
+      console.log("File uploaded successfully to MinIO");
+
+      // Step 4: Get public URL using generated fetch function
+      let publicUrl: string;
+      try {
+        const result = await fetchMinioControllerGetPublicUrl({
+          queryParams: { objectName },
+        });
+        publicUrl = result.url;
+
+        if (!publicUrl) {
+          throw new Error("Không nhận được URL công khai từ server");
+        }
+
+        console.log("Public URL:", publicUrl);
+      } catch (fetchError: any) {
+        console.error("Error fetching public URL:", {
+          error: fetchError,
+          objectName,
+        });
+        throw new Error(
+          `Không thể lấy URL công khai: ${fetchError?.message || "Unknown error"}`,
+        );
+      }
+
+      // Step 5: Update user avatar in database using ZenStack hook
+      await updateUserMutation.mutateAsync({
+        where: { id: userId },
+        data: {
+          avatarUrl: { set: publicUrl },
+        },
+      });
+
+      message.success("Cập nhật avatar thành công!");
+      setIsAvatarModalVisible(false);
+      refetch();
+    } catch (error: any) {
+      console.error("Avatar upload error:", error);
+      message.error(error?.message || "Có lỗi xảy ra khi cập nhật avatar!");
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
-
-  //Validator cho số điện thoại Việt Nam
-  const validatePhoneNumber = (_: any, value: string) => {
-    if (!value) {
-      return Promise.resolve();
-    }
-
-    // Remove spaces và check format số VN
-    const cleanedValue = value.replace(/\s/g, "");
-    const phoneRegex = /^(0|84|\+84)?[3|5|7|8|9][0-9]{8}$/;
-
-    if (!phoneRegex.test(cleanedValue)) {
-      return Promise.reject(
-        new Error("Số điện thoại không hợp lệ! (VD: 0901234567)"),
-      );
-    }
-    return Promise.resolve();
-  };
-
-  //Validator cho ngày sinh
-  const validateBirthday = (_: any, value: string | undefined) => {
-    if (!value) {
-      return Promise.resolve();
-    }
-
-    const birthDate = new Date(value);
-    const today = new Date();
-    const age = today.getFullYear() - birthDate.getFullYear();
-
-    // Check ngày trong tương lai
-    if (birthDate > today) {
-      return Promise.reject(new Error("Ngày sinh không thể trong tương lai!"));
-    }
-
-    // Check tuổi hợp lệ (không quá 120 tuổi)
-    if (age > 120) {
-      return Promise.reject(new Error("Ngày sinh không hợp lệ!"));
-    }
-
-    // Check tuổi tối thiểu (ít nhất 1 tuổi)
-    if (age < 1) {
-      return Promise.reject(new Error("Ngày sinh quá gần với hiện tại!"));
-    }
-
-    return Promise.resolve();
-  };
-
-  const courseStats = useMemo(() => {
-    const list = user?.userCourses ?? [];
-    const total = list.length;
-    const inProgress = list.filter(
-      (item) => item.enrolmentStatus === "IN_PROGRESS",
-    ).length;
-    const completed = list.filter(
-      (item) => item.enrolmentStatus === "COMPLETED",
-    ).length;
-
-    const averageProgress = total
-      ? Math.round(
-          list.reduce((acc, item) => acc + (item.progress ?? 0), 0) / total,
-        )
-      : 0;
-
-    return { total, inProgress, completed, averageProgress };
-  }, [user?.userCourses]);
-
-  const lessonStats = useMemo(() => {
-    const list = user?.userLessons ?? [];
-    const total = list.length;
-    const completed = list.filter((lesson) => lesson.status === "PASS").length;
-    const doing = list.filter((lesson) => lesson.status === "DOING").length;
-
-    return { total, completed, doing };
-  }, [user?.userLessons]);
-
-  const testStats = useMemo(() => {
-    const list = user?.testResults ?? [];
-    const total = list.length;
-    const passed = list.filter((test) => test.status === "PASSED").length;
-
-    return { total, passed };
-  }, [user?.testResults]);
 
   if (!userId || isLoading || isFetching) {
     return (
-      <div className="flex justify-center items-center h-72">
-        <Spin size="large" />
-        <div className="ml-4 text-gray-600">Đang tải hồ sơ học viên...</div>
+      <div className="flex justify-center items-center h-96">
+        <Space direction="vertical" align="center" size="large">
+          <Spin size="large" />
+          <Text type="secondary">Đang tải thông tin của bạn...</Text>
+        </Space>
       </div>
     );
   }
@@ -261,248 +250,348 @@ export default function UserProfilePage() {
         showIcon
         message="Không thể tải hồ sơ"
         description="Vui lòng thử lại sau hoặc liên hệ hỗ trợ."
+        className="m-4"
       />
     );
   }
 
   if (!user) {
-    return <Empty description="Không tìm thấy thông tin học viên." />;
+    return (
+      <Empty description="Không tìm thấy thông tin của bạn" className="mt-20" />
+    );
   }
 
   return (
-    <Space direction="vertical" size="large" style={{ width: "100%" }}>
-      <div>
-        <Title level={3}>Hồ sơ học viên</Title>
-        <Text type="secondary">
-          Thông tin tài khoản và kết quả học tập tổng quan của bạn.
+    <div className="w-full p-6 space-y-6">
+      {/* Header */}
+      <div className="mb-6">
+        <Title level={2} className="!mb-2">
+          Hồ sơ của tôi
+        </Title>
+        <Text type="secondary" className="text-base">
+          Xem và cập nhật thông tin cá nhân, theo dõi tiến độ học tập của bạn
         </Text>
       </div>
 
-      <Card>
-        <div style={{ position: "relative" }}>
+      {/* Profile Card */}
+      <Card className="shadow-sm hover:shadow-md transition-shadow">
+        <div className="relative">
           <Button
             icon={<Edit size={16} />}
-            onClick={handleOpenEditModal}
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              zIndex: 1,
-            }}
+            onClick={() => setIsEditModalVisible(true)}
             type="text"
-          >
-            Chỉnh sửa
-          </Button>
+            shape="circle"
+            className="absolute top-0 right-0 hover:bg-blue-50 hover:text-blue-600"
+            title="Chỉnh sửa thông tin"
+          />
 
-          <Space size={16} align="start">
-            <Avatar size={96} style={{ backgroundColor: "#1677ff" }}>
-              {user.name?.charAt(0) || user.email?.charAt(0) || "U"}
-            </Avatar>
-            <Space direction="vertical" size={8}>
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:pr-8">
+            <div className="relative group">
+              {user.avatarUrl ? (
+                <div className="relative w-[120px] h-[120px] rounded-full overflow-hidden border-4 border-gray-200">
+                  <Image
+                    src={user.avatarUrl}
+                    alt={user.name || "Avatar"}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <Avatar
+                  size={120}
+                  style={{
+                    backgroundColor: getAvatarColorByRole(
+                      user.role || undefined,
+                    ),
+                    fontSize: "48px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {getUserInitials(user.name, user.email)}
+                </Avatar>
+              )}
+              <Button
+                icon={<Camera size={18} />}
+                onClick={() => setIsAvatarModalVisible(true)}
+                type="primary"
+                shape="circle"
+                size="large"
+                className="absolute bottom-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                title="Thay đổi avatar"
+              />
+            </div>
+
+            <div className="flex-1 space-y-4">
               <div>
-                <Title level={4} style={{ margin: 0 }}>
+                <Title level={3} className="!mb-2">
                   {user.name || "Học viên"}
                 </Title>
-                <Tag color="blue">{user.role || "USER"}</Tag>
+                <Space size={8}>
+                  <Tag color="blue" className="text-sm px-3 py-1">
+                    {user.role === "ADMIN" ? "Quản trị viên" : "Học viên"}
+                  </Tag>
+                  {user.group && user.group.length > 0 && (
+                    <Tag color="green" className="text-sm px-3 py-1">
+                      {user.group[0].name}
+                    </Tag>
+                  )}
+                </Space>
               </div>
-              <Space size={12} wrap>
-                <InfoChip icon={<Mail size={16} />} text={user.email} />
-                {user.phone && (
-                  <InfoChip icon={<Phone size={16} />} text={user.phone} />
-                )}
-                {user.birthday && (
-                  <InfoChip
-                    icon={<Calendar size={16} />}
-                    text={new Date(user.birthday).toLocaleDateString("vi-VN")}
-                  />
-                )}
-                {user.gender && (
-                  <InfoChip
-                    icon={<UserRound size={16} />}
-                    text={genderMap[user.gender] || user.gender}
-                  />
-                )}
-              </Space>
-            </Space>
-          </Space>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <InfoItem
+                  icon={<Mail size={18} />}
+                  label="Email"
+                  value={user.email}
+                />
+                <InfoItem
+                  icon={<Phone size={18} />}
+                  label="Số điện thoại"
+                  value={user.phone || "Chưa cập nhật"}
+                />
+                <InfoItem
+                  icon={<Calendar size={18} />}
+                  label="Ngày sinh"
+                  value={
+                    formatDateToVietnamese(
+                      user.birthday ? user.birthday.toString() : null,
+                    ) || "Chưa cập nhật"
+                  }
+                />
+                <InfoItem
+                  icon={<UserRound size={18} />}
+                  label="Giới tính"
+                  value={
+                    user.gender
+                      ? GENDER_DISPLAY_MAP[user.gender]
+                      : "Chưa cập nhật"
+                  }
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </Card>
 
-      <Modal
-        title="Chỉnh sửa thông tin cá nhân"
-        open={isEditModalVisible}
-        onCancel={handleCancelEdit}
-        footer={null}
-        width={500}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleEditSubmit}
-          autoComplete="off"
-        >
-          <Form.Item
-            label="Số điện thoại"
-            name="phone"
-            rules={[{ validator: validatePhoneNumber }]}
-            extra="Ví dụ: 0901234567"
-          >
-            <Input
-              placeholder="Nhập số điện thoại"
-              prefix={<Phone size={16} />}
-              maxLength={11}
-              allowClear
-            />
-          </Form.Item>
-
-          <Form.Item label="Giới tính" name="gender">
-            <Select placeholder="Chọn giới tính" allowClear>
-              <Option value="MALE">Nam</Option>
-              <Option value="FEMALE">Nữ</Option>
-              <Option value="OTHER">Khác</Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            label="Ngày sinh"
-            name="birthday"
-            rules={[{ validator: validateBirthday }]}
-          >
-            <Input
-              type="date"
-              placeholder="Chọn ngày sinh"
-              style={{ width: "100%" }}
-              max={new Date().toISOString().split("T")[0]}
-              min="1900-01-01"
-            />
-          </Form.Item>
-
-          <Form.Item style={{ marginBottom: 0, marginTop: 24 }}>
-            <Space style={{ width: "100%", justifyContent: "flex-end" }}>
-              <Button onClick={handleCancelEdit}>Hủy</Button>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={updateUserMutation.isPending}
-              >
-                Lưu thay đổi
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
-
+      {/* Statistics Cards */}
       <Row gutter={[16, 16]}>
-        <Col xs={24} md={8}>
-          <Card>
+        <Col xs={24} sm={12} lg={6}>
+          <Card className="text-center shadow-sm hover:shadow-md transition-shadow">
             <Statistic
-              title="Khóa học đã đăng ký"
+              title={
+                <span className="text-base font-medium">
+                  Khóa học đã đăng ký
+                </span>
+              }
               value={courseStats.total}
-              prefix={<BookOpen size={18} className="text-blue-500" />}
+              prefix={<BookOpen size={24} className="text-blue-500" />}
+              valueStyle={{ color: "#1890ff", fontSize: "32px" }}
             />
           </Card>
         </Col>
-        <Col xs={24} md={8}>
-          <Card>
+        <Col xs={24} sm={12} lg={6}>
+          <Card className="text-center shadow-sm hover:shadow-md transition-shadow">
             <Statistic
-              title="Bài học đã hoàn thành"
+              title={
+                <span className="text-base font-medium">
+                  Khóa học hoàn thành
+                </span>
+              }
+              value={courseStats.completed}
+              prefix={<Award size={24} className="text-green-500" />}
+              valueStyle={{ color: "#52c41a", fontSize: "32px" }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card className="text-center shadow-sm hover:shadow-md transition-shadow">
+            <Statistic
+              title={
+                <span className="text-base font-medium">
+                  Bài học đã hoàn thành
+                </span>
+              }
               value={lessonStats.completed}
-              prefix={<Award size={18} className="text-emerald-500" />}
+              prefix={<BookOpen size={24} className="text-purple-500" />}
+              valueStyle={{ color: "#722ed1", fontSize: "32px" }}
             />
           </Card>
         </Col>
-        <Col xs={24} md={8}>
-          <Card>
+        <Col xs={24} sm={12} lg={6}>
+          <Card className="text-center shadow-sm hover:shadow-md transition-shadow">
             <Statistic
-              title="Điểm bài kiểm tra đạt"
-              value={testStats.passed}
-              prefix={<Award size={18} className="text-purple-500" />}
+              title={
+                <span className="text-base font-medium">
+                  Tỷ lệ đạt bài kiểm tra
+                </span>
+              }
+              value={testStats.passRate}
+              suffix="%"
+              prefix={<TrendingUp size={24} className="text-orange-500" />}
+              valueStyle={{ color: "#fa8c16", fontSize: "32px" }}
             />
           </Card>
         </Col>
       </Row>
 
+      {/* Detailed Statistics */}
       <Row gutter={[16, 16]}>
-        <Col xs={24} md={12}>
-          <Card title="Tổng quan khóa học">
-            <Descriptions column={1} bordered size="small">
-              <Descriptions.Item label="Đang học">
-                {courseStats.inProgress}
-              </Descriptions.Item>
-              <Descriptions.Item label="Đã hoàn thành">
-                {courseStats.completed}
-              </Descriptions.Item>
-              <Descriptions.Item label="Tiến độ trung bình">
-                {courseStats.averageProgress}%
-              </Descriptions.Item>
-            </Descriptions>
+        <Col xs={24} lg={12}>
+          <Card
+            title={
+              <Space>
+                <GraduationCap size={20} className="text-blue-600" />
+                <span className="text-lg font-semibold">Tiến độ học tập</span>
+              </Space>
+            }
+            className="shadow-sm hover:shadow-md transition-shadow h-full"
+          >
+            <Space direction="vertical" size="large" className="w-full">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <Text>Tiến độ trung bình</Text>
+                  <Text strong>{courseStats.averageProgress}%</Text>
+                </div>
+                <Progress
+                  percent={courseStats.averageProgress}
+                  status={
+                    courseStats.averageProgress === 100 ? "success" : "active"
+                  }
+                  strokeColor={{
+                    "0%": "#108ee9",
+                    "100%": "#87d068",
+                  }}
+                />
+              </div>
+
+              <Descriptions column={1} bordered size="small">
+                <Descriptions.Item label="Tổng khóa học đã đăng ký">
+                  <Text strong>{courseStats.total}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Khóa học đang học">
+                  <Tag color="processing">{courseStats.inProgress}</Tag>
+                </Descriptions.Item>
+                <Descriptions.Item label="Khóa học đã hoàn thành">
+                  <Tag color="success">{courseStats.completed}</Tag>
+                </Descriptions.Item>
+                <Descriptions.Item label="Tổng bài học">
+                  {lessonStats.total}
+                </Descriptions.Item>
+                <Descriptions.Item label="Bài học đang làm">
+                  <Tag color="warning">{lessonStats.doing}</Tag>
+                </Descriptions.Item>
+                <Descriptions.Item label="Bài học đã hoàn thành">
+                  <Tag color="success">{lessonStats.completed}</Tag>
+                </Descriptions.Item>
+              </Descriptions>
+            </Space>
           </Card>
         </Col>
-        <Col xs={24} md={12}>
-          <Card title="Nhóm người dùng">
-            {user.group?.length ? (
-              <Space direction="vertical" size={8}>
-                {user.group.map((group) => (
-                  <Card key={group.id} size="small" bordered>
-                    <Space direction="vertical" size={6}>
-                      <Text strong>{group.name}</Text>
-                      <Space size={4} wrap>
-                        {group.permission?.map((permission) => (
-                          <Tag key={permission.id} color="geekblue">
-                            {permission.name} · {permission.permissionType}
-                          </Tag>
-                        ))}
-                      </Space>
-                    </Space>
-                  </Card>
-                ))}
+
+        <Col xs={24} lg={12}>
+          <Card
+            title={
+              <Space>
+                <ClipboardCheck size={20} className="text-green-600" />
+                <span className="text-lg font-semibold">Kết quả kiểm tra</span>
               </Space>
-            ) : (
-              <Text type="secondary">Bạn chưa thuộc nhóm nào.</Text>
-            )}
+            }
+            className="shadow-sm hover:shadow-md transition-shadow h-full"
+          >
+            <Space direction="vertical" size="large" className="w-full">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <Text>Tỷ lệ đạt bài kiểm tra</Text>
+                  <Text strong>{testStats.passRate}%</Text>
+                </div>
+                <Progress
+                  percent={testStats.passRate}
+                  status={
+                    testStats.passRate >= 80
+                      ? "success"
+                      : testStats.passRate >= 50
+                        ? "normal"
+                        : "exception"
+                  }
+                  strokeColor={
+                    testStats.passRate >= 80
+                      ? "#52c41a"
+                      : testStats.passRate >= 50
+                        ? "#1890ff"
+                        : "#ff4d4f"
+                  }
+                />
+              </div>
+
+              <Descriptions column={1} bordered size="small">
+                <Descriptions.Item label="Tổng số bài kiểm tra">
+                  <Text strong>{testStats.total}</Text>
+                </Descriptions.Item>
+                <Descriptions.Item label="Số bài đạt">
+                  <Tag color="success">{testStats.passed}</Tag>
+                </Descriptions.Item>
+                <Descriptions.Item label="Số bài chưa đạt">
+                  <Tag color="error">{testStats.failed}</Tag>
+                </Descriptions.Item>
+              </Descriptions>
+
+              {testStats.total === 0 && (
+                <Alert
+                  message="Bạn chưa làm bài kiểm tra nào"
+                  description="Hãy tham gia các khóa học và hoàn thành bài kiểm tra để đánh giá năng lực của bạn."
+                  type="info"
+                  showIcon
+                />
+              )}
+            </Space>
           </Card>
         </Col>
       </Row>
 
-      <Row gutter={[16, 16]}>
-        <Col xs={24} md={12}>
-          <Card title="Tiến độ học tập">
-            <Descriptions column={1} size="small" bordered>
-              <Descriptions.Item label="Tổng bài học">
-                {lessonStats.total}
-              </Descriptions.Item>
-              <Descriptions.Item label="Đang học">
-                {lessonStats.doing}
-              </Descriptions.Item>
-            </Descriptions>
-          </Card>
-        </Col>
-        <Col xs={24} md={12}>
-          <Card title="Kết quả kiểm tra">
-            <Descriptions column={1} size="small" bordered>
-              <Descriptions.Item label="Tổng số bài">
-                {testStats.total}
-              </Descriptions.Item>
-              <Descriptions.Item label="Số bài đạt">
-                {testStats.passed}
-              </Descriptions.Item>
-            </Descriptions>
-          </Card>
-        </Col>
-      </Row>
-    </Space>
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        open={isEditModalVisible}
+        onCancel={() => setIsEditModalVisible(false)}
+        onSubmit={handleEditSubmit}
+        initialValues={{
+          name: user.name,
+          phone: user.phone,
+          gender: user.gender,
+          birthday: user.birthday ? user.birthday.toString() : null,
+        }}
+        loading={updateUserMutation.isPending}
+      />
+
+      {/* Avatar Upload Modal */}
+      <AvatarUploadModal
+        open={isAvatarModalVisible}
+        onCancel={() => setIsAvatarModalVisible(false)}
+        onUpload={handleAvatarUpload}
+        currentAvatarUrl={user.avatarUrl}
+        loading={uploadingAvatar}
+      />
+    </div>
   );
 }
 
-type InfoChipProps = {
+interface InfoItemProps {
   icon: ReactNode;
-  text: string;
-};
+  label: string;
+  value: string;
+}
 
-function InfoChip({ icon, text }: InfoChipProps) {
+function InfoItem({ icon, label, value }: InfoItemProps) {
   return (
-    <Tag icon={icon} color="default" style={{ padding: "4px 8px" }}>
-      {text}
-    </Tag>
+    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+      <div className="text-gray-600">{icon}</div>
+      <div className="flex-1">
+        <Text type="secondary" className="text-xs block">
+          {label}
+        </Text>
+        <Text strong className="text-sm">
+          {value}
+        </Text>
+      </div>
+    </div>
   );
 }

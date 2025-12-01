@@ -3,9 +3,10 @@
  ******************************************************************************/
 
 /* eslint-disable */
-// @ts-nocheck
 
-const metadata = {
+import type { ModelMeta } from "@zenstackhq/runtime";
+
+const metadata: ModelMeta = {
   models: {
     course: {
       name: "Course",
@@ -293,6 +294,34 @@ const metadata = {
           name: "maxAttempts",
           type: "Int",
         },
+        maxScore: {
+          name: "maxScore",
+          type: "Int",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: 10 }] },
+          ],
+        },
+        passScore: {
+          name: "passScore",
+          type: "Int",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: 5 }] },
+          ],
+        },
+        shuffleQuestions: {
+          name: "shuffleQuestions",
+          type: "Boolean",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: false }] },
+          ],
+        },
+        shuffleAnswers: {
+          name: "shuffleAnswers",
+          type: "Boolean",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: false }] },
+          ],
+        },
         questions: {
           name: "questions",
           type: "Question",
@@ -306,6 +335,94 @@ const metadata = {
           isDataModel: true,
           isArray: true,
           backLink: "test",
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    mediaFile: {
+      name: "MediaFile",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        fileName: {
+          name: "fileName",
+          type: "String",
+        },
+        fileUrl: {
+          name: "fileUrl",
+          type: "String",
+        },
+        fileType: {
+          name: "fileType",
+          type: "String",
+        },
+        fileSize: {
+          name: "fileSize",
+          type: "Int",
+          isOptional: true,
+        },
+        uploadedBy: {
+          name: "uploadedBy",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "uploader",
+        },
+        questionId: {
+          name: "questionId",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "question",
+        },
+        uploader: {
+          name: "uploader",
+          type: "User",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "uploadedFiles",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "uploadedBy" },
+        },
+        question: {
+          name: "question",
+          type: "Question",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "mediaFiles",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "questionId" },
         },
       },
       uniqueConstraints: {
@@ -360,6 +477,19 @@ const metadata = {
           name: "questionType",
           type: "QuestionType",
         },
+        points: {
+          name: "points",
+          type: "Int",
+          isOptional: true,
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: 1 }] },
+          ],
+        },
+        maxLength: {
+          name: "maxLength",
+          type: "Int",
+          isOptional: true,
+        },
         test: {
           name: "test",
           type: "Test",
@@ -371,6 +501,13 @@ const metadata = {
         answers: {
           name: "answers",
           type: "Answer",
+          isDataModel: true,
+          isArray: true,
+          backLink: "question",
+        },
+        mediaFiles: {
+          name: "mediaFiles",
+          type: "MediaFile",
           isDataModel: true,
           isArray: true,
           backLink: "question",
@@ -499,6 +636,13 @@ const metadata = {
           isForeignKey: true,
           relationField: "word",
         },
+        videoId: {
+          name: "videoId",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "video",
+        },
         content: {
           name: "content",
           type: "String",
@@ -534,6 +678,15 @@ const metadata = {
           isRelationOwner: true,
           foreignKeyMapping: { id: "wordId" },
         },
+        video: {
+          name: "video",
+          type: "VideoContent",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "components",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "videoId" },
+        },
         userWords: {
           name: "userWords",
           type: "UserWord",
@@ -544,6 +697,13 @@ const metadata = {
         testResults: {
           name: "testResults",
           type: "TestResult",
+          isDataModel: true,
+          isArray: true,
+          backLink: "component",
+        },
+        userNotes: {
+          name: "userNotes",
+          type: "UserNote",
           isDataModel: true,
           isArray: true,
           backLink: "component",
@@ -622,6 +782,13 @@ const metadata = {
           name: "endDate",
           type: "DateTime",
           isOptional: true,
+        },
+        extensionRequest: {
+          name: "extensionRequest",
+          type: "Boolean",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: false }] },
+          ],
         },
         user: {
           name: "user",
@@ -913,6 +1080,11 @@ const metadata = {
           name: "userAnswers",
           type: "Json",
         },
+        questionScores: {
+          name: "questionScores",
+          type: "Json",
+          isOptional: true,
+        },
         mark: {
           name: "mark",
           type: "Int",
@@ -920,6 +1092,23 @@ const metadata = {
         status: {
           name: "status",
           type: "TestResultStatus",
+        },
+        feedback: {
+          name: "feedback",
+          type: "String",
+          isOptional: true,
+        },
+        gradedBy: {
+          name: "gradedBy",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "grader",
+        },
+        gradedAt: {
+          name: "gradedAt",
+          type: "DateTime",
+          isOptional: true,
         },
         user: {
           name: "user",
@@ -936,6 +1125,313 @@ const metadata = {
           backLink: "testResults",
           isRelationOwner: true,
           foreignKeyMapping: { id: "componentId" },
+        },
+        grader: {
+          name: "grader",
+          type: "User",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "gradedResults",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "gradedBy" },
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    userNote: {
+      name: "UserNote",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        userId: {
+          name: "userId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "user",
+        },
+        componentId: {
+          name: "componentId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "component",
+        },
+        content: {
+          name: "content",
+          type: "String",
+        },
+        isPrivate: {
+          name: "isPrivate",
+          type: "Boolean",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: true }] },
+          ],
+        },
+        tags: {
+          name: "tags",
+          type: "String",
+          isOptional: true,
+        },
+        user: {
+          name: "user",
+          type: "User",
+          isDataModel: true,
+          backLink: "userNotes",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "userId" },
+        },
+        component: {
+          name: "component",
+          type: "Component",
+          isDataModel: true,
+          backLink: "userNotes",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "componentId" },
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+        userId_componentId: {
+          name: "userId_componentId",
+          fields: ["userId", "componentId"],
+        },
+      },
+    },
+    videoContent: {
+      name: "VideoContent",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        title: {
+          name: "title",
+          type: "String",
+        },
+        originalFile: {
+          name: "originalFile",
+          type: "String",
+        },
+        hlsPlaylistUrl: {
+          name: "hlsPlaylistUrl",
+          type: "String",
+        },
+        thumbnailUrl: {
+          name: "thumbnailUrl",
+          type: "String",
+          isOptional: true,
+        },
+        duration: {
+          name: "duration",
+          type: "Int",
+          isOptional: true,
+        },
+        resolution: {
+          name: "resolution",
+          type: "String",
+          isOptional: true,
+        },
+        fileSize: {
+          name: "fileSize",
+          type: "Int",
+          isOptional: true,
+        },
+        uploadedBy: {
+          name: "uploadedBy",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "uploader",
+        },
+        processedAt: {
+          name: "processedAt",
+          type: "DateTime",
+          isOptional: true,
+        },
+        uploader: {
+          name: "uploader",
+          type: "User",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "uploadedVideos",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "uploadedBy" },
+        },
+        components: {
+          name: "components",
+          type: "Component",
+          isDataModel: true,
+          isArray: true,
+          backLink: "video",
+        },
+        videoComments: {
+          name: "videoComments",
+          type: "VideoComment",
+          isDataModel: true,
+          isArray: true,
+          backLink: "video",
+        },
+      },
+      uniqueConstraints: {
+        id: {
+          name: "id",
+          fields: ["id"],
+        },
+      },
+    },
+    videoComment: {
+      name: "VideoComment",
+      fields: {
+        id: {
+          name: "id",
+          type: "String",
+          isId: true,
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        description: {
+          name: "description",
+          type: "String",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: "" }] },
+          ],
+        },
+        createdAt: {
+          name: "createdAt",
+          type: "DateTime",
+          attributes: [{ name: "@default", args: [{ name: "value" }] }],
+        },
+        updatedAt: {
+          name: "updatedAt",
+          type: "DateTime",
+          attributes: [{ name: "@updatedAt", args: [] }],
+        },
+        deleted: {
+          name: "deleted",
+          type: "DateTime",
+          isOptional: true,
+        },
+        videoId: {
+          name: "videoId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "video",
+        },
+        userId: {
+          name: "userId",
+          type: "String",
+          isForeignKey: true,
+          relationField: "user",
+        },
+        content: {
+          name: "content",
+          type: "String",
+        },
+        timestamp: {
+          name: "timestamp",
+          type: "Int",
+        },
+        parentId: {
+          name: "parentId",
+          type: "String",
+          isOptional: true,
+          isForeignKey: true,
+          relationField: "parent",
+        },
+        isResolved: {
+          name: "isResolved",
+          type: "Boolean",
+          attributes: [
+            { name: "@default", args: [{ name: "value", value: false }] },
+          ],
+        },
+        video: {
+          name: "video",
+          type: "VideoContent",
+          isDataModel: true,
+          backLink: "videoComments",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "videoId" },
+        },
+        user: {
+          name: "user",
+          type: "User",
+          isDataModel: true,
+          backLink: "videoComments",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "userId" },
+        },
+        parent: {
+          name: "parent",
+          type: "VideoComment",
+          isDataModel: true,
+          isOptional: true,
+          backLink: "replies",
+          isRelationOwner: true,
+          foreignKeyMapping: { id: "parentId" },
+        },
+        replies: {
+          name: "replies",
+          type: "VideoComment",
+          isDataModel: true,
+          isArray: true,
+          backLink: "parent",
         },
       },
       uniqueConstraints: {
@@ -1011,6 +1507,11 @@ const metadata = {
             { name: "@default", args: [{ name: "value", value: "" }] },
           ],
         },
+        avatarUrl: {
+          name: "avatarUrl",
+          type: "String",
+          isOptional: true,
+        },
         phone: {
           name: "phone",
           type: "String",
@@ -1080,9 +1581,23 @@ const metadata = {
           isArray: true,
           backLink: "user",
         },
+        gradedResults: {
+          name: "gradedResults",
+          type: "TestResult",
+          isDataModel: true,
+          isArray: true,
+          backLink: "grader",
+        },
         adminCourseManagers: {
           name: "adminCourseManagers",
           type: "AdminCourseManager",
+          isDataModel: true,
+          isArray: true,
+          backLink: "user",
+        },
+        userNotes: {
+          name: "userNotes",
+          type: "UserNote",
           isDataModel: true,
           isArray: true,
           backLink: "user",
@@ -1100,6 +1615,27 @@ const metadata = {
           isDataModel: true,
           isArray: true,
           backLink: "creator",
+        },
+        uploadedFiles: {
+          name: "uploadedFiles",
+          type: "MediaFile",
+          isDataModel: true,
+          isArray: true,
+          backLink: "uploader",
+        },
+        uploadedVideos: {
+          name: "uploadedVideos",
+          type: "VideoContent",
+          isDataModel: true,
+          isArray: true,
+          backLink: "uploader",
+        },
+        videoComments: {
+          name: "videoComments",
+          type: "VideoComment",
+          isDataModel: true,
+          isArray: true,
+          backLink: "user",
         },
       },
       uniqueConstraints: {

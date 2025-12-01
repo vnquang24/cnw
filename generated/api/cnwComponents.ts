@@ -4,7 +4,7 @@
  * @version 1.0
  */
 import * as reactQuery from "@tanstack/react-query";
-import { useCnwContext, CnwContext, queryKeyFn } from "./cnwContext";
+import { type CnwContext, useCnwContext, queryKeyFn } from "./cnwContext";
 import { deepMerge } from "./cnwUtils";
 import type * as Fetcher from "./cnwFetcher";
 import { cnwFetch } from "./cnwFetcher";
@@ -62,7 +62,7 @@ export function appControllerHealthQuery(
   };
 }
 
-export const useSuspenseAppControllerHealth = <TData = undefined,>(
+export const useSuspenseAppControllerHealth = <TData = undefined>(
   variables: AppControllerHealthVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<undefined, AppControllerHealthError, TData>,
@@ -81,7 +81,7 @@ export const useSuspenseAppControllerHealth = <TData = undefined,>(
   });
 };
 
-export const useAppControllerHealth = <TData = undefined,>(
+export const useAppControllerHealth = <TData = undefined>(
   variables: AppControllerHealthVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<undefined, AppControllerHealthError, TData>,
@@ -531,7 +531,7 @@ export function usersControllerFindOneQuery(
   };
 }
 
-export const useSuspenseUsersControllerFindOne = <TData = undefined,>(
+export const useSuspenseUsersControllerFindOne = <TData = undefined>(
   variables: UsersControllerFindOneVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<undefined, UsersControllerFindOneError, TData>,
@@ -550,7 +550,7 @@ export const useSuspenseUsersControllerFindOne = <TData = undefined,>(
   });
 };
 
-export const useUsersControllerFindOne = <TData = undefined,>(
+export const useUsersControllerFindOne = <TData = undefined>(
   variables: UsersControllerFindOneVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<undefined, UsersControllerFindOneError, TData>,
@@ -617,7 +617,7 @@ export function usersControllerFindAllQuery(
   };
 }
 
-export const useSuspenseUsersControllerFindAll = <TData = undefined,>(
+export const useSuspenseUsersControllerFindAll = <TData = undefined>(
   variables: UsersControllerFindAllVariables,
   options?: Omit<
     reactQuery.UseQueryOptions<undefined, UsersControllerFindAllError, TData>,
@@ -636,7 +636,7 @@ export const useSuspenseUsersControllerFindAll = <TData = undefined,>(
   });
 };
 
-export const useUsersControllerFindAll = <TData = undefined,>(
+export const useUsersControllerFindAll = <TData = undefined>(
   variables: UsersControllerFindAllVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<undefined, UsersControllerFindAllError, TData>,
@@ -924,7 +924,7 @@ export const useSuspenseMinioControllerPresignedGetObject = <
   });
 };
 
-export const useMinioControllerPresignedGetObject = <TData = Schemas.UrlDto,>(
+export const useMinioControllerPresignedGetObject = <TData = Schemas.UrlDto>(
   variables: MinioControllerPresignedGetObjectVariables | reactQuery.SkipToken,
   options?: Omit<
     reactQuery.UseQueryOptions<
@@ -948,6 +948,1440 @@ export const useMinioControllerPresignedGetObject = <TData = Schemas.UrlDto,>(
     ),
     ...options,
     ...queryOptions,
+  });
+};
+
+export type MinioControllerGetPublicUrlQueryParams = {
+  /**
+   * Tên object cần lấy URL công khai
+   */
+  objectName: string;
+};
+
+export type MinioControllerGetPublicUrlError = Fetcher.ErrorWrapper<undefined>;
+
+export type MinioControllerGetPublicUrlVariables = {
+  queryParams: MinioControllerGetPublicUrlQueryParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchMinioControllerGetPublicUrl = (
+  variables: MinioControllerGetPublicUrlVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    Schemas.UrlDto,
+    MinioControllerGetPublicUrlError,
+    undefined,
+    {},
+    MinioControllerGetPublicUrlQueryParams,
+    {}
+  >({ url: "/api/minio/public-url", method: "get", ...variables, signal });
+
+export function minioControllerGetPublicUrlQuery(
+  variables: MinioControllerGetPublicUrlVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<Schemas.UrlDto>;
+};
+
+export function minioControllerGetPublicUrlQuery(
+  variables: MinioControllerGetPublicUrlVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<Schemas.UrlDto>)
+    | reactQuery.SkipToken;
+};
+
+export function minioControllerGetPublicUrlQuery(
+  variables: MinioControllerGetPublicUrlVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/minio/public-url",
+      operationId: "minioControllerGetPublicUrl",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchMinioControllerGetPublicUrl(variables, signal),
+  };
+}
+
+export const useSuspenseMinioControllerGetPublicUrl = <TData = Schemas.UrlDto>(
+  variables: MinioControllerGetPublicUrlVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      Schemas.UrlDto,
+      MinioControllerGetPublicUrlError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useSuspenseQuery<
+    Schemas.UrlDto,
+    MinioControllerGetPublicUrlError,
+    TData
+  >({
+    ...minioControllerGetPublicUrlQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useMinioControllerGetPublicUrl = <TData = Schemas.UrlDto>(
+  variables: MinioControllerGetPublicUrlVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      Schemas.UrlDto,
+      MinioControllerGetPublicUrlError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useQuery<
+    Schemas.UrlDto,
+    MinioControllerGetPublicUrlError,
+    TData
+  >({
+    ...minioControllerGetPublicUrlQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type VideoControllerCreateVideoError = Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerCreateVideoVariables = {
+  body: Schemas.CreateVideoDto;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerCreateVideo = (
+  variables: VideoControllerCreateVideoVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerCreateVideoError,
+    Schemas.CreateVideoDto,
+    {},
+    {},
+    {}
+  >({ url: "/api/video", method: "post", ...variables, signal });
+
+export const useVideoControllerCreateVideo = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      VideoControllerCreateVideoError,
+      VideoControllerCreateVideoVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useCnwContext();
+  return reactQuery.useMutation<
+    undefined,
+    VideoControllerCreateVideoError,
+    VideoControllerCreateVideoVariables
+  >({
+    mutationFn: (variables: VideoControllerCreateVideoVariables) =>
+      fetchVideoControllerCreateVideo(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type VideoControllerFindAllVideosQueryParams = {
+  page: string;
+  limit: string;
+};
+
+export type VideoControllerFindAllVideosError = Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerFindAllVideosVariables = {
+  queryParams: VideoControllerFindAllVideosQueryParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerFindAllVideos = (
+  variables: VideoControllerFindAllVideosVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerFindAllVideosError,
+    undefined,
+    {},
+    VideoControllerFindAllVideosQueryParams,
+    {}
+  >({ url: "/api/video", method: "get", ...variables, signal });
+
+export function videoControllerFindAllVideosQuery(
+  variables: VideoControllerFindAllVideosVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function videoControllerFindAllVideosQuery(
+  variables: VideoControllerFindAllVideosVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function videoControllerFindAllVideosQuery(
+  variables: VideoControllerFindAllVideosVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/video",
+      operationId: "videoControllerFindAllVideos",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchVideoControllerFindAllVideos(variables, signal),
+  };
+}
+
+export const useSuspenseVideoControllerFindAllVideos = <TData = undefined>(
+  variables: VideoControllerFindAllVideosVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      VideoControllerFindAllVideosError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    VideoControllerFindAllVideosError,
+    TData
+  >({
+    ...videoControllerFindAllVideosQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useVideoControllerFindAllVideos = <TData = undefined>(
+  variables: VideoControllerFindAllVideosVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      VideoControllerFindAllVideosError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    VideoControllerFindAllVideosError,
+    TData
+  >({
+    ...videoControllerFindAllVideosQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type VideoControllerFindVideoByIdPathParams = {
+  id: string;
+};
+
+export type VideoControllerFindVideoByIdError = Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerFindVideoByIdVariables = {
+  pathParams: VideoControllerFindVideoByIdPathParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerFindVideoById = (
+  variables: VideoControllerFindVideoByIdVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerFindVideoByIdError,
+    undefined,
+    {},
+    {},
+    VideoControllerFindVideoByIdPathParams
+  >({ url: "/api/video/{id}", method: "get", ...variables, signal });
+
+export function videoControllerFindVideoByIdQuery(
+  variables: VideoControllerFindVideoByIdVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function videoControllerFindVideoByIdQuery(
+  variables: VideoControllerFindVideoByIdVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function videoControllerFindVideoByIdQuery(
+  variables: VideoControllerFindVideoByIdVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/video/{id}",
+      operationId: "videoControllerFindVideoById",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchVideoControllerFindVideoById(variables, signal),
+  };
+}
+
+export const useSuspenseVideoControllerFindVideoById = <TData = undefined>(
+  variables: VideoControllerFindVideoByIdVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      VideoControllerFindVideoByIdError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    VideoControllerFindVideoByIdError,
+    TData
+  >({
+    ...videoControllerFindVideoByIdQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useVideoControllerFindVideoById = <TData = undefined>(
+  variables: VideoControllerFindVideoByIdVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      VideoControllerFindVideoByIdError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    VideoControllerFindVideoByIdError,
+    TData
+  >({
+    ...videoControllerFindVideoByIdQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type VideoControllerUpdateVideoPathParams = {
+  id: string;
+};
+
+export type VideoControllerUpdateVideoError = Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerUpdateVideoVariables = {
+  pathParams: VideoControllerUpdateVideoPathParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerUpdateVideo = (
+  variables: VideoControllerUpdateVideoVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerUpdateVideoError,
+    undefined,
+    {},
+    {},
+    VideoControllerUpdateVideoPathParams
+  >({ url: "/api/video/{id}", method: "put", ...variables, signal });
+
+export const useVideoControllerUpdateVideo = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      VideoControllerUpdateVideoError,
+      VideoControllerUpdateVideoVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useCnwContext();
+  return reactQuery.useMutation<
+    undefined,
+    VideoControllerUpdateVideoError,
+    VideoControllerUpdateVideoVariables
+  >({
+    mutationFn: (variables: VideoControllerUpdateVideoVariables) =>
+      fetchVideoControllerUpdateVideo(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type VideoControllerDeleteVideoPathParams = {
+  id: string;
+};
+
+export type VideoControllerDeleteVideoError = Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerDeleteVideoVariables = {
+  pathParams: VideoControllerDeleteVideoPathParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerDeleteVideo = (
+  variables: VideoControllerDeleteVideoVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerDeleteVideoError,
+    undefined,
+    {},
+    {},
+    VideoControllerDeleteVideoPathParams
+  >({ url: "/api/video/{id}", method: "delete", ...variables, signal });
+
+export const useVideoControllerDeleteVideo = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      VideoControllerDeleteVideoError,
+      VideoControllerDeleteVideoVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useCnwContext();
+  return reactQuery.useMutation<
+    undefined,
+    VideoControllerDeleteVideoError,
+    VideoControllerDeleteVideoVariables
+  >({
+    mutationFn: (variables: VideoControllerDeleteVideoVariables) =>
+      fetchVideoControllerDeleteVideo(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type VideoControllerUploadVideoError = Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerUploadVideoRequestBody = {
+  /**
+   * @format binary
+   */
+  file?: Blob;
+  title?: string;
+  description?: string;
+};
+
+export type VideoControllerUploadVideoVariables = {
+  body?: VideoControllerUploadVideoRequestBody;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerUploadVideo = (
+  variables: VideoControllerUploadVideoVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerUploadVideoError,
+    VideoControllerUploadVideoRequestBody,
+    {},
+    {},
+    {}
+  >({ url: "/api/video/upload", method: "post", ...variables, signal });
+
+export const useVideoControllerUploadVideo = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      VideoControllerUploadVideoError,
+      VideoControllerUploadVideoVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useCnwContext();
+  return reactQuery.useMutation<
+    undefined,
+    VideoControllerUploadVideoError,
+    VideoControllerUploadVideoVariables
+  >({
+    mutationFn: (variables: VideoControllerUploadVideoVariables) =>
+      fetchVideoControllerUploadVideo(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type VideoControllerInitChunkedUploadError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerInitChunkedUploadVariables =
+  CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerInitChunkedUpload = (
+  variables: VideoControllerInitChunkedUploadVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerInitChunkedUploadError,
+    undefined,
+    {},
+    {},
+    {}
+  >({ url: "/api/video/upload/init", method: "post", ...variables, signal });
+
+export const useVideoControllerInitChunkedUpload = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      VideoControllerInitChunkedUploadError,
+      VideoControllerInitChunkedUploadVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useCnwContext();
+  return reactQuery.useMutation<
+    undefined,
+    VideoControllerInitChunkedUploadError,
+    VideoControllerInitChunkedUploadVariables
+  >({
+    mutationFn: (variables: VideoControllerInitChunkedUploadVariables) =>
+      fetchVideoControllerInitChunkedUpload(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
+  });
+};
+
+export type VideoControllerUploadChunkPathParams = {
+  uploadId: string;
+};
+
+export type VideoControllerUploadChunkError = Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerUploadChunkVariables = {
+  pathParams: VideoControllerUploadChunkPathParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerUploadChunk = (
+  variables: VideoControllerUploadChunkVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerUploadChunkError,
+    undefined,
+    {},
+    {},
+    VideoControllerUploadChunkPathParams
+  >({
+    url: "/api/video/upload/chunk/{uploadId}",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useVideoControllerUploadChunk = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      VideoControllerUploadChunkError,
+      VideoControllerUploadChunkVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useCnwContext();
+  return reactQuery.useMutation<
+    undefined,
+    VideoControllerUploadChunkError,
+    VideoControllerUploadChunkVariables
+  >({
+    mutationFn: (variables: VideoControllerUploadChunkVariables) =>
+      fetchVideoControllerUploadChunk(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type VideoControllerCompleteChunkedUploadPathParams = {
+  uploadId: string;
+};
+
+export type VideoControllerCompleteChunkedUploadError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerCompleteChunkedUploadVariables = {
+  pathParams: VideoControllerCompleteChunkedUploadPathParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerCompleteChunkedUpload = (
+  variables: VideoControllerCompleteChunkedUploadVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerCompleteChunkedUploadError,
+    undefined,
+    {},
+    {},
+    VideoControllerCompleteChunkedUploadPathParams
+  >({
+    url: "/api/video/upload/complete/{uploadId}",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useVideoControllerCompleteChunkedUpload = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      VideoControllerCompleteChunkedUploadError,
+      VideoControllerCompleteChunkedUploadVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useCnwContext();
+  return reactQuery.useMutation<
+    undefined,
+    VideoControllerCompleteChunkedUploadError,
+    VideoControllerCompleteChunkedUploadVariables
+  >({
+    mutationFn: (variables: VideoControllerCompleteChunkedUploadVariables) =>
+      fetchVideoControllerCompleteChunkedUpload(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
+  });
+};
+
+export type VideoControllerCancelChunkedUploadPathParams = {
+  uploadId: string;
+};
+
+export type VideoControllerCancelChunkedUploadError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerCancelChunkedUploadVariables = {
+  pathParams: VideoControllerCancelChunkedUploadPathParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerCancelChunkedUpload = (
+  variables: VideoControllerCancelChunkedUploadVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerCancelChunkedUploadError,
+    undefined,
+    {},
+    {},
+    VideoControllerCancelChunkedUploadPathParams
+  >({
+    url: "/api/video/upload/cancel/{uploadId}",
+    method: "delete",
+    ...variables,
+    signal,
+  });
+
+export const useVideoControllerCancelChunkedUpload = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      VideoControllerCancelChunkedUploadError,
+      VideoControllerCancelChunkedUploadVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useCnwContext();
+  return reactQuery.useMutation<
+    undefined,
+    VideoControllerCancelChunkedUploadError,
+    VideoControllerCancelChunkedUploadVariables
+  >({
+    mutationFn: (variables: VideoControllerCancelChunkedUploadVariables) =>
+      fetchVideoControllerCancelChunkedUpload(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
+  });
+};
+
+export type VideoControllerGetUploadStatusPathParams = {
+  uploadId: string;
+};
+
+export type VideoControllerGetUploadStatusError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerGetUploadStatusVariables = {
+  pathParams: VideoControllerGetUploadStatusPathParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerGetUploadStatus = (
+  variables: VideoControllerGetUploadStatusVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerGetUploadStatusError,
+    undefined,
+    {},
+    {},
+    VideoControllerGetUploadStatusPathParams
+  >({
+    url: "/api/video/upload/status/{uploadId}",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function videoControllerGetUploadStatusQuery(
+  variables: VideoControllerGetUploadStatusVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function videoControllerGetUploadStatusQuery(
+  variables: VideoControllerGetUploadStatusVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function videoControllerGetUploadStatusQuery(
+  variables: VideoControllerGetUploadStatusVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/video/upload/status/{uploadId}",
+      operationId: "videoControllerGetUploadStatus",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchVideoControllerGetUploadStatus(variables, signal),
+  };
+}
+
+export const useSuspenseVideoControllerGetUploadStatus = <TData = undefined>(
+  variables: VideoControllerGetUploadStatusVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      VideoControllerGetUploadStatusError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    VideoControllerGetUploadStatusError,
+    TData
+  >({
+    ...videoControllerGetUploadStatusQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useVideoControllerGetUploadStatus = <TData = undefined>(
+  variables: VideoControllerGetUploadStatusVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      VideoControllerGetUploadStatusError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    VideoControllerGetUploadStatusError,
+    TData
+  >({
+    ...videoControllerGetUploadStatusQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type VideoControllerProcessVideoToHLSPathParams = {
+  id: string;
+};
+
+export type VideoControllerProcessVideoToHLSError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerProcessVideoToHLSVariables = {
+  pathParams: VideoControllerProcessVideoToHLSPathParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerProcessVideoToHLS = (
+  variables: VideoControllerProcessVideoToHLSVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerProcessVideoToHLSError,
+    undefined,
+    {},
+    {},
+    VideoControllerProcessVideoToHLSPathParams
+  >({
+    url: "/api/video/{id}/process-hls",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useVideoControllerProcessVideoToHLS = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      VideoControllerProcessVideoToHLSError,
+      VideoControllerProcessVideoToHLSVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useCnwContext();
+  return reactQuery.useMutation<
+    undefined,
+    VideoControllerProcessVideoToHLSError,
+    VideoControllerProcessVideoToHLSVariables
+  >({
+    mutationFn: (variables: VideoControllerProcessVideoToHLSVariables) =>
+      fetchVideoControllerProcessVideoToHLS(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
+  });
+};
+
+export type VideoControllerGenerateThumbnailPathParams = {
+  id: string;
+};
+
+export type VideoControllerGenerateThumbnailError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerGenerateThumbnailVariables = {
+  pathParams: VideoControllerGenerateThumbnailPathParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerGenerateThumbnail = (
+  variables: VideoControllerGenerateThumbnailVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerGenerateThumbnailError,
+    undefined,
+    {},
+    {},
+    VideoControllerGenerateThumbnailPathParams
+  >({
+    url: "/api/video/{id}/generate-thumbnail",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useVideoControllerGenerateThumbnail = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      VideoControllerGenerateThumbnailError,
+      VideoControllerGenerateThumbnailVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useCnwContext();
+  return reactQuery.useMutation<
+    undefined,
+    VideoControllerGenerateThumbnailError,
+    VideoControllerGenerateThumbnailVariables
+  >({
+    mutationFn: (variables: VideoControllerGenerateThumbnailVariables) =>
+      fetchVideoControllerGenerateThumbnail(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
+  });
+};
+
+export type VideoControllerStreamPlaylistPathParams = {
+  id: string;
+};
+
+export type VideoControllerStreamPlaylistError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerStreamPlaylistVariables = {
+  pathParams: VideoControllerStreamPlaylistPathParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerStreamPlaylist = (
+  variables: VideoControllerStreamPlaylistVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerStreamPlaylistError,
+    undefined,
+    {},
+    {},
+    VideoControllerStreamPlaylistPathParams
+  >({
+    url: "/api/video/{id}/stream/playlist.m3u8",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function videoControllerStreamPlaylistQuery(
+  variables: VideoControllerStreamPlaylistVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function videoControllerStreamPlaylistQuery(
+  variables: VideoControllerStreamPlaylistVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function videoControllerStreamPlaylistQuery(
+  variables: VideoControllerStreamPlaylistVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/video/{id}/stream/playlist.m3u8",
+      operationId: "videoControllerStreamPlaylist",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchVideoControllerStreamPlaylist(variables, signal),
+  };
+}
+
+export const useSuspenseVideoControllerStreamPlaylist = <TData = undefined>(
+  variables: VideoControllerStreamPlaylistVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      VideoControllerStreamPlaylistError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    VideoControllerStreamPlaylistError,
+    TData
+  >({
+    ...videoControllerStreamPlaylistQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useVideoControllerStreamPlaylist = <TData = undefined>(
+  variables: VideoControllerStreamPlaylistVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      VideoControllerStreamPlaylistError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    VideoControllerStreamPlaylistError,
+    TData
+  >({
+    ...videoControllerStreamPlaylistQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type VideoControllerStreamSegmentPathParams = {
+  id: string;
+  segment: string;
+};
+
+export type VideoControllerStreamSegmentError = Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerStreamSegmentVariables = {
+  pathParams: VideoControllerStreamSegmentPathParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerStreamSegment = (
+  variables: VideoControllerStreamSegmentVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerStreamSegmentError,
+    undefined,
+    {},
+    {},
+    VideoControllerStreamSegmentPathParams
+  >({
+    url: "/api/video/{id}/stream/{segment}",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function videoControllerStreamSegmentQuery(
+  variables: VideoControllerStreamSegmentVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function videoControllerStreamSegmentQuery(
+  variables: VideoControllerStreamSegmentVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function videoControllerStreamSegmentQuery(
+  variables: VideoControllerStreamSegmentVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/video/{id}/stream/{segment}",
+      operationId: "videoControllerStreamSegment",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchVideoControllerStreamSegment(variables, signal),
+  };
+}
+
+export const useSuspenseVideoControllerStreamSegment = <TData = undefined>(
+  variables: VideoControllerStreamSegmentVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      VideoControllerStreamSegmentError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    VideoControllerStreamSegmentError,
+    TData
+  >({
+    ...videoControllerStreamSegmentQuery(deepMerge(fetcherOptions, variables)),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useVideoControllerStreamSegment = <TData = undefined>(
+  variables: VideoControllerStreamSegmentVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      VideoControllerStreamSegmentError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    VideoControllerStreamSegmentError,
+    TData
+  >({
+    ...videoControllerStreamSegmentQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type VideoControllerCreateCommentPathParams = {
+  videoId: string;
+};
+
+export type VideoControllerCreateCommentError = Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerCreateCommentVariables = {
+  body: Schemas.CreateVideoCommentDto;
+  pathParams: VideoControllerCreateCommentPathParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerCreateComment = (
+  variables: VideoControllerCreateCommentVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerCreateCommentError,
+    Schemas.CreateVideoCommentDto,
+    {},
+    {},
+    VideoControllerCreateCommentPathParams
+  >({
+    url: "/api/video/{videoId}/comments",
+    method: "post",
+    ...variables,
+    signal,
+  });
+
+export const useVideoControllerCreateComment = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      VideoControllerCreateCommentError,
+      VideoControllerCreateCommentVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useCnwContext();
+  return reactQuery.useMutation<
+    undefined,
+    VideoControllerCreateCommentError,
+    VideoControllerCreateCommentVariables
+  >({
+    mutationFn: (variables: VideoControllerCreateCommentVariables) =>
+      fetchVideoControllerCreateComment(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type VideoControllerFindCommentsByVideoPathParams = {
+  videoId: string;
+};
+
+export type VideoControllerFindCommentsByVideoQueryParams = {
+  /**
+   * Filter by timestamp (exact match)
+   */
+  timestamp?: number;
+  /**
+   * Filter by timestamp range start
+   */
+  timestampFrom?: number;
+  /**
+   * Filter by timestamp range end
+   */
+  timestampTo?: number;
+  /**
+   * Show only resolved comments
+   */
+  resolved?: boolean;
+};
+
+export type VideoControllerFindCommentsByVideoError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerFindCommentsByVideoVariables = {
+  pathParams: VideoControllerFindCommentsByVideoPathParams;
+  queryParams?: VideoControllerFindCommentsByVideoQueryParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerFindCommentsByVideo = (
+  variables: VideoControllerFindCommentsByVideoVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerFindCommentsByVideoError,
+    undefined,
+    {},
+    VideoControllerFindCommentsByVideoQueryParams,
+    VideoControllerFindCommentsByVideoPathParams
+  >({
+    url: "/api/video/{videoId}/comments",
+    method: "get",
+    ...variables,
+    signal,
+  });
+
+export function videoControllerFindCommentsByVideoQuery(
+  variables: VideoControllerFindCommentsByVideoVariables,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn: (options: QueryFnOptions) => Promise<undefined>;
+};
+
+export function videoControllerFindCommentsByVideoQuery(
+  variables: VideoControllerFindCommentsByVideoVariables | reactQuery.SkipToken,
+): {
+  queryKey: reactQuery.QueryKey;
+  queryFn:
+    | ((options: QueryFnOptions) => Promise<undefined>)
+    | reactQuery.SkipToken;
+};
+
+export function videoControllerFindCommentsByVideoQuery(
+  variables: VideoControllerFindCommentsByVideoVariables | reactQuery.SkipToken,
+) {
+  return {
+    queryKey: queryKeyFn({
+      path: "/api/video/{videoId}/comments",
+      operationId: "videoControllerFindCommentsByVideo",
+      variables,
+    }),
+    queryFn:
+      variables === reactQuery.skipToken
+        ? reactQuery.skipToken
+        : ({ signal }: QueryFnOptions) =>
+            fetchVideoControllerFindCommentsByVideo(variables, signal),
+  };
+}
+
+export const useSuspenseVideoControllerFindCommentsByVideo = <
+  TData = undefined,
+>(
+  variables: VideoControllerFindCommentsByVideoVariables,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      VideoControllerFindCommentsByVideoError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useSuspenseQuery<
+    undefined,
+    VideoControllerFindCommentsByVideoError,
+    TData
+  >({
+    ...videoControllerFindCommentsByVideoQuery(
+      deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export const useVideoControllerFindCommentsByVideo = <TData = undefined>(
+  variables: VideoControllerFindCommentsByVideoVariables | reactQuery.SkipToken,
+  options?: Omit<
+    reactQuery.UseQueryOptions<
+      undefined,
+      VideoControllerFindCommentsByVideoError,
+      TData
+    >,
+    "queryKey" | "queryFn" | "initialData"
+  >,
+) => {
+  const { queryOptions, fetcherOptions } = useCnwContext(options);
+  return reactQuery.useQuery<
+    undefined,
+    VideoControllerFindCommentsByVideoError,
+    TData
+  >({
+    ...videoControllerFindCommentsByVideoQuery(
+      variables === reactQuery.skipToken
+        ? variables
+        : deepMerge(fetcherOptions, variables),
+    ),
+    ...options,
+    ...queryOptions,
+  });
+};
+
+export type VideoControllerUpdateCommentPathParams = {
+  commentId: string;
+};
+
+export type VideoControllerUpdateCommentError = Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerUpdateCommentVariables = {
+  body?: Schemas.UpdateVideoCommentDto;
+  pathParams: VideoControllerUpdateCommentPathParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerUpdateComment = (
+  variables: VideoControllerUpdateCommentVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerUpdateCommentError,
+    Schemas.UpdateVideoCommentDto,
+    {},
+    {},
+    VideoControllerUpdateCommentPathParams
+  >({
+    url: "/api/video/comments/{commentId}",
+    method: "put",
+    ...variables,
+    signal,
+  });
+
+export const useVideoControllerUpdateComment = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      VideoControllerUpdateCommentError,
+      VideoControllerUpdateCommentVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useCnwContext();
+  return reactQuery.useMutation<
+    undefined,
+    VideoControllerUpdateCommentError,
+    VideoControllerUpdateCommentVariables
+  >({
+    mutationFn: (variables: VideoControllerUpdateCommentVariables) =>
+      fetchVideoControllerUpdateComment(deepMerge(fetcherOptions, variables)),
+    ...options,
+  });
+};
+
+export type VideoControllerDeleteCommentPathParams = {
+  commentId: string;
+};
+
+export type VideoControllerDeleteCommentError = Fetcher.ErrorWrapper<undefined>;
+
+export type VideoControllerDeleteCommentVariables = {
+  pathParams: VideoControllerDeleteCommentPathParams;
+} & CnwContext["fetcherOptions"];
+
+export const fetchVideoControllerDeleteComment = (
+  variables: VideoControllerDeleteCommentVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    undefined,
+    VideoControllerDeleteCommentError,
+    undefined,
+    {},
+    {},
+    VideoControllerDeleteCommentPathParams
+  >({
+    url: "/api/video/comments/{commentId}",
+    method: "delete",
+    ...variables,
+    signal,
+  });
+
+export const useVideoControllerDeleteComment = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      undefined,
+      VideoControllerDeleteCommentError,
+      VideoControllerDeleteCommentVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useCnwContext();
+  return reactQuery.useMutation<
+    undefined,
+    VideoControllerDeleteCommentError,
+    VideoControllerDeleteCommentVariables
+  >({
+    mutationFn: (variables: VideoControllerDeleteCommentVariables) =>
+      fetchVideoControllerDeleteComment(deepMerge(fetcherOptions, variables)),
+    ...options,
   });
 };
 
@@ -977,5 +2411,42 @@ export type QueryOperation =
       operationId: "minioControllerPresignedGetObject";
       variables:
         | MinioControllerPresignedGetObjectVariables
+        | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/minio/public-url";
+      operationId: "minioControllerGetPublicUrl";
+      variables: MinioControllerGetPublicUrlVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/video";
+      operationId: "videoControllerFindAllVideos";
+      variables: VideoControllerFindAllVideosVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/video/{id}";
+      operationId: "videoControllerFindVideoById";
+      variables: VideoControllerFindVideoByIdVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/video/upload/status/{uploadId}";
+      operationId: "videoControllerGetUploadStatus";
+      variables: VideoControllerGetUploadStatusVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/video/{id}/stream/playlist.m3u8";
+      operationId: "videoControllerStreamPlaylist";
+      variables: VideoControllerStreamPlaylistVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/video/{id}/stream/{segment}";
+      operationId: "videoControllerStreamSegment";
+      variables: VideoControllerStreamSegmentVariables | reactQuery.SkipToken;
+    }
+  | {
+      path: "/api/video/{videoId}/comments";
+      operationId: "videoControllerFindCommentsByVideo";
+      variables:
+        | VideoControllerFindCommentsByVideoVariables
         | reactQuery.SkipToken;
     };

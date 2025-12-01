@@ -81,7 +81,9 @@ export default function UserTestsPage() {
   if (!userId || isLoading || isFetching) {
     return (
       <div className="flex justify-center items-center h-72">
-        <Spin size="large" tip="Đang tải kết quả kiểm tra..." />
+        <Spin size="large" tip="Đang tải kết quả kiểm tra...">
+          <div style={{ minHeight: 50, minWidth: 100 }} />
+        </Spin>
       </div>
     );
   }

@@ -87,7 +87,7 @@ const Sidebar: React.FC = () => {
             className="p-2 rounded-lg"
             style={{ backgroundColor: token.colorPrimary }}
           >
-            <PanelsTopLeft size={24} className="text-white" />
+            <PanelsTopLeft size={22} className="text-white" />
           </div>
           {!isShowSidebar && (
             <Title

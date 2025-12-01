@@ -70,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({ pathName, user }) => {
 
   return (
     <header
-      className="flex justify-between items-center p-4 rounded-lg shadow-sm"
+      className="flex justify-between items-center px-4 py-2 shadow-sm"
       style={{
         backgroundColor: token.colorBgContainer,
         borderBottom: `1px solid ${token.colorBorderSecondary}`,

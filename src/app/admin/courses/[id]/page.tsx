@@ -1,17 +1,75 @@
 "use client";
 
 import Link from "next/link";
-import { Button, Typography, Tag, Spin, Alert } from "antd";
-import { ChevronLeft, Calendar, Clock, Users, BookOpen } from "lucide-react";
+import {
+  Button,
+  Tag,
+  Spin,
+  Alert,
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  App,
+  Space,
+  Table,
+} from "antd";
+import {
+  ChevronLeft,
+  Calendar,
+  Clock,
+  Users,
+  BookOpen,
+  Settings,
+  Plus,
+  Edit,
+  Trash2,
+} from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
-import { useFindUniqueCourse } from "@/generated/hooks";
+import {
+  useFindUniqueCourse,
+  useFindManyLesson,
+  useCreateLesson,
+  useUpdateLesson,
+  useDeleteLesson,
+} from "@/generated/hooks";
+import { useLessonModal } from "@/components/modal/LessonModalContext";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { getUserId } from "@/lib/auth";
 
-const { Title, Text } = Typography;
+interface LessonData {
+  id: string;
+  title: string;
+  position: number;
+  _count?: {
+    components: number;
+    userLessons: number;
+  };
+  creator?: {
+    id: string;
+    name: string | null;
+  } | null;
+}
+
+interface LessonFormData {
+  title: string;
+  position: number;
+}
 
 export default function CourseDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
+  const queryClient = useQueryClient();
+  const { message } = App.useApp();
+
+  const { openViewModal, openEditModal } = useLessonModal();
+
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingLesson, setEditingLesson] = useState<LessonData | null>(null);
+  const [form] = Form.useForm();
 
   const {
     data: course,
@@ -24,14 +82,6 @@ export default function CourseDetailPage() {
         creator: {
           select: { id: true, name: true, email: true },
         },
-        lessons: {
-          orderBy: { position: "asc" },
-          select: {
-            id: true,
-            title: true,
-            position: true,
-          },
-        },
         _count: {
           select: {
             lessons: true,
@@ -41,10 +91,138 @@ export default function CourseDetailPage() {
       },
     },
     {
-      // Chỉ query khi có id
       enabled: !!id,
     },
   );
+
+  // Fetch lessons
+  const { data: lessons, isLoading: lessonsLoading } = useFindManyLesson(
+    {
+      where: { courseId: id },
+      include: {
+        _count: {
+          select: {
+            components: true,
+            userLessons: true,
+          },
+        },
+        creator: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: { position: "asc" },
+    },
+    {
+      enabled: !!id,
+    },
+  );
+
+  // Mutations
+  const createLessonMutation = useCreateLesson({
+    onSuccess: () => {
+      message.success("Thêm bài học thành công!");
+      setIsModalOpen(false);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ["Lesson"] });
+      queryClient.invalidateQueries({ queryKey: ["Course"] });
+    },
+    onError: (error) => {
+      console.error("Error creating lesson:", error);
+      message.error("Có lỗi xảy ra khi thêm bài học!");
+    },
+  });
+
+  const updateLessonMutation = useUpdateLesson({
+    onSuccess: () => {
+      message.success("Cập nhật bài học thành công!");
+      setIsModalOpen(false);
+      setEditingLesson(null);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ["Lesson"] });
+      queryClient.invalidateQueries({ queryKey: ["Course"] });
+    },
+    onError: (error) => {
+      console.error("Error updating lesson:", error);
+      message.error("Có lỗi xảy ra khi cập nhật bài học!");
+    },
+  });
+
+  const deleteLessonMutation = useDeleteLesson({
+    onSuccess: () => {
+      message.success("Xóa bài học thành công!");
+      queryClient.invalidateQueries({ queryKey: ["Lesson"] });
+      queryClient.invalidateQueries({ queryKey: ["Course"] });
+    },
+    onError: (error) => {
+      console.error("Error deleting lesson:", error);
+      message.error("Có lỗi xảy ra khi xóa bài học!");
+    },
+  });
+
+  // Handlers
+  const handleAddLesson = () => {
+    setEditingLesson(null);
+    form.resetFields();
+    form.setFieldsValue({
+      position: (lessons?.length || 0) + 1,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleEditLesson = (lesson: LessonData) => {
+    setEditingLesson(lesson);
+    form.setFieldsValue({
+      title: lesson.title,
+      position: lesson.position,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDeleteLesson = (lessonId: string) => {
+    Modal.confirm({
+      title: "Xác nhận xóa",
+      content:
+        "Bạn có chắc chắn muốn xóa bài học này? Tất cả thành phần bên trong sẽ bị xóa.",
+      okText: "Xóa",
+      cancelText: "Hủy",
+      okType: "danger",
+      onOk: () => {
+        deleteLessonMutation.mutate({
+          where: { id: lessonId },
+        });
+      },
+    });
+  };
+
+  const handleSubmit = async (values: LessonFormData) => {
+    try {
+      const data = {
+        title: values.title,
+        position: values.position,
+        courseId: id,
+        createdBy: getUserId(),
+      };
+
+      if (editingLesson) {
+        await updateLessonMutation.mutateAsync({
+          where: { id: editingLesson.id },
+          data: {
+            title: values.title,
+            position: values.position,
+          },
+        });
+      } else {
+        await createLessonMutation.mutateAsync({
+          data,
+        });
+      }
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -93,6 +271,106 @@ export default function CourseDetailPage() {
     color: "default",
     text: course.level,
   };
+
+  // Table columns for lessons
+  const columns = [
+    {
+      title: "STT",
+      dataIndex: "position",
+      key: "position",
+      width: 80,
+      render: (position: number) => (
+        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-medium">
+          {position}
+        </div>
+      ),
+    },
+    {
+      title: "Tên bài học",
+      dataIndex: "title",
+      key: "title",
+      render: (title: string, record: LessonData) => (
+        <Link
+          href={`/admin/courses/${id}/lessons/${record.id}`}
+          className="text-blue-600 hover:text-blue-700 font-medium"
+        >
+          {title}
+        </Link>
+      ),
+    },
+    {
+      title: "Thành phần",
+      key: "components",
+      width: 120,
+      render: (record: LessonData) => (
+        <Tag color="blue">{record._count?.components || 0} thành phần</Tag>
+      ),
+    },
+    {
+      title: "Học viên hoàn thành",
+      key: "userLessons",
+      width: 150,
+      render: (record: LessonData) => (
+        <Tag color="green">{record._count?.userLessons || 0} học viên</Tag>
+      ),
+    },
+    {
+      title: "Tác giả",
+      key: "creator",
+      width: 120,
+      render: (record: LessonData) => (
+        <span className="text-sm text-gray-600">
+          {record.creator?.name || "N/A"}
+        </span>
+      ),
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      width: 250,
+      render: (record: LessonData) => (
+        <Space size="small">
+          <Link href={`/admin/courses/${id}/lessons/${record.id}`}>
+            <Button
+              type="default"
+              size="small"
+              icon={<Settings className="w-4 h-4" />}
+              className="text-purple-600 hover:text-purple-700"
+            >
+              Chi tiết
+            </Button>
+          </Link>
+          <Button
+            type="default"
+            size="small"
+            onClick={() => openViewModal(record.id)}
+            className="text-blue-600 hover:text-blue-700"
+          >
+            Xem
+          </Button>
+          <Button
+            type="default"
+            size="small"
+            icon={<Edit className="w-4 h-4" />}
+            onClick={() => handleEditLesson(record)}
+            className="text-gray-600 hover:text-gray-700"
+          >
+            Sửa
+          </Button>
+          <Button
+            type="default"
+            size="small"
+            icon={<Trash2 className="w-4 h-4" />}
+            onClick={() => handleDeleteLesson(record.id)}
+            className="text-red-600 hover:text-red-700"
+            danger
+          >
+            Xóa
+          </Button>
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <div>
@@ -152,50 +430,55 @@ export default function CourseDetailPage() {
               </div>
             </div>
 
-            {/* Lessons Card */}
+            {/* Lessons Card - Now with full table */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  Danh sách bài học ({course.lessons?.length || 0})
+                  Danh sách bài học ({lessons?.length || 0})
                 </h3>
-                <Button className="bg-blue-600 hover:bg-blue-700" size="middle">
-                  + Thêm bài học
+                <Button
+                  type="primary"
+                  icon={<Plus className="w-4 h-4" />}
+                  onClick={handleAddLesson}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Thêm bài học
                 </Button>
               </div>
 
-              <div className="space-y-2">
-                {course.lessons?.map((lesson: any, index: number) => (
-                  <div
-                    key={lesson.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-medium">
-                        {index + 1}
-                      </div>
-                      <span className="text-sm font-medium text-gray-900">
-                        {lesson.title}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
+              <Table
+                columns={columns}
+                dataSource={lessons}
+                loading={lessonsLoading}
+                rowKey="id"
+                pagination={{
+                  pageSize: 10,
+                  showSizeChanger: true,
+                  showTotal: (total, range) =>
+                    `${range[0]}-${range[1]} của ${total} bài học`,
+                }}
+                locale={{
+                  emptyText: (
+                    <div className="text-center py-12">
+                      <BookOpen className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                      <h4 className="text-lg font-medium text-gray-500 mb-2">
+                        Chưa có bài học nào
+                      </h4>
+                      <p className="text-sm text-gray-400 mb-4">
+                        Tạo bài học đầu tiên cho khóa học này
+                      </p>
                       <Button
-                        type="default"
-                        size="small"
-                        className="text-blue-600 hover:text-blue-700"
+                        type="primary"
+                        icon={<Plus className="w-4 h-4" />}
+                        onClick={handleAddLesson}
+                        className="bg-blue-600 hover:bg-blue-700"
                       >
-                        Xem
-                      </Button>
-                      <Button
-                        type="default"
-                        size="small"
-                        className="text-gray-600 hover:text-gray-700"
-                      >
-                        Sửa
+                        Thêm bài học
                       </Button>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ),
+                }}
+              />
             </div>
           </div>
 
@@ -252,7 +535,7 @@ export default function CourseDetailPage() {
               </h3>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
                     <Calendar className="w-4 h-4 text-gray-600" />
                   </div>
                   <div>
@@ -268,7 +551,7 @@ export default function CourseDetailPage() {
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
                     <Calendar className="w-4 h-4 text-gray-600" />
                   </div>
                   <div>
@@ -289,6 +572,80 @@ export default function CourseDetailPage() {
           </div>
         </div>
       </main>
+
+      {/* Lesson Form Modal */}
+      <Modal
+        title={editingLesson ? "Chỉnh sửa bài học" : "Thêm bài học mới"}
+        open={isModalOpen}
+        onCancel={() => {
+          setIsModalOpen(false);
+          setEditingLesson(null);
+          form.resetFields();
+        }}
+        footer={null}
+        width={600}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          disabled={
+            createLessonMutation.isPending || updateLessonMutation.isPending
+          }
+        >
+          <Form.Item
+            label="Tên bài học"
+            name="title"
+            rules={[
+              { required: true, message: "Vui lòng nhập tên bài học!" },
+              { min: 3, message: "Tên bài học phải có ít nhất 3 ký tự!" },
+              { max: 255, message: "Tên bài học không được quá 255 ký tự!" },
+            ]}
+          >
+            <Input placeholder="Nhập tên bài học..." />
+          </Form.Item>
+
+          <Form.Item
+            label="Vị trí"
+            name="position"
+            rules={[
+              { required: true, message: "Vui lòng nhập vị trí bài học!" },
+              { type: "number", min: 1, message: "Vị trí phải lớn hơn 0!" },
+            ]}
+          >
+            <InputNumber
+              placeholder="Nhập vị trí bài học..."
+              className="w-full"
+              min={1}
+            />
+          </Form.Item>
+
+          <div className="flex items-center justify-end gap-2 pt-4 border-t border-gray-200">
+            <Button
+              onClick={() => {
+                setIsModalOpen(false);
+                setEditingLesson(null);
+                form.resetFields();
+              }}
+              disabled={
+                createLessonMutation.isPending || updateLessonMutation.isPending
+              }
+            >
+              Hủy
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={
+                createLessonMutation.isPending || updateLessonMutation.isPending
+              }
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {editingLesson ? "Cập nhật" : "Thêm"}
+            </Button>
+          </div>
+        </Form>
+      </Modal>
     </div>
   );
 }

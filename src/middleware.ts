@@ -1,154 +1,67 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getUserInfo } from "./lib/auth";
-
-type UserRole = "ADMIN" | "USER";
 
 // Định nghĩa danh sách các routes công khai không cần xác thực
 const publicRoutes = [
-  "/login",
-  "/register",
-  "/public", // Tất cả routes trong public (/public/*)
+  "/public", // Routes công khai (/public/*)
   "/_next", // Next.js static files
-  "/api/auth", // API routes xác thực
   "/api/public", // API routes công khai (nếu có)
 ];
 
-const ADMIN_PREFIX = "/admin";
-const USER_PREFIX = "/user";
+// Routes xác thực (auth routes)
+const authRoutes = ["/login", "/register"];
 
-const DEFAULT_ROUTE: Record<UserRole, string> = {
-  ADMIN: `${ADMIN_PREFIX}/dashboard`,
-  USER: `${USER_PREFIX}/courses`,
-};
-
-// Routes API được bảo vệ
-const protectedApiRoutes = [
-  "/api/courses",
-  "/api/lessons",
-  "/api/admins",
-  "/api/tests",
-  "/api/components",
+// Routes được bảo vệ cần xác thực
+const protectedRoutes = [
+  "/admin", // Admin panel - cần role ADMIN
+  "/user", // User panel - cần role USER
+  "/profile", // Profile routes - cần đăng nhập
+  "/main", // Main routes (nếu còn sử dụng)
 ];
 
+// Tối ưu middleware để xử lý nhiều requests cùng lúc
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const accessToken = request.cookies.get("accessToken")?.value;
-  const role = decodeRoleFromToken(accessToken);
-  const infor = getUserInfo();
-  console.log("THOONG TIN NÈ", infor);
-  const redirect = (target: string) =>
-    NextResponse.redirect(new URL(target, request.url));
-  const defaultRoute = role ? DEFAULT_ROUTE[role] : "/public";
-  const redirectToLoginWithReturn = () => {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("returnUrl", pathname);
-    return NextResponse.redirect(loginUrl);
-  };
 
+  // Kiểm tra nếu đang ở trang chủ
   if (pathname === "/") {
-    if (accessToken && role) {
-      return redirect(defaultRoute);
+    // Nếu đã đăng nhập, chuyển đến user courses (trang mặc định cho user)
+    if (accessToken) {
+      return NextResponse.redirect(new URL("/user/courses", request.url));
     }
-    return redirect("/public");
+    // Nếu chưa đăng nhập, chuyển đến public page
+    return NextResponse.redirect(new URL("/public", request.url));
   }
 
+  // Kiểm tra routes công khai - cho phép truy cập tự do
   if (publicRoutes.some((route) => pathname.startsWith(route))) {
-    if (
-      accessToken &&
-      role &&
-      (pathname.startsWith("/login") || pathname.startsWith("/register"))
-    ) {
-      return redirect(defaultRoute);
+    return NextResponse.next();
+  }
+
+  // Kiểm tra routes xác thực (login/register)
+  if (authRoutes.some((route) => pathname.startsWith(route))) {
+    // Nếu đã đăng nhập và đang truy cập trang auth, chuyển về user courses
+    if (accessToken) {
+      return NextResponse.redirect(new URL("/user/courses", request.url));
     }
     return NextResponse.next();
   }
 
-  if (pathname.startsWith(ADMIN_PREFIX)) {
+  // Kiểm tra routes được bảo vệ (admin, user, profile, main)
+  if (protectedRoutes.some((route) => pathname.startsWith(route))) {
+    // Nếu chưa đăng nhập, chuyển đến trang login
     if (!accessToken) {
-      return redirectToLoginWithReturn();
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("returnUrl", pathname);
+      return NextResponse.redirect(loginUrl);
     }
-    if (role !== "ADMIN") {
-      return redirect(role ? DEFAULT_ROUTE[role] : "/public");
-    }
+    // Đã đăng nhập - cho phép truy cập
+    // Note: Việc kiểm tra role (ADMIN/USER) được xử lý ở layout của từng route
     return NextResponse.next();
-  }
-
-  if (pathname.startsWith(USER_PREFIX)) {
-    if (!accessToken) {
-      return redirectToLoginWithReturn();
-    }
-    if (role !== "USER") {
-      return redirect(role ? DEFAULT_ROUTE[role] : "/public");
-    }
-    return NextResponse.next();
-  }
-
-  if (protectedApiRoutes.some((route) => pathname.startsWith(route))) {
-    if (!accessToken) {
-      return new NextResponse(
-        JSON.stringify({ success: false, message: "Authentication required" }),
-        { status: 401, headers: { "content-type": "application/json" } },
-      );
-    }
-    return NextResponse.next();
-  }
-
-  if (!accessToken) {
-    if (
-      !pathname.startsWith("/login") &&
-      !pathname.startsWith("/register") &&
-      !pathname.startsWith("/public")
-    ) {
-      return redirect("/public");
-    }
-  } else if (role) {
-    if (role === "ADMIN" && pathname.startsWith(USER_PREFIX)) {
-      return redirect(DEFAULT_ROUTE.ADMIN);
-    }
-    if (role === "USER" && pathname.startsWith(ADMIN_PREFIX)) {
-      return redirect(DEFAULT_ROUTE.USER);
-    }
   }
 
   return NextResponse.next();
-}
-
-function decodeRoleFromToken(token?: string): UserRole | null {
-  if (!token) return null;
-  try {
-    const parts = token.split(".");
-    if (parts.length < 2) return null;
-    const payloadSegment = parts[1];
-    const decodedPayload = base64UrlDecode(payloadSegment);
-    const parsed = JSON.parse(decodedPayload) as { role?: string } | undefined;
-    console.log("Decoded token payload:", parsed);
-    if (parsed?.role === "ADMIN" || parsed?.role === "USER") {
-      return parsed.role;
-    }
-    return null;
-  } catch (error) {
-    return null;
-  }
-}
-
-function base64UrlDecode(value: string): string {
-  const padded = value.replace(/-/g, "+").replace(/_/g, "/");
-  const padLength = (4 - (padded.length % 4)) % 4;
-  const normalized = padded + "=".repeat(padLength);
-
-  if (typeof globalThis.atob === "function") {
-    return globalThis.atob(normalized);
-  }
-
-  const bufferCtor = (
-    globalThis as typeof globalThis & { Buffer?: typeof Buffer }
-  ).Buffer;
-  if (bufferCtor) {
-    return bufferCtor.from(normalized, "base64").toString("utf-8");
-  }
-
-  throw new Error("No base64 decoder available");
 }
 
 // Chỉ định các routes cần được middleware xử lý
@@ -156,11 +69,11 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
+     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public assets (*.png, *.jpg, *.jpeg, *.gif, *.svg, *.ico)
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|ico)$).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };

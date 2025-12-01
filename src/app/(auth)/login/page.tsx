@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Form, Input, Button, Card, Typography, Space, Divider } from "antd";
@@ -15,7 +15,7 @@ interface LoginFormData {
   password: string;
 }
 
-export default function LoginPage() {
+function LoginFormContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [form] = Form.useForm();
   const router = useRouter();
@@ -171,5 +171,19 @@ export default function LoginPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-96">
+          Đang tải...
+        </div>
+      }
+    >
+      <LoginFormContent />
+    </Suspense>
   );
 }

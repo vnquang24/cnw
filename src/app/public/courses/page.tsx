@@ -141,7 +141,9 @@ export default function CoursesPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Spin size="large" tip="Đang tải khóa học..." />
+        <Spin size="large" tip="Đang tải khóa học...">
+          <div style={{ minHeight: 50, minWidth: 100 }} />
+        </Spin>
       </div>
     );
   }

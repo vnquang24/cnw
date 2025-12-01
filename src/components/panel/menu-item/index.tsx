@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, Tooltip, theme } from "antd";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, Tooltip, theme, Dropdown } from "antd";
+import type { MenuProps } from "antd";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { MenuItemProps } from "./type";
 import { useStoreState } from "@/lib/redux/hook";
@@ -14,6 +15,7 @@ const MenuItemComponent: React.FC<MenuItemProps> = ({
 }) => {
   const { token } = theme.useToken();
   const pathname = usePathname();
+  const router = useRouter();
   const isShowSidebar = useStoreState((state) => state.appState.isShowSidebar);
 
   // Recursively check if any child menu item is active
@@ -130,6 +132,61 @@ const MenuItemComponent: React.FC<MenuItemProps> = ({
 
   // Render item with submenu
   if (item.subMenu && item.subMenu.length > 0) {
+    // Build Ant Design Menu items for dropdown when collapsed
+    const dropdownMenuItems: MenuProps["items"] = item.subMenu
+      .filter((subItem) => !subItem.hidden)
+      .map((subItem) => {
+        const subIsActive = subItem.pathname
+          ? pathname.startsWith(subItem.pathname)
+          : false;
+
+        // If submenu has children, create a submenu group
+        if (subItem.subMenu && subItem.subMenu.length > 0) {
+          return {
+            key: subItem.label,
+            label: subItem.label,
+            icon: subItem.icon ? <subItem.icon size={16} /> : null,
+            children: subItem.subMenu
+              .filter((child) => !child.hidden)
+              .map((child) => {
+                const childIsActive = child.pathname
+                  ? pathname.startsWith(child.pathname)
+                  : false;
+                return {
+                  key: child.pathname || child.label,
+                  label: child.label,
+                  icon: child.icon ? <child.icon size={14} /> : null,
+                  style: {
+                    color: childIsActive ? token.colorPrimary : token.colorText,
+                    fontWeight: childIsActive ? 600 : 400,
+                  },
+                  onClick: () => {
+                    if (child.pathname) {
+                      router.push(child.pathname);
+                    }
+                  },
+                };
+              }),
+          };
+        }
+
+        // Regular submenu item
+        return {
+          key: subItem.pathname || subItem.label,
+          label: subItem.label,
+          icon: subItem.icon ? <subItem.icon size={16} /> : null,
+          style: {
+            color: subIsActive ? token.colorPrimary : token.colorText,
+            fontWeight: subIsActive ? 600 : 400,
+          },
+          onClick: () => {
+            if (subItem.pathname) {
+              router.push(subItem.pathname);
+            }
+          },
+        };
+      });
+
     const menuItemElement = (
       <div
         onClick={handleItemClick}
@@ -176,9 +233,21 @@ const MenuItemComponent: React.FC<MenuItemProps> = ({
     return (
       <div style={{ width: "100%" }}>
         {isShowSidebar ? (
-          <Tooltip title={item.label} placement="right">
+          <Dropdown
+            menu={{
+              items: dropdownMenuItems,
+              style: { minWidth: 220 },
+            }}
+            placement="bottomRight"
+            trigger={["hover", "click"]}
+            overlayClassName="sidebar-collapsed-dropdown"
+            autoAdjustOverflow={true}
+            getPopupContainer={(trigger) =>
+              trigger.parentElement || document.body
+            }
+          >
             {menuItemElement}
-          </Tooltip>
+          </Dropdown>
         ) : (
           menuItemElement
         )}
