@@ -52,6 +52,8 @@ import {
   useFindUniqueVideoContent,
   useFindManyVideoComment,
   useCreateVideoComment,
+  useCreateUserLesson,
+  useUpdateUserLesson,
 } from "@/generated/hooks";
 import { getUserId } from "@/lib/auth";
 import EnhancedVideoPlayer from "@/components/video/EnhancedVideoPlayer";
@@ -131,9 +133,13 @@ export default function LessonLearningPage() {
     [userId, lessonId],
   );
 
-  const { data: userLesson } = useFindManyUserLesson(userLessonArgs, {
-    enabled: Boolean(userId && lessonId),
-  });
+  const { data: userLesson, refetch: refetchUserLesson } =
+    useFindManyUserLesson(userLessonArgs, {
+      enabled: Boolean(userId && lessonId),
+    });
+
+  const createUserLesson = useCreateUserLesson();
+  const updateUserLesson = useUpdateUserLesson();
 
   const componentArgs = useMemo(
     () => ({
@@ -211,6 +217,49 @@ export default function LessonLearningPage() {
   const [selectedComponent, setSelectedComponent] = useState<any>(null);
 
   const hasOtherComponents = otherComponents.length > 0;
+
+  // Function to update lesson status to DOING when user starts
+  const handleStartLearning = async () => {
+    if (!userId || !lessonId || !courseId) return;
+
+    try {
+      const currentUserLesson = userLesson?.[0];
+
+      if (!currentUserLesson) {
+        // Create new UserLesson with DOING status
+        await createUserLesson.mutateAsync({
+          data: {
+            userId,
+            lessonId,
+            courseId,
+            status: "DOING",
+          },
+        });
+      } else if (currentUserLesson.status === "TODO") {
+        // Update existing UserLesson to DOING
+        await updateUserLesson.mutateAsync({
+          where: { id: currentUserLesson.id },
+          data: { status: "DOING" },
+        });
+      }
+
+      refetchUserLesson();
+    } catch (error) {
+      console.error("Error updating lesson status:", error);
+    }
+  };
+
+  // Auto-start learning when page loads (if not already completed)
+  useEffect(() => {
+    if (userId && lessonId && courseId && userLesson !== undefined) {
+      const currentUserLesson = userLesson?.[0];
+      const status = currentUserLesson?.status || "TODO";
+
+      if (status === "TODO") {
+        handleStartLearning();
+      }
+    }
+  }, [userId, lessonId, courseId, userLesson]);
 
   if (
     !lessonId ||
@@ -802,7 +851,7 @@ function TestComponentCard({
               color: record.status === "PASSED" ? "#10b981" : "#ef4444",
             }}
           >
-            {mark}/100
+            {mark}/{component.test?.maxScore || 10}
           </Text>
         </Space>
       ),

@@ -229,7 +229,7 @@ export function UserNote({
             >
               {note && (
                 <StatusTag
-                  status={note.isPrivate ? "default" : "info"}
+                  status={note.isPrivate ? "default" : "success"}
                   icon={
                     note.isPrivate ? <Lock size={12} /> : <Unlock size={12} />
                   }
