@@ -20,6 +20,8 @@ import {
   Award,
   Beaker,
   Target,
+  UserCog,
+  Smartphone,
 } from "lucide-react";
 import { MenuItem } from "@/components/panel/menu-item/type";
 
@@ -69,20 +71,13 @@ export const menuItems: MenuItem[] = [
     pathname: "/admin/users",
   },
   {
-    icon: Beaker,
-    label: "Demo & Thử nghiệm",
-    pathname: "",
-    subMenu: [
-      {
-        label: "Demo Components",
-        pathname: "/admin/demo",
-        icon: Monitor,
-      },
-      {
-        label: "API Examples",
-        pathname: "/admin/example",
-        icon: Target,
-      },
-    ],
+    icon: UserCog,
+    label: "Thông tin cá nhân",
+    pathname: "/profile",
+  },
+  {
+    icon: Smartphone,
+    label: "Quản lý thiết bị",
+    pathname: "/devices",
   },
 ];

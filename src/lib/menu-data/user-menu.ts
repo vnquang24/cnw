@@ -10,6 +10,7 @@ import {
   Award,
   UserCircle,
   UserCog,
+  Smartphone,
 } from "lucide-react";
 import { MenuItem } from "@/components/panel/menu-item/type";
 
@@ -38,5 +39,10 @@ export const userMenuItems: MenuItem[] = [
     icon: UserCog,
     label: "Quản lý thông tin",
     pathname: "/profile",
+  },
+  {
+    icon: Smartphone,
+    label: "Quản lý thiết bị",
+    pathname: "/devices",
   },
 ];

@@ -2385,6 +2385,56 @@ export const useVideoControllerDeleteComment = (
   });
 };
 
+export type TestControllerCreateFlashcardTestError =
+  Fetcher.ErrorWrapper<undefined>;
+
+export type TestControllerCreateFlashcardTestVariables = {
+  body: Schemas.CreateFlashcardTestDto;
+} & CnwContext["fetcherOptions"];
+
+/**
+ * Automatically creates a test with questions from vocabulary words in a lesson. Creates test, questions, answers, and attaches to lesson in a single transaction.
+ */
+export const fetchTestControllerCreateFlashcardTest = (
+  variables: TestControllerCreateFlashcardTestVariables,
+  signal?: AbortSignal,
+) =>
+  cnwFetch<
+    void,
+    TestControllerCreateFlashcardTestError,
+    Schemas.CreateFlashcardTestDto,
+    {},
+    {},
+    {}
+  >({ url: "/api/test/flashcard", method: "post", ...variables, signal });
+
+/**
+ * Automatically creates a test with questions from vocabulary words in a lesson. Creates test, questions, answers, and attaches to lesson in a single transaction.
+ */
+export const useTestControllerCreateFlashcardTest = (
+  options?: Omit<
+    reactQuery.UseMutationOptions<
+      void,
+      TestControllerCreateFlashcardTestError,
+      TestControllerCreateFlashcardTestVariables
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { fetcherOptions } = useCnwContext();
+  return reactQuery.useMutation<
+    void,
+    TestControllerCreateFlashcardTestError,
+    TestControllerCreateFlashcardTestVariables
+  >({
+    mutationFn: (variables: TestControllerCreateFlashcardTestVariables) =>
+      fetchTestControllerCreateFlashcardTest(
+        deepMerge(fetcherOptions, variables),
+      ),
+    ...options,
+  });
+};
+
 export type QueryOperation =
   | {
       path: "/api/health";

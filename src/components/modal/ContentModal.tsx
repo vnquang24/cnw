@@ -80,10 +80,11 @@ export default function ContentModal({
             { type: "number", min: 1, message: "Vị trí phải lớn hơn 0!" },
           ]}
         >
-          <InputNumber
+          <Input
             min={1}
             placeholder="Nhập vị trí trong bài học"
             className="w-full"
+            disabled
           />
         </Form.Item>
 

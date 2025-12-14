@@ -189,6 +189,7 @@ model MediaFile {
   fileSize    Int?
   uploadedBy  String?
   questionId  String?
+  fileUri     String?   @db.VarChar(500)
   uploader    User?     @relation("MediaUploader", fields: [uploadedBy], references: [id])
   question    Question? @relation(fields: [questionId], references: [id])
 }

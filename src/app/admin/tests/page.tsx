@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   Card,
   Table,
@@ -72,12 +73,18 @@ interface TestWithStats {
 
 export default function TestsPage() {
   const { message } = App.useApp();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedTest, setSelectedTest] = useState<TestWithStats | null>(null);
   const [modalState, setModalState] = useState<{
     type: "create" | "edit" | "view" | "results" | "questions" | null;
     open: boolean;
   }>({ type: null, open: false });
   const [filterTrigger, setFilterTrigger] = useState(0);
+  const [highlightedTestId, setHighlightedTestId] = useState<string | null>(
+    null,
+  );
+  const tableRef = useRef<any>(null);
 
   const [createForm] = Form.useForm();
   const [editForm] = Form.useForm();
@@ -175,6 +182,33 @@ export default function TestsPage() {
       };
     });
   }, [tests]);
+
+  // Handle URL params - Auto open edit modal if testId is present
+  useEffect(() => {
+    const testId = searchParams?.get("testId");
+    if (testId && testsWithStats.length > 0) {
+      const test = testsWithStats.find((t) => t.id === testId);
+      if (test && !modalState.open) {
+        // Highlight the test
+        setHighlightedTestId(testId);
+
+        // Auto-fill search to show the test
+        filterForm.setFieldsValue({ searchText: test.name });
+        setFilterTrigger((prev) => prev + 1);
+
+        // Auto-open edit modal
+        handleEditClick(test);
+
+        // Clear URL params after opening
+        setTimeout(() => {
+          router.replace("/admin/tests", { scroll: false });
+          // Clear highlight after 3 seconds
+          setTimeout(() => setHighlightedTestId(null), 3000);
+        }, 500);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, testsWithStats]);
 
   // Handle create test
   const handleCreateTest = async (values: any) => {
@@ -650,10 +684,14 @@ export default function TestsPage() {
       <Card>
         <Spin spinning={testsLoading}>
           <Table
+            ref={tableRef}
             columns={columns}
             dataSource={filteredAndSortedTests}
             rowKey="id"
             scroll={{ x: 1000 }}
+            rowClassName={(record) =>
+              record.id === highlightedTestId ? "ant-table-row-selected" : ""
+            }
             pagination={{
               showSizeChanger: true,
               showQuickJumper: true,
@@ -664,6 +702,23 @@ export default function TestsPage() {
           />
         </Spin>
       </Card>
+
+      {/* Custom styles for highlighted row */}
+      <style jsx global>{`
+        .ant-table-row-selected {
+          background-color: #e6f7ff !important;
+          animation: highlightFade 3s ease-in-out;
+        }
+        
+        @keyframes highlightFade {
+          0% {
+            background-color: #bae7ff;
+          }
+          100% {
+            background-color: #e6f7ff;
+          }
+        }
+      `}</style>
 
       {/* Create Test Modal */}
       <Modal

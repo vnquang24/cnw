@@ -241,6 +241,7 @@ export function UserNote({
                 type="primary"
                 icon={note ? <Edit3 size={14} /> : <MessageSquare size={14} />}
                 onClick={handleEdit}
+                size="small"
               >
                 {note ? "Chỉnh sửa" : "Thêm ghi chú"}
               </Button>
@@ -254,8 +255,6 @@ export function UserNote({
                 onChange={(e) => setEditContent(e.target.value)}
                 placeholder="Nhập ghi chú của bạn..."
                 rows={6}
-                maxLength={2000}
-                showCount
               />
 
               <Input

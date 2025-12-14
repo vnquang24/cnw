@@ -101,6 +101,7 @@ export default function WordModal({
             min={1}
             placeholder="Nhập vị trí trong bài học"
             className="w-full"
+            disabled
           />
         </Form.Item>
 

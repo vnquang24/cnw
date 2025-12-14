@@ -54,6 +54,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import ContentModal from "@/components/modal/ContentModal";
 import WordModal from "@/components/modal/WordModal";
 import VideoModal from "@/components/modal/VideoModal";
+import { SortableTable } from "@/components/SortableTable";
 
 const { Title, Text } = Typography;
 
@@ -280,6 +281,29 @@ export default function LessonDetailPage() {
   const updateVideoMutation = useUpdateVideoContent();
   const uploadVideoMutation = useVideoControllerUploadVideo();
   const processHLSMutation = useVideoControllerProcessVideoToHLS();
+
+  // Batch update positions
+  const handleReorderComponents = async (updatedItems: ComponentData[]) => {
+    try {
+      // Update all components in parallel
+      await Promise.all(
+        updatedItems.map((item) =>
+          updateComponentMutation.mutateAsync({
+            where: { id: item.id },
+            data: { indexInLesson: item.indexInLesson },
+          }),
+        ),
+      );
+
+      // Invalidate queries to refetch data
+      queryClient.invalidateQueries({
+        queryKey: ["findManyComponent"],
+      });
+    } catch (error) {
+      console.error("Error reordering components:", error);
+      throw error;
+    }
+  };
 
   // Loading state
   if (lessonLoading) {
@@ -660,6 +684,7 @@ export default function LessonDetailPage() {
           onAdd={handleAddContent}
           onEdit={handleEditContent}
           onDelete={handleDeleteComponent}
+          onReorder={handleReorderComponents}
         />
       ),
     },
@@ -679,6 +704,7 @@ export default function LessonDetailPage() {
           onEdit={handleEditWord}
           onDelete={handleDeleteComponent}
           getWordTypeLabel={getWordTypeLabel}
+          onReorder={handleReorderComponents}
         />
       ),
     },
@@ -706,6 +732,7 @@ export default function LessonDetailPage() {
             }, 500);
           }}
           isPreviewOpening={isPreviewOpening}
+          onReorder={handleReorderComponents}
         />
       ),
     },
@@ -732,6 +759,7 @@ export default function LessonDetailPage() {
             }
           }}
           onDelete={handleDeleteComponent}
+          onReorder={handleReorderComponents}
         />
       ),
     },
@@ -902,6 +930,7 @@ interface TabProps {
   onAdd: () => void;
   onEdit: (component: ComponentData) => void;
   onDelete: (componentId: string) => void;
+  onReorder: (updatedItems: ComponentData[]) => Promise<void>;
 }
 
 interface WordTabProps extends TabProps {
@@ -923,13 +952,14 @@ function ContentTab({
   onAdd,
   onEdit,
   onDelete,
+  onReorder,
 }: TabProps) {
   const columns = [
     {
       title: "Vị trí",
       dataIndex: "indexInLesson",
       key: "index",
-      width: 80,
+      width: 120,
       align: "center" as const,
       render: (index: number) => (
         <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-semibold">
@@ -986,7 +1016,7 @@ function ContentTab({
               Nội dung bài học
             </Text>
             <Text type="secondary" className="text-sm block">
-              Quản lý các đoạn văn và nội dung giảng dạy
+              Kéo thả để sắp xếp lại vị trí các đoạn văn
             </Text>
           </div>
         </div>
@@ -999,30 +1029,32 @@ function ContentTab({
         </Button>
       </div>
 
-      <Table
-        columns={columns}
+      <SortableTable
         dataSource={components}
+        columns={columns}
         loading={loading}
+        onReorder={onReorder}
         rowKey="id"
         pagination={{
           pageSize: 10,
           showTotal: (total) => `Tổng ${total} nội dung`,
-          responsive: true,
         }}
-        scroll={{ x: 600 }}
-        locale={{
-          emptyText: (
-            <Empty description="Chưa có nội dung nào">
-              <Button
-                type="primary"
-                icon={<Plus className="w-4 h-4" />}
-                onClick={onAdd}
-              >
-                Thêm nội dung đầu tiên
-              </Button>
-            </Empty>
-          ),
-        }}
+        emptyDescription="Chưa có nội dung nào"
+        emptyButtonText="Thêm nội dung đầu tiên"
+        onAdd={onAdd}
+        renderDragOverlay={(item) => (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 text-blue-700 font-semibold text-lg">
+              {item.indexInLesson}
+            </div>
+            <div className="flex-1">
+              <div className="text-xs text-gray-500 mb-1">Nội dung bài học</div>
+              <div className="font-medium text-gray-900 line-clamp-2">
+                {item.content || "Không có nội dung"}
+              </div>
+            </div>
+          </div>
+        )}
       />
     </div>
   );
@@ -1035,13 +1067,14 @@ function WordTab({
   onEdit,
   onDelete,
   getWordTypeLabel,
+  onReorder,
 }: WordTabProps) {
   const columns = [
     {
       title: "Vị trí",
       dataIndex: "indexInLesson",
       key: "index",
-      width: 80,
+      width: 120,
       align: "center" as const,
       render: (index: number) => (
         <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 text-green-700 font-semibold">
@@ -1111,7 +1144,7 @@ function WordTab({
           <div>
             <Text className="font-semibold text-gray-900">Từ vựng</Text>
             <Text type="secondary" className="text-sm block">
-              Quản lý kho từ vựng trong bài học
+              Kéo thả để sắp xếp lại vị trí các từ vựng
             </Text>
           </div>
         </div>
@@ -1125,31 +1158,40 @@ function WordTab({
         </Button>
       </div>
 
-      <Table
-        columns={columns}
+      <SortableTable
         dataSource={components}
+        columns={columns}
         loading={loading}
+        onReorder={onReorder}
         rowKey="id"
         pagination={{
           pageSize: 10,
           showTotal: (total) => `Tổng ${total} từ vựng`,
-          responsive: true,
         }}
-        scroll={{ x: 600 }}
-        locale={{
-          emptyText: (
-            <Empty description="Chưa có từ vựng nào">
-              <Button
-                type="primary"
-                icon={<Plus className="w-4 h-4" />}
-                onClick={onAdd}
-                className="bg-green-600 hover:bg-green-700!"
-              >
-                Thêm từ vựng đầu tiên
-              </Button>
-            </Empty>
-          ),
-        }}
+        emptyDescription="Chưa có từ vựng nào"
+        emptyButtonText="Thêm từ vựng đầu tiên"
+        onAdd={onAdd}
+        renderDragOverlay={(item) => (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-green-100 text-green-700 font-semibold text-lg">
+              {item.indexInLesson}
+            </div>
+            <div className="flex-1">
+              <div className="text-xs text-gray-500 mb-1">
+                Từ vựng -{" "}
+                {item.word?.wordType
+                  ? getWordTypeLabel(item.word.wordType)
+                  : "N/A"}
+              </div>
+              <div className="font-semibold text-gray-900">
+                {item.word?.content}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">
+                {item.word?.meaning}
+              </div>
+            </div>
+          </div>
+        )}
       />
     </div>
   );
@@ -1164,6 +1206,7 @@ function VideoTab({
   onDelete,
   onPreviewVideo,
   isPreviewOpening,
+  onReorder,
 }: VideoTabProps) {
   const formatDuration = (seconds: number | null | undefined) => {
     if (!seconds) return "Chưa xử lý";
@@ -1177,7 +1220,7 @@ function VideoTab({
       title: "Vị trí",
       dataIndex: "indexInLesson",
       key: "index",
-      width: 80,
+      width: 120,
       align: "center" as const,
       render: (index: number) => (
         <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-100 text-purple-700 font-semibold">
@@ -1269,7 +1312,7 @@ function VideoTab({
           <div>
             <Text className="font-semibold text-gray-900">Video bài giảng</Text>
             <Text type="secondary" className="text-sm block">
-              Quản lý video bài giảng với HLS streaming
+              Kéo thả để sắp xếp lại vị trí các video
             </Text>
           </div>
         </div>
@@ -1294,43 +1337,67 @@ function VideoTab({
         </Space>
       </div>
 
-      <Table
-        columns={columns}
+      <SortableTable
         dataSource={components}
+        columns={columns}
         loading={loading}
+        onReorder={onReorder}
         rowKey="id"
         pagination={{
           pageSize: 10,
           showTotal: (total) => `Tổng ${total} video`,
-          responsive: true,
         }}
-        scroll={{ x: 600 }}
-        locale={{
-          emptyText: (
-            <Empty description="Chưa có video nào">
-              <Button
-                type="primary"
-                icon={<Plus className="w-4 h-4" />}
-                onClick={onAdd}
-                className="bg-purple-600 hover:bg-purple-700!"
-              >
-                Upload video đầu tiên
-              </Button>
-            </Empty>
-          ),
+        emptyDescription="Chưa có video nào"
+        emptyButtonText="Upload video đầu tiên"
+        onAdd={onAdd}
+        renderDragOverlay={(item) => {
+          const formatDuration = (seconds: number | null | undefined) => {
+            if (!seconds) return "Chưa xử lý";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, "0")}`;
+          };
+
+          return (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-purple-100 text-purple-700 font-semibold text-lg">
+                {item.indexInLesson}
+              </div>
+              <div className="flex-1">
+                <div className="text-xs text-gray-500 mb-1">
+                  Video bài giảng • {formatDuration(item.video?.duration)}
+                </div>
+                <div className="font-semibold text-gray-900">
+                  {item.video?.title}
+                </div>
+                {item.video?.description && (
+                  <div className="text-sm text-gray-600 mt-1 line-clamp-1">
+                    {item.video.description}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
         }}
       />
     </div>
   );
 }
 
-function TestTab({ components, loading, onAdd, onEdit, onDelete }: TabProps) {
+function TestTab({
+  components,
+  loading,
+  onAdd,
+  onEdit,
+  onDelete,
+  onReorder,
+}: TabProps) {
   const columns = [
     {
       title: "Vị trí",
       dataIndex: "indexInLesson",
       key: "index",
-      width: 80,
+      width: 120,
       align: "center" as const,
       render: (index: number) => (
         <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-orange-100 text-orange-700 font-semibold">
@@ -1392,7 +1459,7 @@ function TestTab({ components, loading, onAdd, onEdit, onDelete }: TabProps) {
           <div>
             <Text className="font-semibold text-gray-900">Bài kiểm tra</Text>
             <Text type="secondary" className="text-sm block">
-              Quản lý các bài kiểm tra trong bài học
+              Kéo thả để sắp xếp lại vị trí các bài kiểm tra
             </Text>
           </div>
         </div>
@@ -1406,31 +1473,34 @@ function TestTab({ components, loading, onAdd, onEdit, onDelete }: TabProps) {
         </Button>
       </div>
 
-      <Table
-        columns={columns}
+      <SortableTable
         dataSource={components}
+        columns={columns}
         loading={loading}
+        onReorder={onReorder}
         rowKey="id"
         pagination={{
           pageSize: 10,
           showTotal: (total) => `Tổng ${total} bài kiểm tra`,
-          responsive: true,
         }}
-        scroll={{ x: 600 }}
-        locale={{
-          emptyText: (
-            <Empty description="Chưa có bài kiểm tra nào">
-              <Button
-                type="primary"
-                icon={<Plus className="w-4 h-4" />}
-                onClick={onAdd}
-                className="bg-orange-600 hover:bg-orange-700!"
-              >
-                Tạo bài kiểm tra đầu tiên
-              </Button>
-            </Empty>
-          ),
-        }}
+        emptyDescription="Chưa có bài kiểm tra nào"
+        emptyButtonText="Tạo bài kiểm tra đầu tiên"
+        onAdd={onAdd}
+        renderDragOverlay={(item) => (
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-orange-100 text-orange-700 font-semibold text-lg">
+              {item.indexInLesson}
+            </div>
+            <div className="flex-1">
+              <div className="text-xs text-gray-500 mb-1">
+                Bài kiểm tra • {item.test?.duration} phút
+              </div>
+              <div className="font-semibold text-gray-900">
+                {item.test?.name}
+              </div>
+            </div>
+          </div>
+        )}
       />
     </div>
   );

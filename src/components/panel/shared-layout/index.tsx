@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useMemo, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { Layout, Spin, Button, Space, Avatar, Typography, theme } from "antd";
 import { PanelsTopLeft, ChevronLeft, ChevronRight } from "lucide-react";
@@ -9,6 +9,8 @@ import { useStoreState, useStoreActions } from "@/lib/redux/hook";
 import MenuItemComponent from "../menu-item";
 import Header from "../header";
 import { MenuItem } from "../menu-item/type";
+import { useFindUniqueUser } from "@/generated/hooks";
+import { getUserInitials, getAvatarColorByRole } from "@/lib/profile-utils";
 
 const { Sider, Content } = Layout;
 const { Text, Title } = Typography;
@@ -36,6 +38,24 @@ export default function SharedLayout({
   const [userInfo, setUserInfo] = useState<JwtPayload | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // Fetch user data including avatar
+  const userQueryArgs = useMemo(
+    () => ({
+      where: { id: userInfo?.userId || "" },
+    }),
+    [userInfo?.userId],
+  );
+
+  const { data: userData } = useFindUniqueUser(userQueryArgs, {
+    enabled: Boolean(userInfo?.userId),
+  });
+
+  const userInitials = getUserInitials(
+    userData?.name,
+    userData?.email || userInfo?.sub,
+  );
+  const avatarColor = getAvatarColorByRole(userInfo?.role || "USER");
 
   // Redux state for sidebar
   const isShowSidebar = useStoreState((state) => state.appState.isShowSidebar);
@@ -238,14 +258,20 @@ export default function SharedLayout({
         {!isShowSidebar && (
           <div className="px-6 mb-4">
             <Space align="center" size={12}>
-              <Avatar size={48} style={{ backgroundColor: token.colorPrimary }}>
-                {userInfo?.name?.charAt(0) || userInfo?.sub?.charAt(0) || "U"}
-              </Avatar>
+              {userData?.avatarUrl ? (
+                <Avatar size={48} src={userData.avatarUrl} />
+              ) : (
+                <Avatar size={48} style={{ backgroundColor: avatarColor }}>
+                  {userInitials}
+                </Avatar>
+              )}
               <div>
-                <Text strong>{userInfo?.name || "Người dùng"}</Text>
+                <Text strong>
+                  {userData?.name || userInfo?.name || "Người dùng"}
+                </Text>
                 <br />
                 <Text type="secondary" style={{ fontSize: 12 }}>
-                  {userInfo?.sub || "user@example.com"}
+                  {userData?.email || userInfo?.sub || "user@example.com"}
                 </Text>
               </div>
             </Space>
@@ -269,13 +295,13 @@ export default function SharedLayout({
         </div>
 
         {/* Logout Button */}
-        {!isShowSidebar && (
+        {/* {!isShowSidebar && (
           <div className="p-6 border-t border-gray-200">
             <Button block danger onClick={handleLogout}>
               Đăng xuất
             </Button>
           </div>
-        )}
+        )} */}
 
         {/* Toggle Button - Fixed position */}
         <div
@@ -401,10 +427,11 @@ export default function SharedLayout({
         <Header
           user={{
             id: userInfo.userId || "",
-            name: userInfo.name || userInfo.sub || "Người dùng",
-            email: userInfo.sub || "",
+            name:
+              userData?.name || userInfo.name || userInfo.sub || "Người dùng",
+            email: userData?.email || userInfo.sub || "",
             role: userInfo.role,
-            avatar: undefined,
+            avatar: userData?.avatarUrl || undefined,
           }}
           pathName={title}
           onMenuClick={() => setIsMobileOpen(true)}

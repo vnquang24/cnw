@@ -96,7 +96,7 @@ export default function AntdDemoPage() {
       {/* Basic Components */}
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={12}>
-          <Card title="📝 Form Controls" className="h-full">
+          <Card title="Form Controls" className="h-full">
             <Space direction="vertical" style={{ width: "100%" }}>
               <Input placeholder="Nhập text..." prefix={<SearchOutlined />} />
 

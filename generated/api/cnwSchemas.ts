@@ -153,3 +153,69 @@ export type UpdateVideoCommentDto = {
    */
   isResolved?: boolean;
 };
+
+export type CreateFlashcardTestDto = {
+  /**
+   * Lesson ID to attach the test to
+   *
+   * @example lesson-123
+   */
+  lessonId: string;
+  /**
+   * Test name
+   *
+   * @example Kiểm tra từ vựng - 14/12/2025
+   */
+  testName: string;
+  /**
+   * Test duration in minutes
+   *
+   * @example 30
+   * @minimum 5
+   * @maximum 180
+   */
+  duration: number;
+  /**
+   * Maximum attempts allowed
+   *
+   * @example 3
+   * @minimum 1
+   * @maximum 10
+   */
+  maxAttempts: number;
+  /**
+   * Pass score (out of 10)
+   *
+   * @example 7
+   * @minimum 1
+   * @maximum 10
+   */
+  passScore: number;
+  /**
+   * Shuffle questions order
+   *
+   * @example true
+   * @default true
+   */
+  shuffleQuestions: boolean;
+  /**
+   * Shuffle answers order
+   *
+   * @example true
+   * @default true
+   */
+  shuffleAnswers: boolean;
+  /**
+   * Which words to include in test
+   *
+   * @example all
+   * @default all
+   */
+  wordSelection: "all" | "mastered" | "unmastered";
+  /**
+   * User ID (for checking mastered words)
+   *
+   * @example user-123
+   */
+  userId: string;
+};

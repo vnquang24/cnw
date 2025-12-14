@@ -865,6 +865,7 @@ export function useCheckMediaFile<TError = DefaultError>(
       fileSize?: number;
       uploadedBy?: string;
       questionId?: string;
+      fileUri?: string;
     };
   },
   options?: Omit<UseQueryOptions<boolean, TError, boolean>, "queryKey"> &

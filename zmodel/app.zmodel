@@ -52,7 +52,7 @@ model Test extends Base {
   passScore          Int     @default(5)  // Score required to pass (out of maxScore)
   shuffleQuestions   Boolean @default(false)
   shuffleAnswers     Boolean @default(false)
-
+  
   // Relations
   questions  Question[]
   components Component[]
@@ -66,7 +66,7 @@ model MediaFile extends Base {
   fileSize    Int?                       // File size in bytes
   uploadedBy  String?                    // User who uploaded the file
   questionId  String?                    // Question this file belongs to
-
+  fileUri     String?   @db.VarChar(500)  // Internal URI in MinIO
   // Relations
   uploader    User?     @relation("MediaUploader", fields: [uploadedBy], references: [id])
   question    Question? @relation(fields: [questionId], references: [id])

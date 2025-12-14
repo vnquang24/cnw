@@ -229,7 +229,7 @@ export default function VideoModal({
             { type: "number", min: 1, message: "Vị trí phải >= 1!" },
           ]}
         >
-          <Input type="number" min={1} />
+          <Input type="number" min={1} disabled />
         </Form.Item>
 
         {!editingData && (

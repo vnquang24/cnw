@@ -262,37 +262,32 @@ export default function CourseDetailPage() {
               const componentCount = lesson.components?.length ?? 0;
 
               return (
-                <List.Item
-                  key={lesson.id}
-                  actions={[
-                    <Link
-                      key="learn"
-                      href={`/user/courses/${course.id}/lessons/${lesson.id}`}
-                    >
-                      <Button type="primary">Bắt đầu học</Button>
-                    </Link>,
-                  ]}
-                >
-                  <List.Item.Meta
-                    avatar={
-                      <StatusTag
-                        status={"default"}
-                        text={`Bài ${lesson.position ?? index + 1}`}
-                        minWidth={70}
-                      />
-                    }
-                    title={
-                      <Space size={8} wrap>
-                        <Text strong>{lesson.title}</Text>
-                        <StatusTag
-                          status={status.status}
-                          icon={status.icon}
-                          text={status.label}
-                          minWidth={100}
-                        />
-                      </Space>
-                    }
-                    description={
+                <List.Item key={lesson.id}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "16px",
+                      width: "100%",
+                    }}
+                  >
+                    <StatusTag
+                      status={"default"}
+                      text={`Bài ${lesson.position ?? index + 1}`}
+                      minWidth={70}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ marginBottom: 8 }}>
+                        <Space size={8} wrap>
+                          <Text strong>{lesson.title}</Text>
+                          <StatusTag
+                            status={status.status}
+                            icon={status.icon}
+                            text={status.label}
+                            minWidth={100}
+                          />
+                        </Space>
+                      </div>
                       <Space size={16} wrap>
                         <InfoBadge
                           icon={<Layers size={16} />}
@@ -305,8 +300,13 @@ export default function CourseDetailPage() {
                           type="secondary"
                         />
                       </Space>
-                    }
-                  />
+                    </div>
+                    <Link
+                      href={`/user/courses/${course.id}/lessons/${lesson.id}`}
+                    >
+                      <Button type="primary">Bắt đầu học</Button>
+                    </Link>
+                  </div>
                 </List.Item>
               );
             }}

@@ -6,7 +6,7 @@ import { userMenuItems } from "@/lib/menu-data/user-menu";
 import { menuItems } from "@/lib/menu-data";
 import { getUserInfo } from "@/lib/auth";
 
-export default function ProfileLayout({ children }: { children: ReactNode }) {
+export default function DevicesLayout({ children }: { children: ReactNode }) {
   const [userRole, setUserRole] = useState<"USER" | "ADMIN" | null>(null);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export default function ProfileLayout({ children }: { children: ReactNode }) {
   return (
     <SharedLayout
       menuItems={menuToUse}
-      title="Quản lý thông tin"
+      title="Quản lý thiết bị"
       logoText="EduSystem"
     >
       {children}

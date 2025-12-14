@@ -406,6 +406,11 @@ const metadata: ModelMeta = {
           isForeignKey: true,
           relationField: "question",
         },
+        fileUri: {
+          name: "fileUri",
+          type: "String",
+          isOptional: true,
+        },
         uploader: {
           name: "uploader",
           type: "User",

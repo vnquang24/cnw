@@ -11,6 +11,7 @@ import {
   Card,
   Row,
   Col,
+  Modal,
 } from "antd";
 import {
   UploadOutlined,
@@ -18,6 +19,7 @@ import {
   PlayCircleOutlined,
   AudioOutlined,
   FileImageOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import type { UploadFile } from "antd/es/upload/interface";
 import {
@@ -51,6 +53,8 @@ export default function MediaUpload({
   disabled = false,
 }: MediaUploadProps) {
   const [uploading, setUploading] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewMedia, setPreviewMedia] = useState<MediaFileItem | null>(null);
 
   const createUploadUrl = useMinioControllerCreateUploadUrl();
 
@@ -127,11 +131,11 @@ export default function MediaUpload({
 
   const beforeUpload = (file: File) => {
     // Check file size
-    const isLt50M = file.size / 1024 / 1024 < maxSizeMB;
-    if (!isLt50M) {
-      message.error(`File phải nhỏ hơn ${maxSizeMB}MB!`);
-      return false;
-    }
+    // const isLt50M = file.size / 1024 / 1024 < maxSizeMB;
+    // if (!isLt50M) {
+    //   message.error(`File phải nhỏ hơn ${maxSizeMB}MB!`);
+    //   return false;
+    // }
 
     // Upload immediately
     handleUpload(file);
@@ -144,6 +148,71 @@ export default function MediaUpload({
       const newFiles = value.filter((_, i) => i !== index);
       onChange(newFiles);
     }
+  };
+
+  const handlePreview = (item: MediaFileItem) => {
+    setPreviewMedia(item);
+    setPreviewOpen(true);
+  };
+
+  const renderPreviewModal = () => {
+    if (!previewMedia) return null;
+
+    const isImage = previewMedia.fileType.startsWith("image/");
+    const isVideo = previewMedia.fileType.startsWith("video/");
+    const isAudio = previewMedia.fileType.startsWith("audio/");
+
+    return (
+      <Modal
+        open={previewOpen}
+        title={previewMedia.fileName}
+        footer={null}
+        onCancel={() => {
+          setPreviewOpen(false);
+          setPreviewMedia(null);
+        }}
+        width={isAudio ? 500 : 800}
+        centered
+      >
+        {isImage && (
+          <div style={{ textAlign: "center" }}>
+            <img
+              src={previewMedia.fileUrl}
+              alt={previewMedia.fileName}
+              style={{
+                maxWidth: "100%",
+                maxHeight: "70vh",
+                objectFit: "contain",
+              }}
+            />
+          </div>
+        )}
+        {isVideo && (
+          <div style={{ width: "100%" }}>
+            <video
+              src={previewMedia.fileUrl}
+              controls
+              style={{ width: "100%", maxHeight: "70vh" }}
+              preload="metadata"
+            >
+              Trình duyệt của bạn không hỗ trợ video.
+            </video>
+          </div>
+        )}
+        {isAudio && (
+          <div style={{ padding: "20px 0" }}>
+            <audio
+              src={previewMedia.fileUrl}
+              controls
+              style={{ width: "100%" }}
+              preload="metadata"
+            >
+              Trình duyệt của bạn không hỗ trợ audio.
+            </audio>
+          </div>
+        )}
+      </Modal>
+    );
   };
 
   const renderMediaItem = (item: MediaFileItem, index: number) => {
@@ -164,17 +233,49 @@ export default function MediaUpload({
           backgroundColor: "#fafafa",
         }}
       >
-        {/* Thumbnail/Icon */}
-        <div style={{ flexShrink: 0, width: 60, height: 60 }}>
+        {/* Thumbnail/Icon - Clickable for preview */}
+        <div
+          style={{
+            flexShrink: 0,
+            width: 60,
+            height: 60,
+            cursor: "pointer",
+            position: "relative",
+          }}
+          onClick={() => handlePreview(item)}
+        >
           {isImage && (
-            <Image
-              src={item.fileUrl}
-              alt={item.fileName}
-              width={60}
-              height={60}
-              style={{ objectFit: "cover", borderRadius: 4 }}
-              preview={{ src: item.fileUrl }}
-            />
+            <>
+              <img
+                src={item.fileUrl}
+                alt={item.fileName}
+                style={{
+                  width: 60,
+                  height: 60,
+                  objectFit: "cover",
+                  borderRadius: 4,
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "rgba(0, 0, 0, 0.3)",
+                  borderRadius: 4,
+                  opacity: 0,
+                  transition: "opacity 0.2s",
+                }}
+                className="preview-overlay"
+              >
+                <EyeOutlined style={{ fontSize: 20, color: "white" }} />
+              </div>
+            </>
           )}
           {isVideo && (
             <div
@@ -186,6 +287,13 @@ export default function MediaUpload({
                 justifyContent: "center",
                 backgroundColor: "#e6f7ff",
                 borderRadius: 4,
+                transition: "background-color 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#bae7ff";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#e6f7ff";
               }}
             >
               <PlayCircleOutlined style={{ fontSize: 24, color: "#1890ff" }} />
@@ -201,6 +309,13 @@ export default function MediaUpload({
                 justifyContent: "center",
                 backgroundColor: "#f6ffed",
                 borderRadius: 4,
+                transition: "background-color 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#d9f7be";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#f6ffed";
               }}
             >
               <AudioOutlined style={{ fontSize: 24, color: "#52c41a" }} />
@@ -246,57 +361,79 @@ export default function MediaUpload({
         </div>
 
         {/* Actions */}
-        <Button
-          danger
-          size="small"
-          type="text"
-          icon={<DeleteOutlined />}
-          onClick={() => handleRemove(index)}
-          disabled={disabled}
-        />
+        <div style={{ display: "flex", gap: 4 }}>
+          <Button
+            size="small"
+            type="text"
+            icon={<EyeOutlined />}
+            onClick={() => handlePreview(item)}
+            title="Xem trước"
+          />
+          <Button
+            danger
+            size="small"
+            type="text"
+            icon={<DeleteOutlined />}
+            onClick={() => handleRemove(index)}
+            disabled={disabled}
+            title="Xóa"
+          />
+        </div>
       </div>
     );
   };
 
   return (
-    <Space direction="vertical" style={{ width: "100%" }} size="small">
-      <Upload
-        beforeUpload={beforeUpload}
-        accept={accept}
-        showUploadList={false}
-        multiple
-        disabled={disabled}
-      >
-        <Button
-          icon={<UploadOutlined />}
-          loading={uploading}
-          size="small"
+    <>
+      <Space direction="vertical" style={{ width: "100%" }} size="small">
+        <Upload
+          beforeUpload={beforeUpload}
+          accept={accept}
+          showUploadList={false}
+          multiple
           disabled={disabled}
         >
-          {uploading
-            ? "Đang tải lên..."
-            : disabled
-              ? "Chỉ upload khi sửa"
-              : "Thêm media"}
-        </Button>
-      </Upload>
-
-      {value.length > 0 && (
-        <div style={{ marginTop: 8 }}>
-          <div style={{ fontSize: 12, color: "#666", marginBottom: 8 }}>
-            {value.length} file(s)
-          </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-              gap: 8,
-            }}
+          <Button
+            icon={<UploadOutlined />}
+            loading={uploading}
+            size="small"
+            disabled={disabled}
           >
-            {value.map((item, index) => renderMediaItem(item, index))}
+            {uploading
+              ? "Đang tải lên..."
+              : disabled
+                ? "Chỉ upload khi sửa"
+                : "Thêm media"}
+          </Button>
+        </Upload>
+
+        {value.length > 0 && (
+          <div style={{ marginTop: 8 }}>
+            <div style={{ fontSize: 12, color: "#666", marginBottom: 8 }}>
+              {value.length} file(s)
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+                gap: 8,
+              }}
+            >
+              {value.map((item, index) => renderMediaItem(item, index))}
+            </div>
           </div>
-        </div>
-      )}
-    </Space>
+        )}
+      </Space>
+
+      {/* Preview Modal */}
+      {renderPreviewModal()}
+
+      {/* CSS for hover effect */}
+      <style jsx>{`
+        .preview-overlay:hover {
+          opacity: 1 !important;
+        }
+      `}</style>
+    </>
   );
 }

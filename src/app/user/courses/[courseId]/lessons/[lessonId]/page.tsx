@@ -22,6 +22,7 @@ import {
   Tabs,
   Input,
   message,
+  Modal,
 } from "antd";
 import type { Prisma } from "@prisma/client";
 import { StatusTag } from "@/components/ui/status-tag";
@@ -33,13 +34,15 @@ import {
   ClipboardList,
   MessageCircle,
   MessageSquare,
-  Shuffle,
   Sparkles,
   Trophy,
   XCircle,
   Eye,
   FileText,
   Target,
+  Clock,
+  BadgeCheck,
+  History,
 } from "lucide-react";
 import {
   useFindUniqueLesson,
@@ -52,6 +55,7 @@ import {
 } from "@/generated/hooks";
 import { getUserId } from "@/lib/auth";
 import EnhancedVideoPlayer from "@/components/video/EnhancedVideoPlayer";
+import FlashcardLearning from "@/components/flashcard/FlashcardLearning";
 import { Video } from "lucide-react";
 
 const { Title, Text, Paragraph } = Typography;
@@ -203,23 +207,9 @@ export default function LessonLearningPage() {
     [components],
   );
 
-  const [wordViewMode, setWordViewMode] = useState<"list" | "flashcard">(
-    "list",
-  );
-  const [flashcardIndex, setFlashcardIndex] = useState(0);
-  const [showMeaning, setShowMeaning] = useState(false);
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [selectedComponent, setSelectedComponent] = useState<any>(null);
 
-  useEffect(() => {
-    setFlashcardIndex(0);
-    setShowMeaning(false);
-  }, [wordViewMode, wordComponents.length]);
-
-  const flashcardWord =
-    wordComponents.length > 0
-      ? (wordComponents[flashcardIndex % wordComponents.length]?.word ?? null)
-      : null;
   const hasOtherComponents = otherComponents.length > 0;
 
   if (
@@ -306,143 +296,17 @@ export default function LessonLearningPage() {
               </Space>
             </Space>
           </Col>
-          <Col xs={24} md={6}>
-            <Card variant="borderless" className="bg-gray-50">
-              <Space direction="vertical" size={8} style={{ width: "100%" }}>
-                <Statistic
-                  title="Thứ tự trong khóa học"
-                  value={lesson.position ?? 0}
-                />
-                {userLesson?.[0]?.completedAt && (
-                  <Descriptions size="small" column={1} bordered>
-                    <Descriptions.Item label="Hoàn thành">
-                      {new Date(userLesson[0].completedAt).toLocaleString(
-                        "vi-VN",
-                      )}
-                    </Descriptions.Item>
-                  </Descriptions>
-                )}
-              </Space>
-            </Card>
-          </Col>
         </Row>
       </Card>
 
       {wordComponents.length > 0 && (
-        <Card
-          title="Từ vựng trong bài"
-          extra={
-            <Segmented
-              options={[
-                { label: "Danh sách", value: "list" },
-                { label: "Flashcard", value: "flashcard" },
-              ]}
-              value={wordViewMode}
-              onChange={(value) =>
-                setWordViewMode(value as "list" | "flashcard")
-              }
-            />
-          }
-        >
-          {wordViewMode === "list" ? (
-            <Row gutter={[12, 12]}>
-              {wordComponents.map((component) => {
-                const word = component.word!;
-                return (
-                  <Col key={component.id} xs={24} md={12} lg={8}>
-                    <Card size="small" className="h-full">
-                      <Space
-                        direction="vertical"
-                        size={6}
-                        style={{ width: "100%" }}
-                      >
-                        <Title level={4} style={{ margin: 0 }}>
-                          {word.content}
-                        </Title>
-                        <Tag color="blue">{word.wordType}</Tag>
-                        <Paragraph style={{ marginBottom: 0 }}>
-                          {word.meaning}
-                        </Paragraph>
-                      </Space>
-                    </Card>
-                  </Col>
-                );
-              })}
-            </Row>
-          ) : (
-            flashcardWord && (
-              <Space
-                direction="vertical"
-                size={16}
-                style={{ width: "100%", alignItems: "center" }}
-              >
-                <Card
-                  hoverable
-                  className="w-full md:w-2/3 text-center"
-                  onClick={() => setShowMeaning((prev) => !prev)}
-                >
-                  <Space
-                    direction="vertical"
-                    size={12}
-                    style={{ width: "100%" }}
-                  >
-                    <StatusTag
-                      status="info"
-                      text={`Từ số ${flashcardIndex + 1}`}
-                      minWidth={90}
-                    />
-                    <Title level={3} style={{ margin: 0 }}>
-                      {flashcardWord.content}
-                    </Title>
-                    <Tag color="green">{flashcardWord.wordType}</Tag>
-                    <Paragraph style={{ minHeight: 48 }}>
-                      {showMeaning
-                        ? flashcardWord.meaning
-                        : "Nhấp vào thẻ để xem nghĩa"}
-                    </Paragraph>
-                  </Space>
-                </Card>
-                <Space size={12} wrap>
-                  <Button
-                    onClick={() => {
-                      setFlashcardIndex((index) =>
-                        index === 0 ? wordComponents.length - 1 : index - 1,
-                      );
-                      setShowMeaning(false);
-                    }}
-                  >
-                    Trước
-                  </Button>
-                  <Button
-                    icon={<Shuffle size={16} />}
-                    onClick={() => {
-                      if (wordComponents.length <= 1) return;
-                      const randomIndex = Math.floor(
-                        Math.random() * wordComponents.length,
-                      );
-                      setFlashcardIndex(randomIndex);
-                      setShowMeaning(false);
-                    }}
-                  >
-                    Ngẫu nhiên
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setFlashcardIndex((index) =>
-                        index === wordComponents.length - 1 ? 0 : index + 1,
-                      );
-                      setShowMeaning(false);
-                    }}
-                  >
-                    Tiếp
-                  </Button>
-                </Space>
-                <Text type="secondary">
-                  {flashcardIndex + 1}/{wordComponents.length} thẻ
-                </Text>
-              </Space>
-            )
-          )}
+        <Card title="Từ vựng trong bài">
+          <FlashcardLearning
+            components={wordComponents}
+            userId={userId}
+            lessonId={lessonId}
+            courseId={courseId}
+          />
         </Card>
       )}
 
@@ -534,27 +398,21 @@ export default function LessonLearningPage() {
                                     {component.content ||
                                       "Nội dung đang cập nhật."}
                                   </Paragraph>
-                                  <Space size={8}>
-                                    <InfoBadge
-                                      icon={<MessageCircle size={14} />}
-                                      text="Hãy ghi chú lại những điểm quan trọng"
-                                      type="default"
-                                    />
-                                    <Button
-                                      type="link"
-                                      icon={<MessageSquare size={14} />}
-                                      onClick={() => {
-                                        setSelectedComponent({
-                                          id: component.id,
-                                          type: component.componentType,
-                                          title: `${order}. ${componentLabel.PARAGRAPH}`,
-                                        });
-                                        setNoteModalOpen(true);
-                                      }}
-                                    >
-                                      Ghi chú
-                                    </Button>
-                                  </Space>
+
+                                  <Button
+                                    type="link"
+                                    icon={<MessageSquare size={14} />}
+                                    onClick={() => {
+                                      setSelectedComponent({
+                                        id: component.id,
+                                        type: component.componentType,
+                                        title: `${order}. ${componentLabel.PARAGRAPH}`,
+                                      });
+                                      setNoteModalOpen(true);
+                                    }}
+                                  >
+                                    Ghi chú
+                                  </Button>
                                 </Space>
                               </Card>
                             );
@@ -750,7 +608,7 @@ function VideoComponentCard({
                   )}
                   {!video.hlsPlaylistUrl && (
                     <InfoBadge
-                      icon="⏳"
+                      icon={<Clock />}
                       text="Video đang được xử lý để tối ưu streaming..."
                       type="warning"
                       size="small"
@@ -758,7 +616,7 @@ function VideoComponentCard({
                   )}
                   {video.hlsPlaylistUrl && (
                     <InfoBadge
-                      icon="✅"
+                      icon={<BadgeCheck />}
                       text="Video sẵn sàng streaming chất lượng cao"
                       type="success"
                       size="small"
@@ -777,7 +635,7 @@ function VideoComponentCard({
                   >
                     <div className="flex items-center justify-between">
                       <Text strong className="text-blue-800 text-sm">
-                        📝 Ghi chú tại: {Math.floor(currentTime / 60)}:
+                        Ghi chú tại: {Math.floor(currentTime / 60)}:
                         {String(Math.floor(currentTime % 60)).padStart(2, "0")}
                       </Text>
                     </div>
@@ -790,7 +648,7 @@ function VideoComponentCard({
                       showCount
                       size="small"
                     />
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center mt-2">
                       <Text type="secondary" className="text-xs">
                         Lưu tại {Math.floor(currentTime)}s
                       </Text>
@@ -916,6 +774,8 @@ function TestComponentCard({
       enabled: Boolean(userId && component.id),
     });
 
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+
   const columns = [
     {
       title: "Lần thử",
@@ -999,66 +859,63 @@ function TestComponentCard({
         }
       >
         <Space direction="vertical" size={16} style={{ width: "100%" }}>
-          <div>
-            <Title level={4} style={{ margin: 0, marginBottom: 8 }}>
-              {component.test.name}
-            </Title>
-            <Space size={16} wrap>
-              <InfoBadge
-                icon={<BookOpen size={14} />}
-                text={`${component.test.duration} phút`}
-                type="secondary"
-                size="small"
-              />
-              <InfoBadge
-                icon={<Trophy size={14} />}
-                text={`Tối đa ${component.test.maxAttempts} lần làm`}
-                type="secondary"
-                size="small"
-              />
-              <InfoBadge
-                icon={<Trophy size={14} />}
-                text={`Điểm đạt: ${component.test.passScore || 5}/${component.test.maxScore || 10}`}
-                type="warning"
-                size="small"
-              />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "16px",
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <Title level={4} style={{ margin: 0, marginBottom: 8 }}>
+                {component.test.name}
+              </Title>
+              <Space size={16} wrap>
+                <InfoBadge
+                  icon={<BookOpen size={14} />}
+                  text={`${component.test.duration} phút`}
+                  type="secondary"
+                  size="small"
+                />
+                <InfoBadge
+                  icon={<Trophy size={14} />}
+                  text={`Tối đa ${component.test.maxAttempts} lần làm`}
+                  type="secondary"
+                  size="small"
+                />
+                <InfoBadge
+                  icon={<Trophy size={14} />}
+                  text={`Điểm đạt: ${component.test.passScore || 5}/${component.test.maxScore || 10}`}
+                  type="warning"
+                  size="small"
+                />
+              </Space>
+            </div>
+            <Space size={8}>
+              {testResults && testResults.length > 0 && (
+                <Button
+                  icon={<History size={16} />}
+                  onClick={() => setHistoryModalOpen(true)}
+                  size="large"
+                >
+                  Lịch sử
+                </Button>
+              )}
+              <Button
+                type="primary"
+                icon={<Sparkles size={16} />}
+                onClick={() =>
+                  router.push(
+                    `/user/tests/${component.test?.id}/take?componentId=${component.id}&lessonId=${lessonId}&courseId=${courseId}`,
+                  )
+                }
+                size="large"
+              >
+                Làm bài
+              </Button>
             </Space>
           </div>
-
-          <Button
-            type="primary"
-            icon={<Sparkles size={16} />}
-            onClick={() =>
-              router.push(
-                `/user/tests/${component.test?.id}/take?componentId=${component.id}&lessonId=${lessonId}&courseId=${courseId}`,
-              )
-            }
-            size="large"
-          >
-            Bắt đầu làm bài
-          </Button>
-
-          {testResults && testResults.length > 0 && (
-            <>
-              <Divider style={{ margin: "8px 0" }} />
-              <div>
-                <Title level={5} style={{ marginBottom: 12 }}>
-                  📊 Lịch sử làm bài
-                </Title>
-                <Table
-                  columns={columns}
-                  dataSource={testResults}
-                  rowKey="id"
-                  pagination={false}
-                  size="small"
-                  loading={resultsLoading}
-                  locale={{
-                    emptyText: "Chưa có lần làm bài nào",
-                  }}
-                />
-              </div>
-            </>
-          )}
 
           <Button
             type="link"
@@ -1076,6 +933,26 @@ function TestComponentCard({
           </Button>
         </Space>
       </Card>
+
+      <Modal
+        title="Lịch sử làm bài"
+        open={historyModalOpen}
+        onCancel={() => setHistoryModalOpen(false)}
+        footer={null}
+        width={800}
+      >
+        <Table
+          columns={columns}
+          dataSource={testResults}
+          rowKey="id"
+          pagination={false}
+          size="small"
+          loading={resultsLoading}
+          locale={{
+            emptyText: "Chưa có lần làm bài nào",
+          }}
+        />
+      </Modal>
     </Space>
   );
 }

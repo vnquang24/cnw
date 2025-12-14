@@ -38,7 +38,6 @@ import {
 } from "@/components/admin/courses/CourseFormDialog";
 import { showToast } from "@/lib/toast";
 import { getUserId } from "@/lib/auth";
-
 const { Title, Text } = Typography;
 const { Option } = Select;
 
@@ -320,7 +319,6 @@ export default function CoursesPage() {
         <Title level={2}>Quản lý khóa học</Title>
         <Text type="secondary">Quản lý và theo dõi tất cả các khóa học</Text>
       </div>
-
       {/* Statistics */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={6}>
