@@ -10,66 +10,69 @@ import {
   Input,
   Select,
   Tag,
-  Rate,
   Avatar,
   Space,
   Pagination,
   Empty,
-  Slider,
   Checkbox,
-  Collapse,
   Badge,
   Spin,
 } from "antd";
 import {
   SearchOutlined,
-  FilterOutlined,
   UserOutlined,
   ClockCircleOutlined,
   TrophyOutlined,
-  FireOutlined,
-  GiftOutlined,
   BookOutlined,
-  PlayCircleOutlined,
 } from "@ant-design/icons";
 import { useFindManyCourse } from "../../../../generated/hooks";
 
 const { Title, Text, Paragraph } = Typography;
 const { Search } = Input;
 const { Option } = Select;
-const { Panel } = Collapse;
 
-const categories = [
-  "Frontend",
-  "Backend",
-  "Data Science",
-  "Design",
-  "DevOps",
-  "Mobile",
-  "Web Development",
-];
+// Real data from database schema
+const levelConfig = {
+  BEGINNER: { label: "Cơ bản", color: "green" },
+  INTERMEDIATE: { label: "Trung cấp", color: "blue" },
+  ADVANCED: { label: "Nâng cao", color: "red" },
+};
 
-const levels = ["Cơ bản", "Trung cấp", "Nâng cao"];
+const statusConfig = {
+  ACTIVE: { label: "Đang mở", color: "success" },
+  INACTIVE: { label: "Đã đóng", color: "default" },
+};
 
 export default function CoursesPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1500000]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([
+    "ACTIVE",
+  ]); // Default show only active courses
   const [sortBy, setSortBy] = useState("popular");
   const [currentPage, setCurrentPage] = useState(1);
-  const [showFilters, setShowFilters] = useState(false);
-  const pageSize = 8;
+  const pageSize = 9; // Better for 3-column layout
 
-  // Fetch courses from database
+  // Fetch courses from database - only active courses by default
   const {
     data: courses,
     isLoading,
     error,
   } = useFindManyCourse({
+    where: {
+      status: {
+        in: selectedStatuses.length > 0 ? selectedStatuses : ["ACTIVE"],
+      },
+    },
     include: {
       userCourses: true,
-      creator: true,
+      creator: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
       lessons: {
         include: {
           components: true,
@@ -84,6 +87,7 @@ export default function CoursesPage() {
     if (!courses) return [];
 
     let filtered = courses.filter((course) => {
+      // Search filter
       const matchesSearch =
         course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (course.description &&
@@ -93,10 +97,11 @@ export default function CoursesPage() {
         (course.creator?.name &&
           course.creator.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-      // For now, skip category and level filters since they don't exist in our schema
-      // Can be added later when we extend the Course model
+      // Level filter
+      const matchesLevel =
+        selectedLevels.length === 0 || selectedLevels.includes(course.level);
 
-      return matchesSearch;
+      return matchesSearch && matchesLevel;
     });
 
     // Sort courses
@@ -106,12 +111,20 @@ export default function CoursesPage() {
           return (
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
+        case "oldest":
+          return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+        case "duration-high":
+          return b.duration - a.duration;
+        case "duration-low":
+          return a.duration - b.duration;
         case "popular":
         default:
           return (b.userCourses?.length || 0) - (a.userCourses?.length || 0);
       }
     });
-  }, [courses, searchTerm, sortBy]);
+  }, [courses, searchTerm, selectedLevels, sortBy]);
 
   // Pagination
   const startIndex = (currentPage - 1) * pageSize;
@@ -120,20 +133,19 @@ export default function CoursesPage() {
     startIndex + pageSize,
   );
 
-  const handleCategoryChange = (categories: string[]) => {
-    setSelectedCategories(categories);
-    setCurrentPage(1);
-  };
-
   const handleLevelChange = (levels: string[]) => {
     setSelectedLevels(levels);
     setCurrentPage(1);
   };
 
+  const handleStatusChange = (statuses: string[]) => {
+    setSelectedStatuses(statuses);
+    setCurrentPage(1);
+  };
+
   const resetFilters = () => {
-    setSelectedCategories([]);
     setSelectedLevels([]);
-    setPriceRange([0, 1500000]);
+    setSelectedStatuses(["ACTIVE"]);
     setSearchTerm("");
     setCurrentPage(1);
   };
@@ -162,7 +174,7 @@ export default function CoursesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 ">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <section className="bg-white py-6 sm:py-8 border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -202,55 +214,45 @@ export default function CoursesPage() {
                   />
                 </div>
 
-                {/* Categories */}
-                <div>
-                  <Text strong className="block mb-2">
-                    Danh mục
-                  </Text>
-                  <Checkbox.Group
-                    options={categories}
-                    value={selectedCategories}
-                    onChange={handleCategoryChange}
-                    className="flex flex-col space-y-2"
-                  />
-                </div>
-
                 {/* Levels */}
                 <div>
                   <Text strong className="block mb-2">
                     Cấp độ
                   </Text>
                   <Checkbox.Group
-                    options={levels}
                     value={selectedLevels}
                     onChange={handleLevelChange}
                     className="flex flex-col space-y-2"
-                  />
+                  >
+                    <Checkbox value="BEGINNER">
+                      {levelConfig.BEGINNER.label}
+                    </Checkbox>
+                    <Checkbox value="INTERMEDIATE">
+                      {levelConfig.INTERMEDIATE.label}
+                    </Checkbox>
+                    <Checkbox value="ADVANCED">
+                      {levelConfig.ADVANCED.label}
+                    </Checkbox>
+                  </Checkbox.Group>
                 </div>
 
-                {/* Price Range */}
+                {/* Status */}
                 <div>
                   <Text strong className="block mb-2">
-                    Giá (VNĐ)
+                    Trạng thái
                   </Text>
-                  <Slider
-                    range
-                    min={0}
-                    max={1500000}
-                    step={50000}
-                    value={priceRange}
-                    onChange={(value) =>
-                      setPriceRange(value as [number, number])
-                    }
-                    tooltip={{
-                      formatter: (value) =>
-                        `${value?.toLocaleString("vi-VN")}đ`,
-                    }}
-                  />
-                  <div className="flex justify-between text-sm text-gray-500 mt-2">
-                    <span>{priceRange[0].toLocaleString("vi-VN")}đ</span>
-                    <span>{priceRange[1].toLocaleString("vi-VN")}đ</span>
-                  </div>
+                  <Checkbox.Group
+                    value={selectedStatuses}
+                    onChange={handleStatusChange}
+                    className="flex flex-col space-y-2"
+                  >
+                    <Checkbox value="ACTIVE">
+                      {statusConfig.ACTIVE.label}
+                    </Checkbox>
+                    <Checkbox value="INACTIVE">
+                      {statusConfig.INACTIVE.label}
+                    </Checkbox>
+                  </Checkbox.Group>
                 </div>
               </Space>
             </Card>
@@ -276,10 +278,10 @@ export default function CoursesPage() {
                   className="w-full sm:w-40"
                 >
                   <Option value="popular">Phổ biến nhất</Option>
-                  <Option value="rating">Đánh giá cao nhất</Option>
                   <Option value="newest">Mới nhất</Option>
-                  <Option value="price-low">Giá thấp đến cao</Option>
-                  <Option value="price-high">Giá cao đến thấp</Option>
+                  <Option value="oldest">Cũ nhất</Option>
+                  <Option value="duration-high">Thời lượng dài nhất</Option>
+                  <Option value="duration-low">Thời lượng ngắn nhất</Option>
                 </Select>
 
                 <Button
@@ -295,77 +297,115 @@ export default function CoursesPage() {
             {/* Courses Grid */}
             {currentCourses.length > 0 ? (
               <Row gutter={[24, 24]}>
-                {currentCourses.map((course) => (
-                  <Col xs={24} sm={12} lg={8} key={course.id}>
-                    <Card
-                      hoverable
-                      cover={
-                        <div className="relative bg-gradient-to-br from-blue-50 to-indigo-100 h-40 sm:h-48">
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center">
-                              <BookOutlined className="text-blue-600 text-2xl" />
+                {currentCourses.map((course) => {
+                  const levelInfo =
+                    levelConfig[course.level as keyof typeof levelConfig];
+                  const statusInfo =
+                    statusConfig[course.status as keyof typeof statusConfig];
+                  const totalComponents =
+                    course.lessons?.reduce(
+                      (sum, lesson) => sum + (lesson.components?.length || 0),
+                      0,
+                    ) || 0;
+
+                  return (
+                    <Col xs={24} sm={12} lg={8} key={course.id}>
+                      <Card
+                        hoverable
+                        cover={
+                          <div className="relative bg-gradient-to-br from-blue-50 to-indigo-100 h-40 sm:h-48">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center">
+                                <BookOutlined className="text-blue-600 text-2xl" />
+                              </div>
                             </div>
+                            {course.status === "ACTIVE" && (
+                              <Badge.Ribbon
+                                text={statusInfo.label}
+                                color="green"
+                              >
+                                <div />
+                              </Badge.Ribbon>
+                            )}
                           </div>
-                          <Badge.Ribbon text="Mới" color="blue">
-                            <div />
-                          </Badge.Ribbon>
+                        }
+                        actions={[
                           <Button
                             type="primary"
-                            shape="circle"
-                            icon={<PlayCircleOutlined />}
-                            size="large"
-                            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 hover:opacity-100 transition-opacity"
-                          />
-                        </div>
-                      }
-                      actions={[
-                        <Button type="primary" block key="enroll">
-                          Xem chi tiết
-                        </Button>,
-                      ]}
-                      className="h-full"
-                    >
-                      <div className="space-y-3">
-                        <Title level={5} className="!mb-2 line-clamp-2">
-                          {course.title}
-                        </Title>
+                            block
+                            key="enroll"
+                            href={`/user/courses/${course.id}`}
+                          >
+                            Xem chi tiết
+                          </Button>,
+                        ]}
+                        className="h-full"
+                      >
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <Title
+                              level={5}
+                              className="!mb-0 line-clamp-2 flex-1"
+                            >
+                              {course.title}
+                            </Title>
+                            <Tag color={levelInfo.color}>{levelInfo.label}</Tag>
+                          </div>
 
-                        <div className="flex items-center space-x-2 text-sm">
-                          <Avatar size="small" icon={<UserOutlined />} />
-                          <Text type="secondary">
-                            {course.creator?.name || "Giảng viên"}
-                          </Text>
-                        </div>
-
-                        <div className="flex items-center justify-between text-sm">
-                          <Space>
-                            <Rate disabled defaultValue={4.5} />
-                            <Text type="secondary">
-                              ({course.userCourses?.length || 0})
+                          {course.description && (
+                            <Text
+                              type="secondary"
+                              className="text-sm line-clamp-2"
+                            >
+                              {course.description}
                             </Text>
-                          </Space>
-                        </div>
+                          )}
 
-                        <div className="flex items-center text-sm text-gray-600">
-                          <ClockCircleOutlined className="mr-1" />
-                          <Text type="secondary">
-                            {Math.round(course.duration / 60)} giờ •{" "}
-                            {course.lessons?.length || 0} bài học
-                          </Text>
-                        </div>
+                          <div className="flex items-center space-x-2 text-sm">
+                            <Avatar size="small" icon={<UserOutlined />} />
+                            <Text type="secondary" className="truncate">
+                              {course.creator?.name || "Chưa cập nhật"}
+                            </Text>
+                          </div>
 
-                        <div className="flex items-center justify-between">
-                          <Text strong className="text-lg text-green-600">
-                            Miễn phí
-                          </Text>
-                          <Tag color="green" icon={<GiftOutlined />}>
-                            Free
-                          </Tag>
+                          <div className="flex items-center text-sm text-gray-600">
+                            <ClockCircleOutlined className="mr-1" />
+                            <Text type="secondary">
+                              {Math.floor(course.duration / 60)} giờ{" "}
+                              {course.duration % 60 > 0
+                                ? `${course.duration % 60} phút`
+                                : ""}
+                            </Text>
+                          </div>
+
+                          <div className="flex items-center justify-between text-sm">
+                            <Space size={4}>
+                              <BookOutlined className="text-gray-400" />
+                              <Text type="secondary">
+                                {course.lessons?.length || 0} bài học
+                              </Text>
+                            </Space>
+                            <Space size={4}>
+                              <UserOutlined className="text-gray-400" />
+                              <Text type="secondary">
+                                {course.userCourses?.length || 0} học viên
+                              </Text>
+                            </Space>
+                          </div>
+
+                          {totalComponents > 0 && (
+                            <div className="flex items-center text-sm text-gray-600">
+                              <TrophyOutlined className="mr-1" />
+                              <Text type="secondary">
+                                {totalComponents} nội dung học
+                              </Text>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    </Card>
-                  </Col>
-                ))}
+                      </Card>
+                    </Col>
+                  );
+                })}
               </Row>
             ) : (
               <Empty
