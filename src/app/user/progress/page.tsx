@@ -164,6 +164,12 @@ export default function UserProgressPage() {
     return { courses, stats };
   }, [userLessons]);
 
+  const completionPercent = useMemo(() => {
+    const total = stats.totalLessons || 0;
+    if (!total) return 0;
+    return Math.round((stats.completed / total) * 100);
+  }, [stats.completed, stats.totalLessons]);
+
   if (!userId || isLoading || isFetching) {
     return (
       <div className="flex justify-center items-center h-72">
@@ -196,16 +202,38 @@ export default function UserProgressPage() {
 
   return (
     <Space direction="vertical" size="large" style={{ width: "100%" }}>
-      <div>
-        <Title level={3}>Tiến độ học tập</Title>
-        <Text type="secondary">
-          Theo dõi trạng thái từng khóa học và bài học bạn đã tham gia.
-        </Text>
-      </div>
+      <Row justify="space-between" align="middle">
+        <Col>
+          <Title level={3}>Tiến độ học tập</Title>
+          <Text type="secondary">
+            Theo dõi trạng thái từng khóa học và bài học bạn đã tham gia.
+          </Text>
+        </Col>
+        <Col>
+          <div style={{ textAlign: "right" }}>
+            <Progress
+              type="circle"
+              percent={completionPercent}
+              width={76}
+              strokeWidth={10}
+              strokeColor={
+                completionPercent === 100
+                  ? { "0%": "#a7f3d0", "100%": "#10b981" }
+                  : { "0%": "#e0f2fe", "100%": "#667eea" }
+              }
+            />
+          </div>
+        </Col>
+      </Row>
 
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <Card
+            style={{
+              borderRadius: 12,
+              boxShadow: "0 8px 24px rgba(2,6,23,0.06)",
+            }}
+          >
             <Statistic
               title="Tổng bài học"
               value={stats.totalLessons}
@@ -214,7 +242,12 @@ export default function UserProgressPage() {
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <Card
+            style={{
+              borderRadius: 12,
+              boxShadow: "0 8px 24px rgba(2,6,23,0.06)",
+            }}
+          >
             <Statistic
               title="Đã hoàn thành"
               value={stats.completed}
@@ -223,7 +256,12 @@ export default function UserProgressPage() {
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <Card
+            style={{
+              borderRadius: 12,
+              boxShadow: "0 8px 24px rgba(2,6,23,0.06)",
+            }}
+          >
             <Statistic
               title="Đang học"
               value={stats.doing}
@@ -232,7 +270,12 @@ export default function UserProgressPage() {
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <Card
+            style={{
+              borderRadius: 12,
+              boxShadow: "0 8px 24px rgba(2,6,23,0.06)",
+            }}
+          >
             <Statistic
               title="Cần ôn lại"
               value={stats.retry}
@@ -245,7 +288,24 @@ export default function UserProgressPage() {
       <Row gutter={[16, 16]}>
         {courses.map((course) => (
           <Col xs={24} md={12} key={course.courseId}>
-            <Card hoverable>
+            <Card
+              hoverable
+              style={{
+                borderRadius: 12,
+                boxShadow: "0 10px 30px rgba(2,6,23,0.06)",
+                transition: "transform 0.12s ease, box-shadow 0.12s ease",
+              }}
+              onMouseEnter={(e: any) => {
+                e.currentTarget.style.transform = "translateY(-6px)";
+                e.currentTarget.style.boxShadow =
+                  "0 18px 50px rgba(2,6,23,0.09)";
+              }}
+              onMouseLeave={(e: any) => {
+                e.currentTarget.style.transform = "none";
+                e.currentTarget.style.boxShadow =
+                  "0 10px 30px rgba(2,6,23,0.06)";
+              }}
+            >
               <Space direction="vertical" size={12} style={{ width: "100%" }}>
                 <div>
                   <Title level={4} style={{ marginBottom: 4 }}>
@@ -308,7 +368,16 @@ type StatTagProps = {
 function StatTag({ label, value, status }: StatTagProps) {
   const config = lessonStatusConfig[status];
   return (
-    <Card size="small" bordered={false} className="bg-gray-50">
+    <Card
+      size="small"
+      bordered={false}
+      style={{
+        backgroundColor: "#fafafa",
+        borderRadius: 8,
+        padding: 10,
+        boxShadow: "0 6px 18px rgba(2,6,23,0.04)",
+      }}
+    >
       <Space direction="vertical" size={4}>
         <Text type="secondary">{label}</Text>
         <Tag color={config.color} style={{ width: "fit-content" }}>
