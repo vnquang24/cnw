@@ -41,6 +41,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { InfoBadge } from "@/components/ui/info-badge";
 import { Can } from "@/components/permissions/Can";
+import { getUserId, getUserInfo } from "@/lib/auth";
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
@@ -79,6 +80,9 @@ export default function EnrollmentsPage() {
 }
 
 function EnrollmentsPageContent() {
+  const userId = getUserId();
+  const userInfo = getUserInfo();
+  const isSuperAdmin = userInfo?.sub === "superadmin@gmail.com";
   const [searchText, setSearchText] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [approveModalOpen, setApproveModalOpen] = useState(false);
@@ -105,8 +109,25 @@ function EnrollmentsPageContent() {
     return dayjs(endDate).isBefore(dayjs(), "day");
   };
 
-  // Fetch enrollments from database
+  // Get Vietnamese text for course level
+  const getLevelText = (level: string | undefined) => {
+    const levelMap: Record<string, string> = {
+      BEGINNER: "Sơ cấp",
+      INTERMEDIATE: "Trung cấp",
+      ADVANCED: "Nâng cao",
+    };
+    return level ? levelMap[level] || level : "";
+  };
+
+  // Fetch enrollments from database - CHỈ của courses mà giáo viên tạo (trừ superadmin)
   const { data: enrollments, isLoading } = useFindManyUserCourse({
+    where: isSuperAdmin
+      ? {} // SuperAdmin xem tất cả
+      : {
+          course: {
+            createdBy: userId, // Chỉ lấy enrollments của courses do giáo viên này tạo
+          },
+        },
     include: {
       user: {
         select: {
@@ -346,7 +367,7 @@ function EnrollmentsPageContent() {
           <Space size={4} className="mt-1">
             {record.course?.level && (
               <Tag color="blue" style={{ fontSize: "11px" }}>
-                {record.course.level}
+                {getLevelText(record.course.level)}
               </Tag>
             )}
             {record.course?.duration && (

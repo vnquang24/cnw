@@ -37,7 +37,7 @@ import {
   type CourseFormData,
 } from "@/components/admin/courses/CourseFormDialog";
 import { showToast } from "@/lib/toast";
-import { getUserId } from "@/lib/auth";
+import { getUserId, getUserInfo } from "@/lib/auth";
 import { Can } from "@/components/permissions/Can";
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -45,6 +45,8 @@ const { Option } = Select;
 export default function CoursesPage() {
   const router = useRouter();
   const userId = getUserId();
+  const userInfo = getUserInfo();
+  const isSuperAdmin = userInfo?.sub === "superadmin@gmail.com";
   const [searchText, setSearchText] = useState("");
   const [filterStatus, setFilterStatus] = useState("ALL");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -69,6 +71,11 @@ export default function CoursesPage() {
     error,
     refetch,
   } = useFindManyCourse({
+    where: isSuperAdmin
+      ? {} // Superadmin xem tất cả
+      : {
+          createdBy: userId, // Chỉ lấy courses do giáo viên này tạo
+        },
     orderBy: { createdAt: "desc" },
     include: {
       creator: {

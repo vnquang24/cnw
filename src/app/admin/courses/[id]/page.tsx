@@ -36,7 +36,7 @@ import {
 import { useLessonModal } from "@/components/modal/LessonModalContext";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { getUserId } from "@/lib/auth";
+import { getUserId, getUserInfo } from "@/lib/auth";
 import { Can } from "@/components/permissions/Can";
 
 interface LessonData {
@@ -64,6 +64,9 @@ export default function CourseDetailPage() {
   const id = params?.id as string;
   const queryClient = useQueryClient();
   const { message } = App.useApp();
+  const currentUserId = getUserId(); // Lấy ID giáo viên hiện tại
+  const userInfo = getUserInfo();
+  const isSuperAdmin = userInfo?.sub === "superadmin@gmail.com";
 
   const { openViewModal, openEditModal } = useLessonModal();
 
@@ -244,6 +247,29 @@ export default function CourseDetailPage() {
           action={
             <Button size="small" onClick={() => router.back()}>
               Quay lại
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
+  // Kiểm tra authorization - chỉ creator hoặc superadmin mới được truy cập
+  const isCreator = course.createdBy === currentUserId;
+  if (!isCreator && !isSuperAdmin) {
+    return (
+      <div className="p-6">
+        <Alert
+          message="Không có quyền truy cập"
+          description="Bạn không có quyền truy cập khóa học này. Chỉ giáo viên tạo khóa học mới có thể quản lý."
+          type="warning"
+          showIcon
+          action={
+            <Button
+              type="primary"
+              onClick={() => router.push("/admin/courses")}
+            >
+              Quay lại danh sách khóa học
             </Button>
           }
         />

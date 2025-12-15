@@ -55,6 +55,7 @@ import ContentModal from "@/components/modal/ContentModal";
 import WordModal from "@/components/modal/WordModal";
 import VideoModal from "@/components/modal/VideoModal";
 import { SortableTable } from "@/components/SortableTable";
+import { getUserId, getUserInfo } from "@/lib/auth";
 
 const { Title, Text } = Typography;
 
@@ -127,6 +128,9 @@ export default function LessonDetailPage() {
   const lessonId = params?.lessonId as string;
   const queryClient = useQueryClient();
   const { message } = App.useApp();
+  const currentUserId = getUserId(); // Lấy ID giáo viên hiện tại
+  const userInfo = getUserInfo();
+  const isSuperAdmin = userInfo?.sub === "superadmin@gmail.com";
 
   const [activeTab, setActiveTab] = useState("content");
 
@@ -176,6 +180,7 @@ export default function LessonDetailPage() {
           select: {
             id: true,
             title: true,
+            createdBy: true, // Lấy thêm createdBy để check authorization
           },
         },
       },
@@ -764,6 +769,57 @@ export default function LessonDetailPage() {
       ),
     },
   ];
+
+  // Loading state
+  if (lessonLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  // Error state
+  if (lessonError || !lesson) {
+    return (
+      <div className="p-6">
+        <Alert
+          message="Lỗi"
+          description="Không thể tải thông tin bài học. Vui lòng thử lại sau."
+          type="error"
+          showIcon
+          action={
+            <Button size="small" onClick={() => router.back()}>
+              Quay lại
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
+  // Authorization check - chỉ creator của course hoặc superadmin mới được truy cập
+  const isCreator = lesson.course?.createdBy === currentUserId;
+  if (!isCreator && !isSuperAdmin) {
+    return (
+      <div className="p-6">
+        <Alert
+          message="Không có quyền truy cập"
+          description="Bạn không có quyền truy cập bài học này. Chỉ giáo viên tạo khóa học mới có thể quản lý."
+          type="warning"
+          showIcon
+          action={
+            <Button
+              type="primary"
+              onClick={() => router.push("/admin/courses")}
+            >
+              Quay lại danh sách khóa học
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div>

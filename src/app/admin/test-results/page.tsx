@@ -36,6 +36,7 @@ import {
 import AnswerReviewModal from "./components/AnswerReviewModal";
 import GradingModal from "./components/GradingModal";
 import { StatusTag } from "@/components/ui/status-tag";
+import { getUserId, getUserInfo } from "@/lib/auth";
 import type { Dayjs } from "dayjs";
 
 const { Title, Text } = Typography;
@@ -56,6 +57,9 @@ interface TestResultWithDetails {
 }
 
 export default function TestResultsPage() {
+  const userId = getUserId(); // Lấy ID giáo viên hiện tại
+  const userInfo = getUserInfo();
+  const isSuperAdmin = userInfo?.sub === "superadmin@gmail.com"; // Kiểm tra superadmin
   const [searchText, setSearchText] = useState("");
   const [filterTest, setFilterTest] = useState<string>("ALL");
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
@@ -74,8 +78,19 @@ export default function TestResultsPage() {
     string | null
   >(null);
 
-  // Fetch all test results with related data
+  // Fetch all test results with related data - CHỈ của courses mà giáo viên tạo (trừ superadmin)
   const { data: testResults = [], isLoading } = useFindManyTestResult({
+    where: isSuperAdmin
+      ? {} // Superadmin xem tất cả
+      : {
+          component: {
+            lesson: {
+              course: {
+                createdBy: userId, // Chỉ lấy test results của courses do giáo viên này tạo
+              },
+            },
+          },
+        },
     include: {
       user: true,
       component: {
@@ -96,16 +111,34 @@ export default function TestResultsPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  // Fetch all tests for filter dropdown
+  // Fetch all tests for filter dropdown - CHỈ tests trong courses do giáo viên tạo (trừ superadmin)
   const { data: tests = [] } = useFindManyTest({
+    where: isSuperAdmin
+      ? {} // Superadmin xem tất cả
+      : {
+          components: {
+            some: {
+              lesson: {
+                course: {
+                  createdBy: userId,
+                },
+              },
+            },
+          },
+        },
     select: {
       id: true,
       name: true,
     },
   });
 
-  // Fetch all courses for filter dropdown
+  // Fetch all courses for filter dropdown - CHỈ courses do giáo viên tạo (trừ superadmin)
   const { data: courses = [] } = useFindManyCourse({
+    where: isSuperAdmin
+      ? {} // Superadmin xem tất cả
+      : {
+          createdBy: userId, // Chỉ lấy courses do giáo viên này tạo
+        },
     select: {
       id: true,
       title: true,
