@@ -11,6 +11,7 @@ import {
   Row,
   Space,
   Spin,
+  Progress,
   Statistic,
   Tag,
   Typography,
@@ -134,6 +135,13 @@ export default function TestResultPage() {
     }
   }, [result?.questionScores]);
 
+  const scorePercent = useMemo(() => {
+    if (isPending) return 0;
+    const max = Number(test?.maxScore || 10);
+    const mark = Number(result?.mark || 0);
+    return Math.round((mark / max) * 100);
+  }, [isPending, result?.mark, test?.maxScore]);
+
   // Calculate statistics
   const correctCount = useMemo(() => {
     let count = 0;
@@ -222,6 +230,8 @@ export default function TestResultPage() {
                       : "linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)",
                   border: "none",
                   textAlign: "center",
+                  borderRadius: 12,
+                  boxShadow: "0 6px 18px rgba(15,23,42,0.06)",
                 }}
               >
                 <Space direction="vertical" size={8} align="center">
@@ -246,6 +256,21 @@ export default function TestResultPage() {
                       fontWeight: "bold",
                     }}
                   />
+                  {!isPending && (
+                    <div style={{ marginTop: 8 }}>
+                      <Progress
+                        type="circle"
+                        percent={scorePercent}
+                        width={72}
+                        strokeWidth={10}
+                        strokeColor={
+                          isPassed
+                            ? { "0%": "#a7f3d0", "100%": "#10b981" }
+                            : { "0%": "#fee2e2", "100%": "#ef4444" }
+                        }
+                      />
+                    </div>
+                  )}
                   {isPending && (
                     <Text type="secondary">Đang chờ giáo viên chấm điểm</Text>
                   )}
@@ -258,7 +283,12 @@ export default function TestResultPage() {
         {/* Statistics */}
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={8}>
-            <Card>
+            <Card
+              style={{
+                borderRadius: 10,
+                boxShadow: "0 6px 18px rgba(15,23,42,0.04)",
+              }}
+            >
               <Statistic
                 title="Câu đúng"
                 value={correctCount}
@@ -269,7 +299,12 @@ export default function TestResultPage() {
             </Card>
           </Col>
           <Col xs={24} sm={8}>
-            <Card>
+            <Card
+              style={{
+                borderRadius: 10,
+                boxShadow: "0 6px 18px rgba(15,23,42,0.04)",
+              }}
+            >
               <Statistic
                 title="Câu sai"
                 value={incorrectCount}
@@ -280,7 +315,12 @@ export default function TestResultPage() {
             </Card>
           </Col>
           <Col xs={24} sm={8}>
-            <Card>
+            <Card
+              style={{
+                borderRadius: 10,
+                boxShadow: "0 6px 18px rgba(15,23,42,0.04)",
+              }}
+            >
               <Statistic
                 title="Tỷ lệ đúng"
                 value={Math.round((correctCount / questions.length) * 100)}
@@ -424,8 +464,8 @@ export default function TestResultPage() {
                           <div
                             key={answer.id}
                             style={{
-                              padding: "8px 12px",
-                              borderRadius: 8,
+                              padding: "10px 14px",
+                              borderRadius: 10,
                               backgroundColor: showAsCorrect
                                 ? "#d1fae5"
                                 : showAsWrong
@@ -435,7 +475,21 @@ export default function TestResultPage() {
                                 ? "2px solid #10b981"
                                 : showAsWrong
                                   ? "2px solid #ef4444"
-                                  : "1px solid #d9d9d9",
+                                  : "1px solid #e6e6e6",
+                              boxShadow: "0 4px 14px rgba(2,6,23,0.04)",
+                              transition:
+                                "transform 0.12s ease, box-shadow 0.12s ease",
+                            }}
+                            onMouseEnter={(e: any) => {
+                              e.currentTarget.style.transform =
+                                "translateY(-4px)";
+                              e.currentTarget.style.boxShadow =
+                                "0 10px 30px rgba(2,6,23,0.08)";
+                            }}
+                            onMouseLeave={(e: any) => {
+                              e.currentTarget.style.transform = "none";
+                              e.currentTarget.style.boxShadow =
+                                "0 4px 14px rgba(2,6,23,0.04)";
                             }}
                           >
                             <Space size={8}>
