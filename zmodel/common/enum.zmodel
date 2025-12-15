@@ -1,0 +1,108 @@
+enum PermissionName {
+  // User management
+  User
+  UserGroup
+  Permission
+  
+  // System entities
+  Device
+  RefreshToken
+  
+  // Course management
+  Course
+  Lesson
+  Test
+  Question
+  Answer
+  Component
+  Word
+  MediaFile
+  VideoContent
+  
+  // User progress tracking
+  UserCourse
+  UserLesson
+  TestResult
+}
+
+enum UserRole {
+  ADMIN
+  USER 
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+// Add by Nguyen Anh Quan
+enum CourseLevel {
+  BEGINNER 
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CourseStatus {
+  ACTIVE
+  INACTIVE
+}
+// 
+
+enum EnrolmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum LessonStatus {
+  TODO
+  DOING
+  PASS
+  FAIL
+}
+
+enum WordType {
+  NOUN
+  PRONOUN
+  VERB
+  ADJECTIVE
+  ADVERB
+  PREPOSITION
+  CONJUNCTION
+  INTERJECTION
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  ESSAY
+}
+
+enum ComponentType {
+  WORD
+  TEST
+  PARAGRAPH
+  VIDEO
+}
+
+enum TestResultStatus {
+  PENDING
+  PASSED
+  FAILED
+}
+
+enum PermissionType {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+}
