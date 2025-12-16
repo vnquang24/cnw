@@ -15,7 +15,7 @@
     "generate:zmodel": "zenstack generate",
     "generate:all": "pnpm run generate:zmodel && pnpm run generate-api",
     "prepare": "husky",
-    "postinstall": "pnpm run generate:all"
+    "postinstall": "pnpm run generate:zmodel"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
