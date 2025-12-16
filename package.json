@@ -14,7 +14,8 @@
     "generate-api": "openapi-codegen gen cnw",
     "generate:zmodel": "zenstack generate",
     "generate:all": "pnpm run generate:zmodel && pnpm run generate-api",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "pnpm run generate:all"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
