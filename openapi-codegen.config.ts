@@ -8,7 +8,9 @@ export default defineConfig({
   cnw: {
     from: {
       source: "url",
-      url: "http://localhost:8000/api-docs-json",
+      url: process.env.NEXT_PUBLIC_API_URL
+        ? `${process.env.NEXT_PUBLIC_API_URL}/api-docs-json`
+        : "https://cnw-backend.ambitiousocean-b000b10b.southeastasia.azurecontainerapps.io/api-docs-json",
     },
     outputDir: "./generated/api", // Thư mục đầu ra
     to: async (context) => {
