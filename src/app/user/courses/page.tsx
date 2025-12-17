@@ -325,7 +325,7 @@ function UserCoursesContent() {
         return {
           color: "geekblue" as const,
           badgeType: "success" as const,
-          text: "Đã phê duyệt",
+          text: "Đã phê duyệt ",
           icon: <CheckCircle size={14} />,
         };
       case "REJECTED":
