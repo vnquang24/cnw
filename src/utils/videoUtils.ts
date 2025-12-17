@@ -157,7 +157,7 @@ export const checkVideoProcessingStatus = async (
   onStatusUpdate?: (status: string, progress?: number) => void,
 ): Promise<{ completed: boolean; hlsUrl?: string; error?: string }> => {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000";
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     const response = await fetch(`${baseUrl}/api/video/${videoId}/status`);
 
     if (!response.ok) {

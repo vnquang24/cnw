@@ -1,14 +1,14 @@
 import { CnwContext } from "./cnwContext";
-import { getCookie} from "cookies-next"; 
-import { interceptorsResponse } from '@/lib/api/index';
+import { getCookie } from "cookies-next";
+import { interceptorsResponse } from "@/lib/api/index";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL; 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 // Danh sách URL không cần authentication header
 const PUBLIC_URL = [
-  '/api/auth/login',
-  '/api/auth/register',
-  '/api/auth/refresh-token'
+  "/api/auth/login",
+  "/api/auth/register",
+  "/api/auth/refresh-token",
 ];
 
 export type ErrorWrapper<TError> =
@@ -48,16 +48,19 @@ export async function cnwFetch<
 >): Promise<TData> {
   let error: ErrorWrapper<TError>;
   try {
-    const accessToken = typeof window !== 'undefined' ? getCookie('accessToken') : null;
+    const accessToken =
+      typeof window !== "undefined" ? getCookie("accessToken") : null;
     const resolvedUrl = resolveUrl(url, queryParams, pathParams);
-    
+
     // Kiểm tra xem URL hiện tại có phải là public URL không
-    const isPublicUrl = PUBLIC_URL.some(item => url.includes(item));
-    
+    const isPublicUrl = PUBLIC_URL.some((item) => url.includes(item));
+
     const requestHeaders: HeadersInit = {
       "Content-Type": "application/json",
       // Chỉ thêm Authorization header nếu là private URL và token tồn tại
-      ...(!isPublicUrl && accessToken ? { "Authorization": `Bearer ${accessToken}` } : {}),
+      ...(!isPublicUrl && accessToken
+        ? { Authorization: `Bearer ${accessToken}` }
+        : {}),
       ...headers, // Đảm bảo headers được cung cấp vẫn có thể ghi đè
     };
 
@@ -74,24 +77,21 @@ export async function cnwFetch<
     ) {
       delete requestHeaders["Content-Type"];
     }
-    
+
     const fullUrl = `${baseUrl}${resolveUrl(url, queryParams, pathParams)}`;
-    const response = await window.fetch(
-      fullUrl,
-      {
-        signal,
-        method: method.toUpperCase(),
-        body: body
-          ? body instanceof FormData
-            ? body
-            : JSON.stringify(body)
-          : undefined,
-        headers: requestHeaders,
-      },
-    );
-    
+    const response = await window.fetch(fullUrl, {
+      signal,
+      method: method.toUpperCase(),
+      body: body
+        ? body instanceof FormData
+          ? body
+          : JSON.stringify(body)
+        : undefined,
+      headers: requestHeaders,
+    });
+
     await interceptorsResponse(response.status, fullUrl);
-    
+
     if (!response.ok) {
       try {
         error = await response.json();

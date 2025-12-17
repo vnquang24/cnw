@@ -532,7 +532,7 @@ export default function LessonDetailPage() {
 
         // Upload video with XMLHttpRequest for progress tracking
         const baseUrl =
-          process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000";
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
         const uploadedVideo = await new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();

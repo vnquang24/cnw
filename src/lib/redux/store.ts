@@ -1,11 +1,11 @@
-import { createStore } from 'easy-peasy'
-import { StoreModel } from './models'
-import { appState} from './stores'
+import { createStore } from "easy-peasy";
+import { StoreModel } from "./models";
+import { appState } from "./stores";
 
 const model: StoreModel = {
-    appState
-}
+  appState,
+};
 
-const store = createStore<StoreModel>(model)
+const store = createStore<StoreModel>(model);
 
-export default store
+export default store;

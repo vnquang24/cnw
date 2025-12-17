@@ -787,7 +787,7 @@ function VideoComponentCard({
   // Check if video has HLS playlist or fallback URL
   const videoSrc =
     video.hlsPlaylistUrl ||
-    `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000"}/api/video/${video.id}/stream/playlist.m3u8`;
+    `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/video/${video.id}/stream/playlist.m3u8`;
 
   const hasValidVideo = video.hlsPlaylistUrl || video.originalUrl;
 

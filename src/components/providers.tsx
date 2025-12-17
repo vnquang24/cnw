@@ -16,7 +16,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <ZenStackHooksProvider
         value={{
           endpoint:
-            (process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000") +
+            (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000") +
             "/api/models",
           fetch: fetchInstance,
         }}

@@ -1,7 +1,7 @@
-import {AppState} from './app-state';
+import { AppState } from "./app-state";
 
 interface StoreModel {
-    appState: AppState
+  appState: AppState;
 }
 
-export type {StoreModel}
+export type { StoreModel };

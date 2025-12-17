@@ -7,7 +7,7 @@ import { logout } from "@/lib/auth";
 import { showToast } from "@/lib/toast";
 
 const queryClient = new QueryClient();
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 const AUTH_URL = ["auth/login", "auth/logout", "auth/refresh-token"];
 
 // Danh sách routes public không cần xác thực

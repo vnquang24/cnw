@@ -1,3 +1,3 @@
-import { appState } from './app-state'
+import { appState } from "./app-state";
 
-export { appState }
+export { appState };
