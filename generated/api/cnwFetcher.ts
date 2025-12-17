@@ -2,7 +2,7 @@ import { CnwContext } from "./cnwContext";
 import { getCookie } from "cookies-next";
 import { interceptorsResponse } from "@/lib/api/index";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
 // Danh sách URL không cần authentication header
 const PUBLIC_URL = [
